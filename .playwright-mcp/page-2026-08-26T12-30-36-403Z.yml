@@ -1,0 +1,246 @@
+- generic [ref=e2]:
+  - link "Skip to content" [ref=e3] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "SocialOrbit home" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e13]:
+          - generic [ref=e14]: SocialOrbit
+          - generic [ref=e15]: Influencer Intelligence
+      - navigation "Main" [ref=e16]:
+        - list [ref=e17]:
+          - listitem [ref=e18]:
+            - link "Platform" [ref=e19] [cursor=pointer]:
+              - /url: /#platform
+          - listitem [ref=e20]:
+            - link "Intelligence" [ref=e21] [cursor=pointer]:
+              - /url: /#intelligence
+          - listitem [ref=e22]:
+            - link "Developer API" [ref=e23] [cursor=pointer]:
+              - /url: /#api
+          - listitem [ref=e24]:
+            - link "Pricing" [ref=e25] [cursor=pointer]:
+              - /url: /pricing
+      - generic [ref=e26]:
+        - link "Sign in" [ref=e27] [cursor=pointer]:
+          - /url: /login
+        - link "Request access" [ref=e28] [cursor=pointer]:
+          - /url: /register
+  - main [ref=e29]:
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]: Influencer · Consumer · Campaign intelligence
+        - heading "Every number on a creator profile should say where it came from." [level=1] [ref=e34]
+        - paragraph [ref=e35]: Most influencer tools hand you a confident number and no way to check it. SocialOrbit labels every fact — verified, observed, derived, estimated or AI-inferred — with its source, its collection time and its confidence, so you can tell a measurement from a guess before you spend a budget on it.
+        - generic [ref=e36]:
+          - link "Request access" [ref=e37] [cursor=pointer]:
+            - /url: /register
+          - link "Sign in" [ref=e38] [cursor=pointer]:
+            - /url: /login
+        - paragraph [ref=e39]: Data from official platform APIs, OAuth-authorized creator accounts and permitted public research. No prohibited scraping.
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - generic [ref=e42]:
+            - generic [ref=e43]: SocialOrbit Health
+            - generic [ref=e44]: health-1.0.0
+          - generic [ref=e45]: inf_0001
+        - generic [ref=e46]:
+          - generic [ref=e47]:
+            - 'img "SocialOrbit Health: 79 out of 100" [ref=e48]':
+              - generic [ref=e52]:
+                - generic [ref=e53]: "79"
+                - generic [ref=e54]: /100
+            - generic [ref=e55]:
+              - paragraph [ref=e56]: Strong performance
+              - paragraph [ref=e57]: Top 15% of technology creators in the 1M+ follower band.
+              - generic [ref=e58]: 91%
+          - generic [ref=e62]:
+            - generic [ref=e63]:
+              - generic [ref=e64]:
+                - generic [ref=e65]: Audience authenticity
+                - generic [ref=e66]: 20%
+              - generic [ref=e67]: "79"
+            - generic [ref=e70]:
+              - generic [ref=e71]:
+                - generic [ref=e72]: Engagement rate
+                - generic [ref=e73]: 15%
+              - generic [ref=e74]: "90"
+            - generic [ref=e77]:
+              - generic [ref=e78]:
+                - generic [ref=e79]: Growth pattern
+                - generic [ref=e80]: 15%
+              - generic [ref=e81]: "70"
+            - generic [ref=e84]:
+              - generic [ref=e85]:
+                - generic [ref=e86]: Brand safety
+                - generic [ref=e87]: 5%
+              - generic [ref=e88]: "94"
+          - generic [ref=e91]:
+            - generic [ref=e92]:
+              - generic [ref=e93]:
+                - generic [ref=e94]: Followers
+                - generic [ref=e95]: Verified, collected 5 hours ago
+              - generic [ref=e101]: 2.4M
+            - generic [ref=e102]:
+              - generic [ref=e103]:
+                - generic [ref=e104]: Median views
+                - generic [ref=e105]: Observed, collected 5 hours ago
+              - generic [ref=e111]: 420K
+            - generic [ref=e112]:
+              - generic [ref=e113]:
+                - generic [ref=e114]: Est. reach / mo
+                - generic [ref=e115]: Estimated, collected 5 hours ago
+              - generic [ref=e120]: 12M
+          - generic [ref=e129]:
+            - generic [ref=e130]:
+              - text: Verified
+              - generic [ref=e132]: 22%
+            - generic [ref=e133]:
+              - text: Observed
+              - generic [ref=e135]: 48%
+            - generic [ref=e136]:
+              - text: Derived
+              - generic [ref=e138]: 16%
+            - generic [ref=e139]:
+              - text: Estimated
+              - generic [ref=e141]: 6%
+            - generic [ref=e142]:
+              - text: AI inferred
+              - generic [ref=e144]: 8%
+    - generic [ref=e146]:
+      - generic [ref=e147]:
+        - text: The rule the platform is built on
+        - heading "AI explains the score. It never sets it." [level=2] [ref=e148]
+        - paragraph [ref=e149]: Health, authenticity, engagement quality, growth and risk are computed in backend code by versioned formulas over stored observations. The same inputs produce the same score today and in three years, and every component that fed it is stored alongside the result. A model can classify a comment or read the output back to you in plain language — it cannot move the number.
+      - generic [ref=e150]:
+        - generic [ref=e151]:
+          - heading "Deterministic and versioned" [level=3] [ref=e157]
+          - paragraph [ref=e158]: Nine weighted components, published weights, stored inputs, a formula version on every result. Reproducible by definition.
+        - generic [ref=e159]:
+          - heading "Confidence is its own axis" [level=3] [ref=e164]
+          - paragraph [ref=e165]: A creator can score 91 on health with 40% confidence. We show both, separately, because folding them together is the most misleading thing a tool like this can do.
+        - generic [ref=e166]:
+          - heading "AI stays in its lane" [level=3] [ref=e171]
+          - paragraph [ref=e172]: Classification, extraction, summaries and explanations — each stored with its provider, model, prompt version and evidence. Never follower counts, never demographics.
+    - generic [ref=e174]:
+      - generic [ref=e175]:
+        - text: Two workflows, one data foundation
+        - heading "Decide who to work with. Then measure what they delivered." [level=2] [ref=e176]
+      - generic [ref=e177]:
+        - generic [ref=e178]:
+          - generic [ref=e185]:
+            - text: Workflow A
+            - heading "Influencer Intelligence" [level=3] [ref=e186]
+          - generic [ref=e187]:
+            - paragraph [ref=e188]: “Should I work with this creator?”
+            - list [ref=e189]:
+              - listitem [ref=e190]:
+                - generic [ref=e191]: "01"
+                - text: Search by country, language, category, audience size, engagement, health, risk and campaign fit
+              - listitem [ref=e192]:
+                - generic [ref=e193]: "02"
+                - text: Open an evidence-based report covering the account, its audience and its content
+              - listitem [ref=e194]:
+                - generic [ref=e195]: "03"
+                - text: Compare creators on normalised metrics over comparable time ranges
+              - listitem [ref=e196]:
+                - generic [ref=e197]: "04"
+                - text: Shortlist, annotate and export
+        - generic [ref=e198]:
+          - generic [ref=e205]:
+            - text: Workflow B
+            - heading "Campaign Management" [level=3] [ref=e206]
+          - generic [ref=e207]:
+            - paragraph [ref=e208]: “How did this creator perform for us?”
+            - list [ref=e209]:
+              - listitem [ref=e210]:
+                - generic [ref=e211]: "01"
+                - text: Select talent from a shortlist and record agreed rates
+              - listitem [ref=e212]:
+                - generic [ref=e213]: "02"
+                - text: Set a tracking hashtag — every campaign requires one
+              - listitem [ref=e214]:
+                - generic [ref=e215]: "03"
+                - text: Attribute posts to the campaign by hashtag match
+              - listitem [ref=e216]:
+                - generic [ref=e217]: "04"
+                - text: Score each creator's campaign performance separately from their profile
+    - generic [ref=e219]:
+      - generic [ref=e220]:
+        - text: Data foundation
+        - heading "Sources are ranked, and the ranking is visible." [level=2] [ref=e221]
+        - paragraph [ref=e222]: An official API measurement outranks public research, which outranks model inference. Where a creator connects their account through OAuth, first-party analytics become available and the profile earns SocialOrbit Verified — a status that is never issued from public data alone.
+      - list [ref=e223]:
+        - listitem [ref=e224]:
+          - generic [ref=e225]: "01"
+          - paragraph [ref=e230]: Platform APIs
+          - paragraph [ref=e231]: YouTube, Meta
+        - listitem [ref=e232]:
+          - generic [ref=e233]: "02"
+          - paragraph [ref=e238]: OAuth connection
+          - paragraph [ref=e239]: First-party analytics
+        - listitem [ref=e240]:
+          - generic [ref=e241]: "03"
+          - paragraph [ref=e247]: Normalise & snapshot
+          - paragraph [ref=e248]: History, never overwritten
+        - listitem [ref=e249]:
+          - generic [ref=e250]: "04"
+          - paragraph [ref=e256]: Analytics & scoring
+          - paragraph [ref=e257]: Deterministic
+        - listitem [ref=e258]:
+          - generic [ref=e259]: "05"
+          - paragraph [ref=e264]: AI enrichment
+          - paragraph [ref=e265]: Explained, evidenced
+    - generic [ref=e267]:
+      - generic [ref=e268]:
+        - text: Developer API
+        - heading "The same database the product runs on." [level=2] [ref=e269]
+        - paragraph [ref=e270]: A versioned REST API over the canonical influencer record, with hashed keys, rotation, per-client rate limits, field-level access control and usage tracking. Not an export — the same service layer the application itself calls.
+        - link "Get API access" [ref=e271] [cursor=pointer]:
+          - /url: /register
+      - generic [ref=e277]:
+        - generic [ref=e278]: GET /v1/influencers
+        - code [ref=e282]: "GET /v1/influencers ?country=IN &language=en &category=technology &followers_min=100000 &followers_max=1000000 &health_min=75 &engagement_min=3 &verified=true &sort=health_score_desc Authorization: Bearer so_live_••••••••"
+    - generic [ref=e284]:
+      - generic [ref=e285]:
+        - heading "Start with five searches." [level=2] [ref=e286]
+        - paragraph [ref=e287]: The free plan includes five influencer searches per month. Saved profiles, shortlists and comparisons stay available whether or not you have searches left.
+      - generic [ref=e288]:
+        - link "Create account" [ref=e289] [cursor=pointer]:
+          - /url: /register
+        - link "See plans" [ref=e290] [cursor=pointer]:
+          - /url: /pricing
+  - contentinfo [ref=e291]:
+    - generic [ref=e292]:
+      - generic [ref=e293]:
+        - generic [ref=e300]:
+          - generic [ref=e301]: SocialOrbit
+          - generic [ref=e302]: Influencer Intelligence
+        - paragraph [ref=e303]: Influencer intelligence built on official platform APIs, authorized creator connections and permitted public research.
+      - generic [ref=e304]:
+        - generic [ref=e305]:
+          - paragraph [ref=e306]: Platform
+          - list [ref=e307]:
+            - listitem [ref=e308]:
+              - link "Intelligence" [ref=e309] [cursor=pointer]:
+                - /url: /#intelligence
+            - listitem [ref=e310]:
+              - link "Verification" [ref=e311] [cursor=pointer]:
+                - /url: /#verification
+            - listitem [ref=e312]:
+              - link "Developer API" [ref=e313] [cursor=pointer]:
+                - /url: /#api
+        - generic [ref=e314]:
+          - paragraph [ref=e315]: Company
+          - list [ref=e316]:
+            - listitem [ref=e317]:
+              - link "Pricing" [ref=e318] [cursor=pointer]:
+                - /url: /pricing
+            - listitem [ref=e319]:
+              - link "Sign in" [ref=e320] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e321]:
+              - link "Request access" [ref=e322] [cursor=pointer]:
+                - /url: /register
+    - paragraph [ref=e324]: © 2026 SocialOrbit. Data is collected from official platform APIs and authorized connections. Estimated and AI-inferred values are labelled as such throughout the product.

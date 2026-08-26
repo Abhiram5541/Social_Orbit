@@ -1,0 +1,211 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   SocialOrbit design tokens
+   Modern Corporate Minimalism — a dense analytical surface that should read
+   like a financial terminal. Depth comes from 1px borders and tonal layering,
+   not shadows. Colour is reserved for meaning.
+
+   This block is the ONLY place raw colour values are allowed to appear.
+   ========================================================================= */
+
+@theme {
+  /* --- Type ------------------------------------------------------------ */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  /* --- Neutral scale: the canvas the data sits on ---------------------- */
+  --color-canvas: #f8fafc; /* app background */
+  --color-surface: #ffffff; /* cards, tables, panels */
+  --color-sunken: #f1f5f9; /* AI panels, inset regions, table headers */
+  --color-sunken-strong: #e8edf3; /* hover on sunken */
+
+  --color-line: #e2e8f0; /* default 1px border */
+  --color-line-strong: #cbd5e1; /* inputs, emphasised dividers */
+
+  --color-ink: #0f172a; /* primary text */
+  --color-ink-muted: #64748b; /* labels, metadata */
+  --color-ink-subtle: #94a3b8; /* placeholders, disabled */
+  --color-ink-inverse: #f8fafc;
+
+  /* --- Intelligence Blue: intent only, never decoration ---------------- */
+  --color-brand: #0066ff;
+  --color-brand-hover: #0052d6;
+  --color-brand-active: #0043b0;
+  --color-brand-soft: #eef4ff; /* selected rows, active nav */
+  --color-brand-softer: #f6f9ff;
+  --color-brand-line: #c7dbff;
+  --color-brand-ink: #0043b0; /* brand text on light — meets AA */
+
+  /* --- Semantic: applied to measurements, not chrome ------------------- */
+  --color-positive: #047857;
+  --color-positive-soft: #ecfdf5;
+  --color-positive-line: #a7f3d0;
+
+  --color-caution: #b45309;
+  --color-caution-soft: #fffbeb;
+  --color-caution-line: #fde68a;
+
+  --color-critical: #be123c;
+  --color-critical-soft: #fff1f2;
+  --color-critical-line: #fecdd3;
+
+  --color-neutral-metric: #475569; /* a series that carries no meaning */
+
+  /* --- Provenance: how a fact came to exist ---------------------------- */
+  --color-verified: #0066ff; /* OAuth-confirmed, first-party */
+  --color-observed: #047857; /* official API measurement */
+  --color-inferred: #7c3aed; /* AI classification */
+  --color-inferred-soft: #f5f3ff;
+  --color-inferred-line: #ddd6fe;
+  --color-estimated: #b45309; /* modelled estimate */
+
+  /* --- Chart series ----------------------------------------------------
+     Fixed order, never cycled: a series keeps its hue when a filter removes
+     its neighbours. Validated against white surface — lightness band, chroma
+     floor, adjacent-pair CVD separation (worst ΔE 13.6 deutan), normal-vision
+     separation (worst ΔE 28.8) and 3:1 contrast all pass.
+
+     Deliberately disjoint from the status hues above: a series must never be
+     mistaken for a "this is bad" signal because it happened to land on rose.
+     A ninth series does not exist — fold into "Other" or facet instead. */
+  --color-series-1: #0066ff;
+  --color-series-2: #ea580c;
+  --color-series-3: #0d9488;
+  --color-series-4: #a21caf;
+  --color-series-5: #4d7c0f;
+  --color-series-6: #7c3aed;
+  --color-grid: #eef2f7;
+
+  /* --- Elevation ------------------------------------------------------- */
+  --shadow-raised: 0 1px 2px 0 rgb(15 23 42 / 0.04);
+  --shadow-overlay: 0 4px 6px -1px rgb(15 23 42 / 0.06),
+    0 10px 24px -6px rgb(15 23 42 / 0.12);
+  --shadow-popover: 0 2px 4px -1px rgb(15 23 42 / 0.05),
+    0 8px 16px -4px rgb(15 23 42 / 0.1);
+
+  /* --- Layout constants ------------------------------------------------ */
+  --spacing-sidebar: 15rem; /* 240px */
+  --spacing-sidebar-rail: 4rem; /* 64px */
+  --spacing-panel: 22.5rem; /* 360px */
+  --spacing-topbar: 3.5rem; /* 56px */
+
+  /* --- Motion: subtle, fast, purposeful -------------------------------- */
+  --ease-out-quick: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================================================
+   Base
+   ========================================================================= */
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    /* The invariant: wide content scrolls inside its own container, the
+       document never does. `clip` rather than `hidden` — `hidden` would make
+       the body a scroll container and break every sticky header and column. */
+    overflow-x: clip;
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 0.875rem; /* 14px default — density first */
+    line-height: 1.25rem;
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  /* Every numeric in the product aligns in a column. */
+  .font-mono,
+  [class*="font-mono"] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Only remove the ring where a component draws its own. */
+  [data-focus-custom]:focus-visible {
+    outline: none;
+  }
+
+  ::selection {
+    background-color: var(--color-brand-soft);
+    color: var(--color-brand-active);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Inputs inherit type rather than falling back to the UA default. */
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+}
+
+@layer utilities {
+  /* A scroll container that keeps the page itself from scrolling sideways. */
+  .scroll-x {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+
+  .scroll-x::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .scroll-x::-webkit-scrollbar-thumb {
+    background-color: var(--color-line-strong);
+    border-radius: 9999px;
+  }
+
+  /* Visually hidden but reachable by screen readers. */
+  .sr-only-focusable:not(:focus):not(:focus-within) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

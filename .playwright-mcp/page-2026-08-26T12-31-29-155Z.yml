@@ -1,0 +1,175 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e2]:
+    - link "Skip to content" [ref=f2e3] [cursor=pointer]:
+      - /url: "#main"
+    - complementary [ref=f2e4]:
+      - link "SocialOrbit home" [ref=f2e6] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=f2e13]:
+          - generic [ref=f2e14]: SocialOrbit
+          - generic [ref=f2e15]: Influencer Intelligence
+      - navigation "Primary" [ref=f2e17]:
+        - generic [ref=f2e18]:
+          - link "Overview" [ref=f2e19] [cursor=pointer]:
+            - /url: /dashboard
+          - link "Discovery" [ref=f2e26] [cursor=pointer]:
+            - /url: /discovery
+          - link "Influencers" [ref=f2e31] [cursor=pointer]:
+            - /url: /influencers
+        - generic [ref=f2e38]:
+          - generic [ref=f2e39]: Workspace
+          - link "Shortlists" [ref=f2e40] [cursor=pointer]:
+            - /url: /shortlists
+          - link "Compare" [ref=f2e45] [cursor=pointer]:
+            - /url: /compare
+          - link "Campaigns" [ref=f2e51] [cursor=pointer]:
+            - /url: /campaigns
+          - link "Reports" [ref=f2e56] [cursor=pointer]:
+            - /url: /reports
+        - generic [ref=f2e61]:
+          - generic [ref=f2e62]: Account
+          - link "API" [ref=f2e63] [cursor=pointer]:
+            - /url: /api-portal
+          - link "Usage & billing" [ref=f2e69] [cursor=pointer]:
+            - /url: /usage
+          - link "Settings" [ref=f2e73] [cursor=pointer]:
+            - /url: /settings
+      - button "Collapse navigation" [ref=f2e79]:
+        - generic [ref=f2e83]: Collapse
+    - generic [ref=f2e84]:
+      - banner [ref=f2e85]:
+        - button "Search creators, campaigns, shortlists… /" [ref=f2e86]:
+          - generic [ref=f2e90]: Search creators, campaigns, shortlists…
+          - generic [ref=f2e91]: /
+        - generic [ref=f2e92]:
+          - link "500 of 500 searches remaining this month" [ref=f2e93] [cursor=pointer]:
+            - /url: /usage
+            - generic [ref=f2e94]: Searches
+            - generic [ref=f2e95]: 500/500
+          - link "Notifications" [ref=f2e96] [cursor=pointer]:
+            - /url: /notifications
+          - link "Help and documentation" [ref=f2e100] [cursor=pointer]:
+            - /url: /help
+          - button "Marcus Whitfield Client Owner" [ref=f2e104]:
+            - generic [ref=f2e105]: MW
+            - generic [ref=f2e107]:
+              - generic [ref=f2e108]: Marcus Whitfield
+              - generic [ref=f2e109]: Client Owner
+      - main [ref=f2e112]:
+        - generic [ref=f2e114]:
+          - generic [ref=f2e115]:
+            - heading "Good morning, Marcus." [level=1] [ref=f2e116]
+            - paragraph [ref=f2e117]: What is happening across Northwind Brands.
+          - link "Discover creators" [ref=f2e120] [cursor=pointer]:
+            - /url: /discovery
+        - generic [ref=f2e124]:
+          - generic [ref=f2e125]:
+            - generic [ref=f2e126]:
+              - generic [ref=f2e127]: Tracked creators
+              - generic [ref=f2e129]: "6"
+              - generic [ref=f2e130]: across 2 shortlists
+            - generic [ref=f2e132]:
+              - generic [ref=f2e133]: Live campaigns
+              - generic [ref=f2e135]: "1"
+              - generic [ref=f2e136]: 2 total
+            - generic [ref=f2e138]:
+              - generic [ref=f2e139]: Attributed posts
+              - generic [ref=f2e141]: "11"
+              - generic [ref=f2e142]: matched to campaign hashtags
+            - generic [ref=f2e144]:
+              - generic [ref=f2e145]: Searches this month
+              - generic [ref=f2e147]: 0 / 500
+              - generic [ref=f2e148]: resets monthly
+          - generic [ref=f2e150]:
+            - generic [ref=f2e151]:
+              - generic [ref=f2e152]:
+                - heading "Campaigns" [level=2] [ref=f2e153]
+                - link "View all" [ref=f2e154] [cursor=pointer]:
+                  - /url: /campaigns
+              - list [ref=f2e155]:
+                - listitem [ref=f2e156]:
+                  - 'link "Orbit Series launch Live #OrbitSeries2026 · 1 Aug 2026 – 30 Sept 2026 Creators 3/4 Reach 75.3K" [ref=f2e157] [cursor=pointer]':
+                    - /url: /campaigns/cmp_orbit_launch
+                    - generic [ref=f2e158]:
+                      - paragraph [ref=f2e159]:
+                        - text: Orbit Series launch
+                        - generic [ref=f2e160]: Live
+                      - paragraph [ref=f2e162]:
+                        - generic [ref=f2e163]: "#OrbitSeries2026"
+                        - text: · 1 Aug 2026 – 30 Sept 2026
+                    - generic [ref=f2e164]:
+                      - generic [ref=f2e165]:
+                        - term [ref=f2e166]: Creators
+                        - definition [ref=f2e167]: 3/4
+                      - generic [ref=f2e168]:
+                        - term [ref=f2e169]: Reach
+                        - definition [ref=f2e170]: 75.3K
+                - listitem [ref=f2e171]:
+                  - 'link "Summer beauty edit Completed #NorthwindGlowEdit · 5 May 2026 – 30 Jun 2026 Creators 2/2 Reach 133.2K" [ref=f2e172] [cursor=pointer]':
+                    - /url: /campaigns/cmp_summer_beauty
+                    - generic [ref=f2e173]:
+                      - paragraph [ref=f2e174]:
+                        - text: Summer beauty edit
+                        - generic [ref=f2e175]: Completed
+                      - paragraph [ref=f2e176]:
+                        - generic [ref=f2e177]: "#NorthwindGlowEdit"
+                        - text: · 5 May 2026 – 30 Jun 2026
+                    - generic [ref=f2e178]:
+                      - generic [ref=f2e179]:
+                        - term [ref=f2e180]: Creators
+                        - definition [ref=f2e181]: 2/2
+                      - generic [ref=f2e182]:
+                        - term [ref=f2e183]: Reach
+                        - definition [ref=f2e184]: 133.2K
+            - generic [ref=f2e185]:
+              - generic [ref=f2e186]:
+                - heading "Shortlists" [level=2] [ref=f2e187]
+                - link "View all" [ref=f2e188] [cursor=pointer]:
+                  - /url: /shortlists
+              - list [ref=f2e189]:
+                - listitem [ref=f2e190]:
+                  - link [ref=f2e191] [cursor=pointer]:
+                    - /url: /shortlists/sl_q4_tech
+                    - generic [ref=f2e192]:
+                      - paragraph [ref=f2e193]: Q4 technology launch
+                      - paragraph [ref=f2e194]: 4 creators · updated 2 days ago
+                - listitem [ref=f2e198]:
+                  - link [ref=f2e199] [cursor=pointer]:
+                    - /url: /shortlists/sl_beauty_always_on
+                    - generic [ref=f2e200]:
+                      - paragraph [ref=f2e201]: Beauty — always on
+                      - paragraph [ref=f2e202]: 2 creators · updated 5 days ago
+          - generic [ref=f2e206]:
+            - generic [ref=f2e207]:
+              - heading "Needs attention" [level=2] [ref=f2e208]
+              - generic [ref=f2e209]: Signals across creators you track
+            - list [ref=f2e210]:
+              - listitem [ref=f2e211]:
+                - link "Talia Okafor Health score below your review threshold Health 51 Engagement 3.2%" [ref=f2e212] [cursor=pointer]:
+                  - /url: /influencers/inf_0004
+                  - generic [ref=f2e213]: TO
+                  - generic [ref=f2e215]:
+                    - paragraph [ref=f2e216]: Talia Okafor
+                    - paragraph [ref=f2e217]: Health score below your review threshold
+                  - generic [ref=f2e218]:
+                    - generic [ref=f2e219]:
+                      - generic [ref=f2e220]: Health
+                      - 'generic "Health: Fair" [ref=f2e221]': "51"
+                    - generic [ref=f2e224]:
+                      - generic [ref=f2e225]: Engagement
+                      - text: 3.2%
+              - listitem [ref=f2e226]:
+                - link "Jonas Petrov Health score below your review threshold Health 50 Engagement 0.6%" [ref=f2e227] [cursor=pointer]:
+                  - /url: /influencers/inf_0009
+                  - generic [ref=f2e228]: JP
+                  - generic [ref=f2e230]:
+                    - paragraph [ref=f2e231]: Jonas Petrov
+                    - paragraph [ref=f2e232]: Health score below your review threshold
+                  - generic [ref=f2e233]:
+                    - generic [ref=f2e234]:
+                      - generic [ref=f2e235]: Health
+                      - 'generic "Health: Needs review" [ref=f2e236]': "50"
+                    - generic [ref=f2e239]:
+                      - generic [ref=f2e240]: Engagement
+                      - text: 0.6%
+  - button "Open Next.js Dev Tools" [ref=f2e246] [cursor=pointer]

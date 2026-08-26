@@ -1,0 +1,232 @@
+"use client";
+
+import * as React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/cn";
+import type { Permission, SessionUser } from "@/lib/contracts/auth";
+import { ROLE_PERMISSIONS, ROLE_WORKSPACE } from "@/lib/contracts/auth";
+import type { SearchQuota } from "@/lib/contracts/search";
+import { visibleNav, WORKSPACE_HOME } from "@/lib/navigation";
+import { Sheet } from "@/components/ui/dialog";
+import { Wordmark } from "./logo";
+import { Sidebar, SidebarNav } from "./sidebar";
+import { Topbar } from "./topbar";
+import { CommandPalette } from "./command-palette";
+
+const COLLAPSE_KEY = "socialorbit.nav.collapsed";
+
+export function AppShell({
+  user,
+  quota,
+  unreadCount,
+  children,
+}: {
+  user: SessionUser;
+  quota?: SearchQuota | null;
+  unreadCount?: number;
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const [collapsed, setCollapsed] = React.useState(false);
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [paletteOpen, setPaletteOpen] = React.useState(false);
+
+  // Read the stored preference after mount so the server and first client
+  // render agree; storage can throw in restricted contexts, so it is guarded.
+  React.useEffect(() => {
+    try {
+      setCollapsed(window.localStorage.getItem(COLLAPSE_KEY) === "1");
+    } catch {
+      /* storage unavailable — the default stands */
+    }
+  }, []);
+
+  const toggleCollapsed = React.useCallback(() => {
+    setCollapsed((previous) => {
+      const next = !previous;
+      try {
+        window.localStorage.setItem(COLLAPSE_KEY, next ? "1" : "0");
+      } catch {
+        /* preference simply is not remembered */
+      }
+      return next;
+    });
+  }, []);
+
+  // Close the drawer whenever the route changes, including on back/forward.
+  React.useEffect(() => {
+    setDrawerOpen(false);
+  }, [pathname]);
+
+  React.useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      const typing =
+        target instanceof HTMLElement &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable);
+      if (typing) return;
+
+      if (event.key === "/" || ((event.metaKey || event.ctrlKey) && event.key === "k")) {
+        event.preventDefault();
+        setPaletteOpen(true);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  const permissions = React.useMemo(
+    () => new Set<Permission>(ROLE_PERMISSIONS[user.role]),
+    [user.role],
+  );
+  const can = React.useCallback(
+    (permission: Permission) => permissions.has(permission),
+    [permissions],
+  );
+
+  const workspace = ROLE_WORKSPACE[user.role];
+  const sections = React.useMemo(() => visibleNav(workspace, can), [workspace, can]);
+
+  return (
+    <div className="flex min-h-dvh">
+      <a
+        href="#main"
+        className="sr-only-focusable absolute left-3 top-3 z-50 rounded-lg bg-brand px-3 py-2 text-[13px] font-medium text-white"
+      >
+        Skip to content
+      </a>
+
+      <Sidebar
+        sections={sections}
+        collapsed={collapsed}
+        onToggleCollapsed={toggleCollapsed}
+        homeHref={WORKSPACE_HOME[workspace]}
+      />
+
+      <Sheet open={drawerOpen} onClose={() => setDrawerOpen(false)} title="Navigation">
+        <div className="px-2 pt-2">
+          <Link
+            href={WORKSPACE_HOME[workspace]}
+            className="block rounded px-2 py-1"
+            aria-label="SocialOrbit home"
+          >
+            <Wordmark />
+          </Link>
+        </div>
+        <SidebarNav
+          sections={sections}
+          collapsed={false}
+          onNavigate={() => setDrawerOpen(false)}
+        />
+      </Sheet>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Topbar
+          user={user}
+          quota={quota}
+          unreadCount={unreadCount}
+          onOpenNav={() => setDrawerOpen(true)}
+          onOpenSearch={() => setPaletteOpen(true)}
+        />
+        <main id="main" className="min-w-0 flex-1">
+          {children}
+        </main>
+      </div>
+
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} can={can} />
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+ * Page chrome shared by every screen inside the shell.
+ * ------------------------------------------------------------------------ */
+
+export function PageHeader({
+  title,
+  description,
+  breadcrumbs,
+  actions,
+  meta,
+  className,
+  titleAs = "h1",
+}: {
+  title: React.ReactNode;
+  /**
+   * A page that renders its own <h1> lower down (the influencer profile does)
+   * passes "p" here, so the document keeps exactly one level-1 heading.
+   */
+  titleAs?: "h1" | "p";
+  description?: React.ReactNode;
+  breadcrumbs?: { label: string; href?: string }[];
+  actions?: React.ReactNode;
+  /** Right-aligned freshness or status line under the actions. */
+  meta?: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("border-b border-line bg-surface px-4 py-4 sm:px-6", className)}>
+      {breadcrumbs && breadcrumbs.length > 0 && (
+        <nav aria-label="Breadcrumb" className="mb-1.5">
+          <ol className="flex flex-wrap items-center gap-1 text-[12px] text-ink-muted">
+            {breadcrumbs.map((crumb, index) => (
+              <li key={`${crumb.label}-${index}`} className="flex items-center gap-1">
+                {index > 0 && (
+                  <span aria-hidden className="text-ink-subtle">
+                    /
+                  </span>
+                )}
+                {crumb.href ? (
+                  <Link href={crumb.href} className="rounded hover:text-ink hover:underline">
+                    {crumb.label}
+                  </Link>
+                ) : (
+                  <span aria-current="page" className="text-ink">
+                    {crumb.label}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )}
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+        <div className="min-w-0 space-y-1">
+          {React.createElement(
+            titleAs,
+            {
+              className:
+                "text-[20px] font-semibold leading-tight tracking-[-0.015em] text-ink",
+            },
+            title,
+          )}
+          {description && (
+            <p className="max-w-2xl text-[13px] text-ink-muted">{description}</p>
+          )}
+        </div>
+        {(actions || meta) && (
+          // Never `shrink-0`: on a phone the action row is wider than the
+          // viewport, and a rigid block there pushes the whole page sideways.
+          <div className="flex min-w-0 max-w-full flex-col items-start gap-1.5 sm:items-end">
+            {actions && (
+              <div className="flex max-w-full flex-wrap items-center gap-2 sm:justify-end">
+                {actions}
+              </div>
+            )}
+            {meta && <div className="max-w-full">{meta}</div>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function PageBody({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn("px-4 py-4 sm:px-6 sm:py-5", className)} {...props} />;
+}

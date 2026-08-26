@@ -1,0 +1,48 @@
+- generic [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - generic [ref=f1e3]:
+      - link "SocialOrbit Influencer Intelligence" [ref=f1e4] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f1e11]:
+          - generic [ref=f1e12]: SocialOrbit
+          - generic [ref=f1e13]: Influencer Intelligence
+      - generic [ref=f1e14]:
+        - heading "Every number on a SocialOrbit profile can tell you where it came from." [level=1] [ref=f1e15]
+        - list [ref=f1e16]:
+          - listitem [ref=f1e17]:
+            - generic [ref=f1e22]:
+              - generic [ref=f1e23]: Provenance on every fact
+              - generic [ref=f1e24]: Verified, observed, derived, estimated or AI-inferred — labelled, timestamped and traceable to a source.
+          - listitem [ref=f1e25]:
+            - generic [ref=f1e30]:
+              - generic [ref=f1e31]: Deterministic scoring
+              - generic [ref=f1e32]: Health, authenticity and risk are computed by versioned formulas in code. AI explains a score; it never sets one.
+          - listitem [ref=f1e33]:
+            - generic [ref=f1e38]:
+              - generic [ref=f1e39]: OAuth-backed verification
+              - generic [ref=f1e40]: Verified status is issued only after a creator connects their account and the identity match passes.
+      - paragraph [ref=f1e41]: © 2026 SocialOrbit. Influencer intelligence platform.
+    - generic [ref=f1e43]:
+      - generic [ref=f1e44]:
+        - heading "Sign in" [level=2] [ref=f1e45]
+        - paragraph [ref=f1e46]: Use your SocialOrbit workspace account.
+      - generic [ref=f1e47]:
+        - generic [ref=f1e48]:
+          - generic [ref=f1e49]: Work email*
+          - textbox "Work email" [active] [ref=f1e51]:
+            - /placeholder: you@company.com
+        - generic [ref=f1e52]:
+          - generic [ref=f1e53]:
+            - generic [ref=f1e54]: Password*
+            - link "Forgot password?" [ref=f1e55] [cursor=pointer]:
+              - /url: /forgot-password
+          - textbox "Password" [ref=f1e56]
+        - button "Sign in" [ref=f1e57]
+      - paragraph [ref=f1e58]:
+        - text: New to SocialOrbit?
+        - link "Create an account" [ref=f1e59] [cursor=pointer]:
+          - /url: /register
+      - group [ref=f1e60]:
+        - generic "Development accounts" [ref=f1e61] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=f1e67] [cursor=pointer]
+  - alert [ref=f1e71]

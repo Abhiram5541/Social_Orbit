@@ -1,0 +1,318 @@
+- generic [active] [ref=f7e1]:
+  - generic [ref=f7e2]:
+    - link "Skip to content" [ref=f7e3] [cursor=pointer]:
+      - /url: "#main"
+    - complementary [ref=f7e4]:
+      - link "SocialOrbit home" [ref=f7e6] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=f7e13]:
+          - generic [ref=f7e14]: SocialOrbit
+          - generic [ref=f7e15]: Influencer Intelligence
+      - navigation "Primary" [ref=f7e17]:
+        - generic [ref=f7e18]:
+          - link "Overview" [ref=f7e19] [cursor=pointer]:
+            - /url: /dashboard
+          - link "Discovery" [ref=f7e26] [cursor=pointer]:
+            - /url: /discovery
+          - link "Influencers" [ref=f7e31] [cursor=pointer]:
+            - /url: /influencers
+        - generic [ref=f7e38]:
+          - generic [ref=f7e39]: Workspace
+          - link "Shortlists" [ref=f7e40] [cursor=pointer]:
+            - /url: /shortlists
+          - link "Compare" [ref=f7e45] [cursor=pointer]:
+            - /url: /compare
+          - link "Campaigns" [ref=f7e51] [cursor=pointer]:
+            - /url: /campaigns
+          - link "Reports" [ref=f7e56] [cursor=pointer]:
+            - /url: /reports
+        - generic [ref=f7e61]:
+          - generic [ref=f7e62]: Account
+          - link "API" [ref=f7e63] [cursor=pointer]:
+            - /url: /api-portal
+          - link "Usage & billing" [ref=f7e69] [cursor=pointer]:
+            - /url: /usage
+          - link "Settings" [ref=f7e73] [cursor=pointer]:
+            - /url: /settings
+      - button "Collapse navigation" [ref=f7e79]:
+        - generic [ref=f7e83]: Collapse
+    - generic [ref=f7e84]:
+      - banner [ref=f7e85]:
+        - button "Search creators, campaigns, shortlists… /" [ref=f7e86]:
+          - generic [ref=f7e90]: Search creators, campaigns, shortlists…
+          - generic [ref=f7e91]: /
+        - generic [ref=f7e92]:
+          - link "500 of 500 searches remaining this month" [ref=f7e93] [cursor=pointer]:
+            - /url: /usage
+            - generic [ref=f7e94]: Searches
+            - generic [ref=f7e95]: 500/500
+          - link "Notifications" [ref=f7e96] [cursor=pointer]:
+            - /url: /notifications
+          - link "Help and documentation" [ref=f7e100] [cursor=pointer]:
+            - /url: /help
+          - button "Marcus Whitfield Client Owner" [ref=f7e104]:
+            - generic [ref=f7e105]: MW
+            - generic [ref=f7e107]:
+              - generic [ref=f7e108]: Marcus Whitfield
+              - generic [ref=f7e109]: Client Owner
+      - main [ref=f7e112]:
+        - generic [ref=f7e113]:
+          - navigation "Breadcrumb" [ref=f7e114]:
+            - list [ref=f7e115]:
+              - listitem [ref=f7e116]:
+                - link "Discovery" [ref=f7e117] [cursor=pointer]:
+                  - /url: /discovery
+              - listitem [ref=f7e118]:
+                - generic [ref=f7e119]: /
+                - generic [ref=f7e120]: Compare
+          - generic [ref=f7e121]:
+            - generic [ref=f7e122]:
+              - heading "Compare creators" [level=1] [ref=f7e123]
+              - paragraph [ref=f7e124]: 3 creators, normalised where the platforms allow it.
+            - generic [ref=f7e125]: "Oldest observation in this set: 20 hours ago"
+        - generic [ref=f7e127]:
+          - region "Creator comparison" [ref=f7e129]:
+            - table [ref=f7e130]:
+              - rowgroup [ref=f7e131]:
+                - row [ref=f7e132]:
+                  - columnheader "Metric" [ref=f7e133]
+                  - columnheader "Aria Lindqvist YouTube" [ref=f7e134]:
+                    - generic [ref=f7e135]:
+                      - generic [ref=f7e136]: AL
+                      - generic [ref=f7e138]:
+                        - link "Aria Lindqvist" [ref=f7e139] [cursor=pointer]:
+                          - /url: /influencers/inf_0001
+                        - generic [ref=f7e140]: YouTube
+                  - columnheader "Talia Okafor YouTube" [ref=f7e141]:
+                    - generic [ref=f7e142]:
+                      - generic [ref=f7e143]: TO
+                      - generic [ref=f7e145]:
+                        - link "Talia Okafor" [ref=f7e146] [cursor=pointer]:
+                          - /url: /influencers/inf_0004
+                        - generic [ref=f7e147]: YouTube
+                  - columnheader "SocialOrbit Verified Jonas Petrov YouTube" [ref=f7e148]:
+                    - generic [ref=f7e149]:
+                      - generic [ref=f7e150]:
+                        - generic [ref=f7e151]: JP
+                        - generic "SocialOrbit Verified" [ref=f7e152]:
+                          - img "SocialOrbit Verified" [ref=f7e153]
+                      - generic [ref=f7e156]:
+                        - link "Jonas Petrov" [ref=f7e157] [cursor=pointer]:
+                          - /url: /influencers/inf_0009
+                        - generic [ref=f7e158]: YouTube
+              - rowgroup [ref=f7e159]:
+                - row [ref=f7e160]:
+                  - cell "Identity" [ref=f7e161]
+                - row [ref=f7e162]:
+                  - rowheader "Verification" [ref=f7e163]
+                  - cell "unverified" [ref=f7e164]
+                  - cell "unverified" [ref=f7e166]
+                  - cell "verified" [ref=f7e168]
+                - row [ref=f7e170]:
+                  - rowheader "Country" [ref=f7e171]
+                  - cell "Japan" [ref=f7e172]
+                  - cell "Brazil" [ref=f7e173]
+                  - cell "Japan" [ref=f7e174]
+                - row [ref=f7e175]:
+                  - rowheader "Categories" [ref=f7e176]
+                  - cell "Travel" [ref=f7e177]
+                  - cell "Lifestyle, Business" [ref=f7e178]
+                  - cell "Finance, Business" [ref=f7e179]
+                - row [ref=f7e180]:
+                  - rowheader "Platforms" [ref=f7e181]
+                  - cell "YouTube, Instagram" [ref=f7e182]
+                  - cell "YouTube, Instagram" [ref=f7e183]
+                  - cell "YouTube, Instagram" [ref=f7e184]
+                - row [ref=f7e185]:
+                  - cell "Audience" [ref=f7e186]
+                - row [ref=f7e187]:
+                  - rowheader "Followers" [ref=f7e188]
+                  - cell "42K" [ref=f7e189]
+                  - cell "43.4K" [ref=f7e190]
+                  - cell "1.4M (best in this comparison)" [ref=f7e191]:
+                    - generic [ref=f7e192]:
+                      - text: 1.4M
+                      - generic [ref=f7e193]: (best in this comparison)
+                - row [ref=f7e194]:
+                  - rowheader "Median views" [ref=f7e195]
+                  - cell "16.1K" [ref=f7e196]
+                  - cell "12.5K" [ref=f7e197]
+                  - cell "175.3K (best in this comparison)" [ref=f7e198]:
+                    - generic [ref=f7e199]:
+                      - text: 175.3K
+                      - generic [ref=f7e200]: (best in this comparison)
+                - row [ref=f7e201]:
+                  - rowheader "Total views" [ref=f7e202]
+                  - cell "2.4M" [ref=f7e203]
+                  - cell "3.5M" [ref=f7e204]
+                  - cell "60.8M (best in this comparison)" [ref=f7e205]:
+                    - generic [ref=f7e206]:
+                      - text: 60.8M
+                      - generic [ref=f7e207]: (best in this comparison)
+                - row [ref=f7e208]:
+                  - rowheader "Engagement rate" [ref=f7e209]
+                  - cell "2.3%" [ref=f7e210]
+                  - cell "3.2% (best in this comparison)" [ref=f7e211]:
+                    - generic [ref=f7e212]:
+                      - text: 3.2%
+                      - generic [ref=f7e213]: (best in this comparison)
+                  - cell "0.6%" [ref=f7e214]
+                - row [ref=f7e215]:
+                  - cell "Publishing" [ref=f7e216]
+                - row [ref=f7e217]:
+                  - rowheader "Upload frequency" [ref=f7e218]
+                  - cell "2.5/wk" [ref=f7e219]
+                  - cell "3.5/wk (best in this comparison)" [ref=f7e220]:
+                    - generic [ref=f7e221]:
+                      - text: 3.5/wk
+                      - generic [ref=f7e222]: (best in this comparison)
+                  - cell "1.0/wk" [ref=f7e223]
+                - row [ref=f7e224]:
+                  - rowheader "Content indexed" [ref=f7e225]
+                  - cell "274" [ref=f7e226]
+                  - cell "358 (best in this comparison)" [ref=f7e227]:
+                    - generic [ref=f7e228]:
+                      - text: "358"
+                      - generic [ref=f7e229]: (best in this comparison)
+                  - cell "70" [ref=f7e230]
+                - row [ref=f7e231]:
+                  - rowheader "Average length" [ref=f7e232]
+                  - cell "16m 58s" [ref=f7e233]
+                  - cell "16m 3s" [ref=f7e234]
+                  - cell "15m 34s" [ref=f7e235]
+                - row [ref=f7e236]:
+                  - rowheader "Activity" [ref=f7e237]
+                  - cell "recently active" [ref=f7e238]
+                  - cell "active" [ref=f7e240]
+                  - cell "active" [ref=f7e242]
+                - row [ref=f7e244]:
+                  - cell "SocialOrbit scores" [ref=f7e245]
+                - row [ref=f7e246]:
+                  - rowheader "Health score" [ref=f7e247]
+                  - cell "69" [ref=f7e248]:
+                    - 'generic "Health score: Fair" [ref=f7e249]': "69"
+                  - cell "51" [ref=f7e252]:
+                    - 'generic "Health score: Fair" [ref=f7e253]': "51"
+                  - cell "50" [ref=f7e256]:
+                    - 'generic "Health score: Needs review" [ref=f7e257]': "50"
+                - row [ref=f7e260]:
+                  - rowheader "Campaign fit" [ref=f7e261]
+                  - cell "73 (best in this comparison)" [ref=f7e262]:
+                    - generic [ref=f7e263]:
+                      - text: "73"
+                      - generic [ref=f7e264]: (best in this comparison)
+                  - cell "59" [ref=f7e265]
+                  - cell "44" [ref=f7e266]
+                - row [ref=f7e267]:
+                  - rowheader "Audience authenticity" [ref=f7e268]
+                  - cell "84" [ref=f7e269]
+                  - cell "85 (best in this comparison)" [ref=f7e270]:
+                    - generic [ref=f7e271]:
+                      - text: "85"
+                      - generic [ref=f7e272]: (best in this comparison)
+                  - cell "59" [ref=f7e273]
+                - row [ref=f7e274]:
+                  - rowheader "Engagement quality" [ref=f7e275]
+                  - cell "56 (best in this comparison)" [ref=f7e276]:
+                    - generic [ref=f7e277]:
+                      - text: "56"
+                      - generic [ref=f7e278]: (best in this comparison)
+                  - cell "36" [ref=f7e279]
+                  - cell "24" [ref=f7e280]
+                - row [ref=f7e281]:
+                  - rowheader "Engagement rate" [ref=f7e282]
+                  - cell "61 (best in this comparison)" [ref=f7e283]:
+                    - generic [ref=f7e284]:
+                      - text: "61"
+                      - generic [ref=f7e285]: (best in this comparison)
+                  - cell "43" [ref=f7e286]
+                  - cell "27" [ref=f7e287]
+                - row [ref=f7e288]:
+                  - rowheader "Growth pattern" [ref=f7e289]
+                  - cell "—" [ref=f7e290]
+                  - cell "23" [ref=f7e291]
+                  - cell "63 (best in this comparison)" [ref=f7e292]:
+                    - generic [ref=f7e293]:
+                      - text: "63"
+                      - generic [ref=f7e294]: (best in this comparison)
+                - row [ref=f7e295]:
+                  - rowheader "View consistency" [ref=f7e296]
+                  - cell "26 (best in this comparison)" [ref=f7e297]:
+                    - generic [ref=f7e298]:
+                      - text: "26"
+                      - generic [ref=f7e299]: (best in this comparison)
+                  - cell "10" [ref=f7e300]
+                  - cell "12" [ref=f7e301]
+                - row [ref=f7e302]:
+                  - rowheader "Audience activity" [ref=f7e303]
+                  - cell "100 (best in this comparison)" [ref=f7e304]:
+                    - generic [ref=f7e305]:
+                      - text: "100"
+                      - generic [ref=f7e306]: (best in this comparison)
+                  - cell "72" [ref=f7e307]
+                  - cell "70" [ref=f7e308]
+                - row [ref=f7e309]:
+                  - rowheader "Comment quality" [ref=f7e310]
+                  - cell "73" [ref=f7e311]
+                  - cell "65" [ref=f7e312]
+                  - cell "81 (best in this comparison)" [ref=f7e313]:
+                    - generic [ref=f7e314]:
+                      - text: "81"
+                      - generic [ref=f7e315]: (best in this comparison)
+                - row [ref=f7e316]:
+                  - rowheader "Upload consistency" [ref=f7e317]
+                  - cell "74" [ref=f7e318]
+                  - cell "63" [ref=f7e319]
+                  - cell "92 (best in this comparison)" [ref=f7e320]:
+                    - generic [ref=f7e321]:
+                      - text: "92"
+                      - generic [ref=f7e322]: (best in this comparison)
+                - row [ref=f7e323]:
+                  - rowheader "Brand safety" [ref=f7e324]
+                  - cell "90 (best in this comparison)" [ref=f7e325]:
+                    - generic [ref=f7e326]:
+                      - text: "90"
+                      - generic [ref=f7e327]: (best in this comparison)
+                  - cell "72" [ref=f7e328]
+                  - cell "83" [ref=f7e329]
+                - row [ref=f7e330]:
+                  - cell "Risk & confidence" [ref=f7e331]
+                - row [ref=f7e332]:
+                  - rowheader "Risk level" [ref=f7e333]
+                  - cell "Low risk" [ref=f7e334]
+                  - cell "Low risk" [ref=f7e337]
+                  - cell "Medium risk" [ref=f7e340]
+                - row [ref=f7e343]:
+                  - rowheader "Estimated bot risk" [ref=f7e344]
+                  - cell "17" [ref=f7e345]
+                  - cell "8 (best in this comparison)" [ref=f7e346]:
+                    - generic [ref=f7e347]:
+                      - text: "8"
+                      - generic [ref=f7e348]: (best in this comparison)
+                  - cell "34" [ref=f7e349]
+                - row [ref=f7e350]:
+                  - rowheader "Inactive audience" [ref=f7e351]
+                  - cell "14 (best in this comparison)" [ref=f7e352]:
+                    - generic [ref=f7e353]:
+                      - text: "14"
+                      - generic [ref=f7e354]: (best in this comparison)
+                  - cell "28" [ref=f7e355]
+                  - cell "54" [ref=f7e356]
+                - row [ref=f7e357]:
+                  - rowheader "Data confidence" [ref=f7e358]
+                  - cell "61%" [ref=f7e359]
+                  - cell "89%" [ref=f7e364]
+                  - cell "100%" [ref=f7e369]
+                - row [ref=f7e374]:
+                  - rowheader "Last refreshed" [ref=f7e375]
+                  - cell "7 hours ago" [ref=f7e376]
+                  - cell "20 hours ago" [ref=f7e377]
+                  - cell "16 hours ago" [ref=f7e378]
+          - generic [ref=f7e379]:
+            - heading "How to read this" [level=2] [ref=f7e381]
+            - list [ref=f7e382]:
+              - listitem [ref=f7e383]: Best value in each numeric row is marked. Rows where lower is better — bot risk, inactive audience — are marked on that basis.
+              - listitem [ref=f7e384]: Health components are normalised against each creator's own category and follower-band cohort, so a 70 means the same thing in both columns.
+              - listitem [ref=f7e385]: A dash means the platform has not exposed that measurement, not that the value is zero.
+              - listitem [ref=f7e386]: Confidence is a separate axis from quality. A high score on thin history is still thin history.
+  - button "Open Next.js Dev Tools" [ref=f7e392] [cursor=pointer]

@@ -1,0 +1,146 @@
+- generic [active] [ref=f3e1]:
+  - generic [ref=f3e2]:
+    - link "Skip to content" [ref=f3e3] [cursor=pointer]:
+      - /url: "#main"
+    - complementary [ref=f3e4]:
+      - link "SocialOrbit home" [ref=f3e6] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=f3e13]:
+          - generic [ref=f3e14]: SocialOrbit
+          - generic [ref=f3e15]: Influencer Intelligence
+      - navigation "Primary" [ref=f3e17]:
+        - generic [ref=f3e18]:
+          - link "Overview" [ref=f3e19] [cursor=pointer]:
+            - /url: /dashboard
+          - link "Discovery" [ref=f3e26] [cursor=pointer]:
+            - /url: /discovery
+          - link "Influencers" [ref=f3e31] [cursor=pointer]:
+            - /url: /influencers
+        - generic [ref=f3e38]:
+          - generic [ref=f3e39]: Workspace
+          - link "Shortlists" [ref=f3e40] [cursor=pointer]:
+            - /url: /shortlists
+          - link "Compare" [ref=f3e45] [cursor=pointer]:
+            - /url: /compare
+          - link "Campaigns" [ref=f3e51] [cursor=pointer]:
+            - /url: /campaigns
+          - link "Reports" [ref=f3e56] [cursor=pointer]:
+            - /url: /reports
+        - generic [ref=f3e61]:
+          - generic [ref=f3e62]: Account
+          - link "API" [ref=f3e63] [cursor=pointer]:
+            - /url: /api-portal
+          - link "Usage & billing" [ref=f3e69] [cursor=pointer]:
+            - /url: /usage
+          - link "Settings" [ref=f3e73] [cursor=pointer]:
+            - /url: /settings
+      - button "Collapse navigation" [ref=f3e79]:
+        - generic [ref=f3e83]: Collapse
+    - generic [ref=f3e84]:
+      - banner [ref=f3e85]:
+        - button "Search creators, campaigns, shortlists… /" [ref=f3e86]:
+          - generic [ref=f3e90]: Search creators, campaigns, shortlists…
+          - generic [ref=f3e91]: /
+        - generic [ref=f3e92]:
+          - link "500 of 500 searches remaining this month" [ref=f3e93] [cursor=pointer]:
+            - /url: /usage
+            - generic [ref=f3e94]: Searches
+            - generic [ref=f3e95]: 500/500
+          - link "Notifications" [ref=f3e96] [cursor=pointer]:
+            - /url: /notifications
+          - link "Help and documentation" [ref=f3e100] [cursor=pointer]:
+            - /url: /help
+          - button "Marcus Whitfield Client Owner" [ref=f3e104]:
+            - generic [ref=f3e105]: MW
+            - generic [ref=f3e107]:
+              - generic [ref=f3e108]: Marcus Whitfield
+              - generic [ref=f3e109]: Client Owner
+      - main [ref=f3e112]:
+        - generic [ref=f3e113]:
+          - generic [ref=f3e116]:
+            - heading "Discovery" [level=1] [ref=f3e117]
+            - paragraph [ref=f3e118]: Search the SocialOrbit database by market, category, audience quality and campaign fit. Filters combine with AND.
+          - generic [ref=f3e119]:
+            - complementary [ref=f3e120]:
+              - generic [ref=f3e121]:
+                - generic [ref=f3e122]:
+                  - generic [ref=f3e123]: Filters
+                  - button "Reset" [ref=f3e124]
+                - generic [ref=f3e128]:
+                  - group [ref=f3e129]:
+                    - generic "Platform" [ref=f3e130] [cursor=pointer]
+                    - generic [ref=f3e133]:
+                      - generic [ref=f3e134]:
+                        - checkbox "YouTube" [ref=f3e135] [cursor=pointer]
+                        - generic [ref=f3e136] [cursor=pointer]: YouTube
+                      - generic [ref=f3e137]:
+                        - checkbox "Instagram" [ref=f3e138] [cursor=pointer]
+                        - generic [ref=f3e139] [cursor=pointer]: Instagram
+                      - paragraph [ref=f3e140]: TikTok is not yet connected — no creators are indexed for it.
+                  - group [ref=f3e141]:
+                    - generic "Verification" [ref=f3e142] [cursor=pointer]
+                    - generic [ref=f3e145]:
+                      - generic [ref=f3e146]:
+                        - checkbox "SocialOrbit Verified" [ref=f3e147] [cursor=pointer]
+                        - generic [ref=f3e148] [cursor=pointer]: SocialOrbit Verified
+                      - generic [ref=f3e149]:
+                        - checkbox "Connection pending" [ref=f3e150] [cursor=pointer]
+                        - generic [ref=f3e151] [cursor=pointer]: Connection pending
+                      - generic [ref=f3e152]:
+                        - checkbox "Unverified" [ref=f3e153] [cursor=pointer]
+                        - generic [ref=f3e154] [cursor=pointer]: Unverified
+                  - group [ref=f3e155]:
+                    - generic "Audience size" [ref=f3e156] [cursor=pointer]
+                    - generic [ref=f3e159]:
+                      - generic [ref=f3e160]:
+                        - checkbox "Nano · 1K–10K" [ref=f3e161] [cursor=pointer]
+                        - generic [ref=f3e162] [cursor=pointer]: Nano · 1K–10K
+                      - generic [ref=f3e163]:
+                        - checkbox "Micro · 10K–100K" [ref=f3e164] [cursor=pointer]
+                        - generic [ref=f3e165] [cursor=pointer]: Micro · 10K–100K
+                      - generic [ref=f3e166]:
+                        - checkbox "Mid · 100K–500K" [ref=f3e167] [cursor=pointer]
+                        - generic [ref=f3e168] [cursor=pointer]: Mid · 100K–500K
+                      - generic [ref=f3e169]:
+                        - checkbox "Macro · 500K–1M" [ref=f3e170] [cursor=pointer]
+                        - generic [ref=f3e171] [cursor=pointer]: Macro · 500K–1M
+                      - generic [ref=f3e172]:
+                        - checkbox "Mega · 1M+" [ref=f3e173] [cursor=pointer]
+                        - generic [ref=f3e174] [cursor=pointer]: Mega · 1M+
+                      - generic [ref=f3e175]:
+                        - generic [ref=f3e176]:
+                          - generic [ref=f3e177]: Min followers
+                          - spinbutton "Min followers" [ref=f3e179]
+                        - generic [ref=f3e180]:
+                          - generic [ref=f3e181]: Max followers
+                          - spinbutton "Max followers" [ref=f3e183]
+                  - group [ref=f3e184]:
+                    - generic "Category" [ref=f3e185] [cursor=pointer]
+                  - group [ref=f3e188]:
+                    - generic "Location" [ref=f3e189] [cursor=pointer]
+                  - group [ref=f3e192]:
+                    - generic "Performance" [ref=f3e193] [cursor=pointer]
+                  - group [ref=f3e196]:
+                    - generic "Quality" [ref=f3e197] [cursor=pointer]
+                  - group [ref=f3e200]:
+                    - generic "Risk" [ref=f3e201] [cursor=pointer]
+                  - group [ref=f3e204]:
+                    - generic "Activity" [ref=f3e205] [cursor=pointer]
+            - generic [ref=f3e208]:
+              - search [ref=f3e210]:
+                - searchbox "Search influencers" [ref=f3e212]
+                - button "Search" [ref=f3e213]
+                - generic [ref=f3e214]:
+                  - generic [ref=f3e215]: Sort
+                  - combobox "Sort results" [ref=f3e217]:
+                    - option "Best match" [selected]
+                    - option "Health score"
+                    - option "Followers — high to low"
+                    - option "Followers — low to high"
+                    - option "Engagement rate"
+                    - option "Median views"
+                    - option "Growth"
+                    - option "Campaign fit"
+                    - option "Recently active"
+              - status "Loading results" [ref=f3e220]
+  - button "Open Next.js Dev Tools" [ref=f3e306] [cursor=pointer]
