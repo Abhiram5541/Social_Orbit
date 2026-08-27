@@ -12,7 +12,11 @@ export function Card({
   return (
     <Tag
       className={cn(
-        "rounded-xl border border-line bg-surface shadow-raised",
+        // `min-w-0` matters: as a flex or grid child, a card defaults to
+        // `min-width: auto` and its content can push it wider than its track,
+        // which is how a dense table quietly widens the whole page. Wide
+        // content is the scroll container's job, never the card's.
+        "min-w-0 rounded-xl border border-line bg-surface shadow-raised",
         className,
       )}
       {...props}

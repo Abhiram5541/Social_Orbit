@@ -247,7 +247,7 @@ function CreatorCell({ item }: { item: InfluencerSummary }) {
           {item.displayName}
         </Link>
         <p className="truncate text-[12px] text-ink-muted">
-          <span className="font-mono">@{item.primaryHandle}</span>
+          <span className="font-num">@{item.primaryHandle}</span>
           <span aria-hidden> · </span>
           {item.platforms.map((p: Platform) => PLATFORM_LABEL[p]).join(", ")}
           {item.countryName && (
@@ -268,7 +268,7 @@ function Metric({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
       <dt className="text-[11px] uppercase tracking-[0.05em] text-ink-muted">{label}</dt>
-      <dd className="font-mono text-[13px] tabular-nums text-ink">{value}</dd>
+      <dd className="font-num text-[13px] tabular-nums text-ink">{value}</dd>
     </div>
   );
 }
@@ -295,7 +295,7 @@ export function SelectionBar({
         className,
       )}
     >
-      <span className="font-mono tabular-nums">{count}</span>
+      <span className="font-num tabular-nums">{count}</span>
       <span>selected</span>
       <span className="h-4 w-px bg-white/20" aria-hidden />
       <button

@@ -59,7 +59,7 @@ export function ProfileHeader({ profile }: { profile: InfluencerProfile }) {
             <h1 className="text-[24px] font-semibold leading-tight tracking-[-0.02em] text-ink">
               {profile.displayName}
             </h1>
-            <span className="rounded border border-line bg-sunken px-1.5 py-0.5 font-mono text-[12px] text-ink-muted">
+            <span className="rounded border border-line bg-sunken px-1.5 py-0.5 font-num text-[12px] text-ink-muted">
               @{profile.primaryHandle}
             </span>
             <Badge tone={verification.tone} title={verification.note}>
@@ -95,7 +95,7 @@ export function ProfileHeader({ profile }: { profile: InfluencerProfile }) {
                   <span className="font-medium text-ink">
                     {PLATFORM_LABEL[account.platform]}
                   </span>
-                  <span className="font-mono tabular-nums text-ink-muted">
+                  <span className="font-num tabular-nums text-ink-muted">
                     {formatCompact(account.followers)}
                   </span>
                   {account.isPrimary && (

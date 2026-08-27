@@ -72,7 +72,7 @@ function ChartTooltip({
   return (
     <div className="rounded-md bg-ink px-2 py-1.5 text-[12px] leading-4 text-ink-inverse shadow-popover">
       <p className="text-ink-inverse/60">{formatAxisDate(String(label))}</p>
-      <p className="font-mono tabular-nums">
+      <p className="font-num tabular-nums">
         {render(payload[0].value)}{" "}
         <span className="font-sans text-ink-inverse/60">{valueLabel}</span>
       </p>

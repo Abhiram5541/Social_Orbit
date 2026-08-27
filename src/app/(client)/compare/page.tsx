@@ -149,7 +149,7 @@ export default async function ComparePage({
                           >
                             {profile.displayName}
                           </Link>
-                          <span className="block truncate font-mono text-[11px] font-normal normal-case tracking-normal text-ink-muted">
+                          <span className="block truncate font-num text-[11px] font-normal normal-case tracking-normal text-ink-muted">
                             {PLATFORM_LABEL[profile.primaryPlatform]}
                           </span>
                         </div>

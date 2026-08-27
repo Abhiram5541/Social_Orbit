@@ -53,15 +53,15 @@ export function ApiReference() {
               {ENDPOINTS.map((endpoint) => (
                 <Tr key={endpoint.path + endpoint.method}>
                   <Td>
-                    <code className="font-mono text-[12px] font-medium text-brand-ink">
+                    <code className="font-num text-[12px] font-medium text-brand-ink">
                       {endpoint.method}
                     </code>
                   </Td>
                   <Td>
-                    <code className="font-mono text-[12px] text-ink">{endpoint.path}</code>
+                    <code className="font-num text-[12px] text-ink">{endpoint.path}</code>
                   </Td>
                   <Td>
-                    <code className="font-mono text-[11px] text-ink-muted">{endpoint.scope}</code>
+                    <code className="font-num text-[11px] text-ink-muted">{endpoint.scope}</code>
                   </Td>
                   <Td className="text-ink-muted">{endpoint.purpose}</Td>
                   <Td>
@@ -94,9 +94,9 @@ export function ApiReference() {
               {PARAMETERS.map((parameter) => (
                 <Tr key={parameter.name}>
                   <Td>
-                    <code className="font-mono text-[12px] text-ink">{parameter.name}</code>
+                    <code className="font-num text-[12px] text-ink">{parameter.name}</code>
                   </Td>
-                  <Td className="font-mono text-[12px] text-ink-muted">{parameter.type}</Td>
+                  <Td className="font-num text-[12px] text-ink-muted">{parameter.type}</Td>
                   <Td className="text-ink-muted">{parameter.detail}</Td>
                 </Tr>
               ))}

@@ -48,7 +48,10 @@ test.describe("discovery", () => {
       await expect(showResults).toBeVisible();
     }
 
-    await page.locator('input[type="checkbox"]:visible').first().check();
+    // Scope to the surface that is actually on screen: both the rail and the
+    // sheet render the same control names, and one of them is display:none.
+    const surface = usesSheet ? page.getByRole("dialog", { name: "Filters" }) : page;
+    await surface.locator('input[type="checkbox"]:visible').first().check();
     if (usesSheet) await showResults.click();
 
     await expect(page).toHaveURL(/platform=|category=|verification=/);

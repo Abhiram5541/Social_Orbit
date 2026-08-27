@@ -8,11 +8,15 @@ import { Badge, type BadgeTone } from "@/components/ui/badge";
 /* ---------------------------------------------------------------------------
  * Score display.
  *
- * A deliberate restraint runs through this file: the SocialOrbit score itself
- * is always drawn in brand blue, because it is one brand artifact rather than a
- * traffic light. Only components that fall into genuinely poor territory take
- * on warning colour. A panel where every bar is a different hue reads as
- * decoration and stops communicating.
+ * The score is the product's headline artifact, so it is the one place the
+ * design spends its boldness: a dark instrument readout with the value set
+ * large and light, ringed by its own components. Everything around it stays
+ * quiet.
+ *
+ * A deliberate restraint runs through the colour: the ring is always cobalt,
+ * because the score is one brand artifact rather than a traffic light. Only
+ * components in genuinely poor territory take on warning colour, so a panel
+ * where every bar is a different hue never happens.
  * ------------------------------------------------------------------------ */
 
 export const HEALTH_BAND_LABEL: Record<ReturnType<typeof healthBand>, string> = {
@@ -22,29 +26,41 @@ export const HEALTH_BAND_LABEL: Record<ReturnType<typeof healthBand>, string> = 
   weak: "Needs review",
 };
 
+export type ScoreTone = "light" | "instrument";
+
 /** Sub-50 is a real problem; sub-70 is worth noticing; above that stays quiet. */
-function componentTone(value: number): string {
+function componentTone(value: number, tone: ScoreTone): string {
   if (value < 50) return "bg-critical";
   if (value < 70) return "bg-caution";
-  return "bg-neutral-metric";
+  return tone === "instrument" ? "bg-instrument-muted" : "bg-neutral-metric";
 }
 
 export function ScoreRing({
   value,
   size = 96,
   label = "SocialOrbit Health",
+  tone = "light",
+  animate = true,
   className,
 }: {
   value: number | null;
   size?: number;
   label?: string;
+  tone?: ScoreTone;
+  /** The sweep runs once on mount. Turn it off for print or dense listings. */
+  animate?: boolean;
   className?: string;
 }) {
-  const stroke = size >= 80 ? 8 : 6;
+  const stroke = size >= 120 ? 7 : size >= 80 ? 6 : 5;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const pct = value === null ? 0 : Math.max(0, Math.min(100, value));
   const offset = circumference * (1 - pct / 100);
+
+  const track = tone === "instrument" ? "stroke-instrument-line" : "stroke-line";
+  const arc = tone === "instrument" ? "stroke-brand-glow" : "stroke-brand";
+  const numeral = tone === "instrument" ? "text-instrument-ink" : "text-ink";
+  const unit = tone === "instrument" ? "text-instrument-muted" : "text-ink-subtle";
 
   return (
     <div
@@ -52,7 +68,9 @@ export function ScoreRing({
       style={{ width: size, height: size }}
       role="img"
       aria-label={
-        value === null ? `${label}: not yet available` : `${label}: ${Math.round(value)} out of 100`
+        value === null
+          ? `${label}: not yet available`
+          : `${label}: ${Math.round(value)} out of 100`
       }
     >
       <svg viewBox={`0 0 ${size} ${size}`} className="size-full -rotate-90" aria-hidden>
@@ -62,7 +80,7 @@ export function ScoreRing({
           r={radius}
           fill="none"
           strokeWidth={stroke}
-          className="stroke-line"
+          className={track}
         />
         {value !== null && (
           <circle
@@ -73,20 +91,31 @@ export function ScoreRing({
             strokeWidth={stroke}
             strokeLinecap="round"
             strokeDasharray={circumference}
+            // The arc sweeps from empty to its value once on mount. Under
+            // reduced motion the animation is neutralised and the inline
+            // dashoffset below is what renders, so the value is never lost.
             strokeDashoffset={offset}
-            className="stroke-brand"
+            className={cn(arc, animate && "animate-sweep")}
+            style={
+              animate
+                ? ({
+                    "--sweep-from": circumference,
+                    "--sweep-to": offset,
+                  } as React.CSSProperties)
+                : undefined
+            }
           />
         )}
       </svg>
       <div className="absolute inset-0 grid place-content-center text-center leading-none">
         <span
-          className="font-mono font-semibold tabular-nums text-ink"
-          style={{ fontSize: size * 0.28 }}
+          className={cn("font-num font-light tabular-nums", numeral)}
+          style={{ fontSize: size * 0.34, letterSpacing: "-0.04em" }}
         >
           {value === null ? NO_VALUE : Math.round(value)}
         </span>
         {value !== null && (
-          <span className="mt-0.5 text-[10px] text-ink-subtle">/100</span>
+          <span className={cn("mt-1 label-caps text-[9px]", unit)}>/100</span>
         )}
       </div>
     </div>
@@ -99,33 +128,47 @@ export function ScoreBar({
   value,
   weight,
   available = true,
+  tone = "light",
+  index = 0,
   className,
 }: {
   label: string;
   value: number | null;
   weight?: number;
   available?: boolean;
+  tone?: ScoreTone;
+  /** Position in the group, used to stagger the growth animation. */
+  index?: number;
   className?: string;
 }) {
   const pct = value === null ? 0 : Math.max(0, Math.min(100, value));
+  const labelColour = tone === "instrument" ? "text-instrument-muted" : "text-ink-muted";
+  const valueColour = tone === "instrument" ? "text-instrument-ink" : "text-ink";
+  const trackColour = tone === "instrument" ? "bg-instrument-line" : "bg-line";
+
   return (
     <div className={cn("grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1", className)}>
       <div className="flex min-w-0 items-baseline gap-1.5">
-        <span className="truncate text-[12px] text-ink-muted">{label}</span>
+        <span className={cn("truncate text-[12px]", labelColour)}>{label}</span>
         {weight !== undefined && (
-          <span className="shrink-0 font-mono text-[10px] tabular-nums text-ink-subtle">
+          <span className={cn("shrink-0 font-num text-[10px] tabular-nums", labelColour, "opacity-70")}>
             {Math.round(weight * 100)}%
           </span>
         )}
       </div>
-      <span className="font-mono text-[13px] font-medium tabular-nums text-ink">
+      <span className={cn("font-num text-[13px] font-semibold tabular-nums", valueColour)}>
         {available && value !== null ? Math.round(value) : NO_VALUE}
       </span>
-      <div className="col-span-2 h-1.5 overflow-hidden rounded-full bg-line">
+      <div className={cn("col-span-2 h-1 overflow-hidden rounded-sm", trackColour)}>
         {available && value !== null && (
           <div
-            className={cn("h-full rounded-full transition-[width]", componentTone(value))}
-            style={{ width: `${pct}%` }}
+            className={cn("animate-extend h-full rounded-sm", componentTone(value, tone))}
+            style={
+              {
+                width: `${pct}%`,
+                "--stagger": `${120 + index * 45}ms`,
+              } as React.CSSProperties
+            }
           />
         )}
       </div>
@@ -144,22 +187,22 @@ export function ScorePill({
   className?: string;
 }) {
   if (value === null) {
-    return <span className={cn("font-mono text-ink-subtle", className)}>{NO_VALUE}</span>;
+    return <span className={cn("font-num text-ink-subtle", className)}>{NO_VALUE}</span>;
   }
   const band = healthBand(value);
   return (
     <span
-      className={cn("inline-flex items-baseline gap-1", className)}
+      className={cn("inline-flex items-baseline gap-1.5", className)}
       title={label ? `${label}: ${HEALTH_BAND_LABEL[band]}` : HEALTH_BAND_LABEL[band]}
     >
       <span
         aria-hidden
         className={cn(
-          "size-1.5 shrink-0 self-center rounded-full",
+          "size-1 shrink-0 self-center rounded-full",
           value < 50 ? "bg-critical" : value < 70 ? "bg-caution" : "bg-brand",
         )}
       />
-      <span className="font-mono text-[13px] font-medium tabular-nums text-ink">
+      <span className="font-num text-[13px] font-semibold tabular-nums text-ink">
         {Math.round(value)}
       </span>
     </span>
@@ -178,9 +221,17 @@ const RISK_LABEL: Record<RiskLevel, string> = {
   high: "High risk",
 };
 
-export function RiskBadge({ level, className }: { level: RiskLevel; className?: string }) {
+export function RiskBadge({
+  level,
+  onInstrument,
+  className,
+}: {
+  level: RiskLevel;
+  onInstrument?: boolean;
+  className?: string;
+}) {
   return (
-    <Badge tone={RISK_TONE[level]} dot className={className}>
+    <Badge tone={RISK_TONE[level]} dot onInstrument={onInstrument} className={className}>
       {RISK_LABEL[level]}
     </Badge>
   );

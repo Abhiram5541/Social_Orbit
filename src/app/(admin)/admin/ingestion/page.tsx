@@ -79,7 +79,7 @@ export default async function IngestionPage() {
                     <Td className="text-ink-muted">
                       {formatRelativeTime(connector.lastSuccessfulSync)}
                     </Td>
-                    <Td className="font-mono text-[12px] text-ink-muted">
+                    <Td className="font-num text-[12px] text-ink-muted">
                       {connector.missing.length > 0 ? connector.missing.join(", ") : "—"}
                     </Td>
                   </Tr>
@@ -97,7 +97,7 @@ export default async function IngestionPage() {
             <ol className="space-y-2">
               {PIPELINE.map((step, index) => (
                 <li key={step.stage} className="flex gap-3">
-                  <span className="mt-0.5 font-mono text-[11px] tabular-nums text-ink-subtle">
+                  <span className="mt-0.5 font-num text-[11px] tabular-nums text-ink-subtle">
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <span>

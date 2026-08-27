@@ -145,7 +145,7 @@ export function CampaignForm({
                   value={hashtag}
                   onChange={(event) => setHashtag(event.currentTarget.value)}
                   placeholder="OrbitSeries2026"
-                  className="pl-8 font-mono"
+                  className="pl-8 font-num"
                   aria-describedby="hashtag-preview"
                 />
               </div>
@@ -153,7 +153,7 @@ export function CampaignForm({
             {hashtag.trim() && !hashtagCheck && (
               <p id="hashtag-preview" className="-mt-2 text-[12px] text-ink-muted">
                 Posts containing{" "}
-                <span className="font-mono text-ink">
+                <span className="font-num text-ink">
                   #{hashtag.replace(/^#/, "")}
                 </span>{" "}
                 will be attributed to this campaign.

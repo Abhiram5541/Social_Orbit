@@ -57,17 +57,17 @@ export default async function ApiPortalPage() {
           <CardContent className="space-y-3 text-[13px] leading-5 text-ink-muted">
             <p>
               Send your key as a bearer token. Session cookies are deliberately not accepted
-              on <code className="font-mono text-ink">/v1</code> — a browser session and an
+              on <code className="font-num text-ink">/v1</code> — a browser session and an
               API key have different revocation and audit stories.
             </p>
-            <pre className="scroll-x rounded-lg bg-ink px-3 py-2.5 font-mono text-[12px] leading-5 text-ink-inverse">
+            <pre className="scroll-x rounded-lg bg-ink px-3 py-2.5 font-num text-[12px] leading-5 text-ink-inverse">
               <code>{`curl https://api.socialorbit.io/v1/influencers?country=IN&health_min=75 \\
   -H "Authorization: Bearer so_live_••••••••"`}</code>
             </pre>
             <p>
               Every response carries{" "}
-              <code className="font-mono text-ink">x-socialorbit-api-version</code>. Errors use
-              one shape: <code className="font-mono text-ink">{`{ "error": { "code", "message" } }`}</code>.
+              <code className="font-num text-ink">x-socialorbit-api-version</code>. Errors use
+              one shape: <code className="font-num text-ink">{`{ "error": { "code", "message" } }`}</code>.
             </p>
           </CardContent>
         </Card>

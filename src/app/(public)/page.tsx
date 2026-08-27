@@ -11,13 +11,11 @@ import {
   Sparkles,
 } from "lucide-react";
 import { HEALTH_COMPONENT_LABEL, HEALTH_WEIGHTS } from "@/lib/contracts/score";
-import type { Provenance } from "@/lib/contracts/common";
 import { LinkButton } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, Eyebrow } from "@/components/ui/card";
 import { ScoreBar, ScoreRing } from "@/components/intelligence/score";
-import { ConfidenceMeter, ProvenanceMix } from "@/components/intelligence/provenance";
-import { StatTile } from "@/components/intelligence/stat";
+import * as React from "react";
 import { MarketingChrome } from "@/components/shell/marketing-chrome";
 
 export const metadata: Metadata = {
@@ -28,20 +26,14 @@ export const metadata: Metadata = {
 
 /* The hero is built from the product's own components rather than a picture of
    them: what a visitor sees on this page is literally what a profile renders. */
-const AT = "2026-08-26T07:12:00.000Z";
-
-const observed: Provenance = {
-  tier: "platform_api",
-  kind: "observed",
-  collectedAt: AT,
-  verifiedAt: null,
-  sourceUrl: null,
-  confidence: 94,
-  ai: null,
-};
-
-const verified: Provenance = { ...observed, tier: "oauth_authorized", kind: "verified", verifiedAt: AT, confidence: 98 };
-const estimated: Provenance = { ...observed, kind: "estimated", confidence: 46 };
+/** How much of the profile above was measured rather than inferred. */
+const PROVENANCE_MIX = [
+  { label: "Verified", share: 22, bar: "bg-verified" },
+  { label: "Observed", share: 48, bar: "bg-observed" },
+  { label: "Derived", share: 16, bar: "bg-instrument-muted" },
+  { label: "Estimated", share: 6, bar: "bg-estimated" },
+  { label: "AI inferred", share: 8, bar: "bg-inferred" },
+];
 
 export default function LandingPage() {
   return (
@@ -74,53 +66,93 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* A real profile fragment, rendered by the same components the app uses. */}
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-sunken/50">
-              <div className="flex items-center gap-2">
-                <Eyebrow>SocialOrbit Health</Eyebrow>
-                <Badge tone="neutral">health-1.0.0</Badge>
+          {/* The hero is the product's signature artifact, not a picture of
+              it: the same instrument panel a profile renders, built from the
+              same components, showing a measurement beside its own
+              uncertainty. */}
+          <div className="animate-rise overflow-hidden rounded-xl bg-instrument text-instrument-ink shadow-instrument">
+            <header className="flex items-center justify-between gap-3 border-b border-instrument-line px-4 py-2.5">
+              <span className="label-caps text-instrument-muted">SocialOrbit Health</span>
+              <span className="font-num text-[11px] tracking-[0.04em] text-instrument-muted">
+                health-1.0.0
+              </span>
+            </header>
+
+            <div className="flex flex-wrap items-center gap-5 p-5">
+              <ScoreRing value={79} size={112} tone="instrument" />
+              <div className="min-w-44 flex-1 space-y-2">
+                <p className="text-[18px] font-semibold leading-tight tracking-[-0.02em]">
+                  Strong performance
+                </p>
+                <p className="text-[12px] leading-5 text-instrument-muted">
+                  87th percentile of 214 technology creators in the 1M+ follower band.
+                </p>
+                <Badge tone="positive" dot onInstrument>
+                  Low risk
+                </Badge>
               </div>
-              <span className="font-mono text-[11px] text-ink-muted">inf_0001</span>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4">
-                <ScoreRing value={79} size={84} />
-                <div className="min-w-0 space-y-1">
-                  <p className="text-[15px] font-semibold text-ink">Strong performance</p>
-                  <p className="text-[12px] text-ink-muted">
-                    Top 15% of technology creators in the 1M+ follower band.
-                  </p>
-                  <ConfidenceMeter confidence={{ score: 91, band: "high" }} compact />
+            </div>
+
+            <div className="grid gap-x-7 gap-y-3 border-t border-instrument-line px-5 py-4 sm:grid-cols-2">
+              {(["authenticity", "engagementRate", "growthPattern", "brandSafety"] as const).map(
+                (key, index) => (
+                  <ScoreBar
+                    key={key}
+                    label={HEALTH_COMPONENT_LABEL[key]}
+                    weight={HEALTH_WEIGHTS[key]}
+                    value={[79, 90, 70, 94][index]}
+                    tone="instrument"
+                    index={index}
+                  />
+                ),
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-instrument-line px-5 py-3">
+              <div className="min-w-40 flex-1 space-y-1">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="label-caps text-instrument-muted">Data confidence</span>
+                  <span className="font-num text-[13px] font-semibold tabular-nums">91%</span>
                 </div>
+                <div className="h-1 overflow-hidden rounded-sm bg-instrument-line">
+                  <div
+                    className="animate-extend h-full rounded-sm bg-brand-glow"
+                    style={{ width: "91%", "--stagger": "300ms" } as React.CSSProperties}
+                  />
+                </div>
+                <p className="text-[11px] text-instrument-muted">
+                  high confidence — separate from the score above
+                </p>
               </div>
+            </div>
 
-              <div className="grid gap-x-5 gap-y-2 border-t border-line pt-4 sm:grid-cols-2">
-                {(["authenticity", "engagementRate", "growthPattern", "brandSafety"] as const).map(
-                  (key, index) => (
-                    <ScoreBar
-                      key={key}
-                      label={HEALTH_COMPONENT_LABEL[key]}
-                      weight={HEALTH_WEIGHTS[key]}
-                      value={[79, 90, 70, 94][index]}
-                    />
-                  ),
-                )}
+            {/* The provenance mix: what the reader is actually looking at. */}
+            <div className="border-t border-instrument-line bg-instrument-raised px-5 py-3">
+              <div className="mb-2 flex h-1 overflow-hidden rounded-sm" aria-hidden>
+                {PROVENANCE_MIX.map((slice) => (
+                  <span
+                    key={slice.label}
+                    className={slice.bar}
+                    style={{ width: `${slice.share}%` }}
+                  />
+                ))}
               </div>
-
-              <div className="grid gap-2 border-t border-line pt-4 sm:grid-cols-3">
-                <StatTile label="Followers" value="2.4M" provenance={verified} />
-                <StatTile label="Median views" value="420K" provenance={observed} />
-                <StatTile label="Est. reach / mo" value="12M" provenance={estimated} />
-              </div>
-
-              <div className="border-t border-line pt-4">
-                <ProvenanceMix
-                  mix={{ verified: 22, observed: 48, derived: 16, estimated: 6, inferred: 8 }}
-                />
-              </div>
-            </CardContent>
-          </Card>
+              <ul className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                {PROVENANCE_MIX.map((slice) => (
+                  <li
+                    key={slice.label}
+                    className="inline-flex items-center gap-1.5 text-[11px] text-instrument-muted"
+                  >
+                    <span className={`size-1 rounded-full ${slice.bar}`} aria-hidden />
+                    {slice.label}
+                    <span className="font-num tabular-nums text-instrument-ink">
+                      {slice.share}%
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -229,7 +261,7 @@ export default function LandingPage() {
                 className="flex flex-col gap-2 rounded-lg border border-line bg-surface p-3"
               >
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[11px] text-ink-subtle">
+                  <span className="font-num text-[11px] text-ink-subtle">
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <step.icon className="size-4 text-brand" aria-hidden />
@@ -264,9 +296,9 @@ export default function LandingPage() {
           <div className="overflow-hidden rounded-xl border border-line bg-ink">
             <div className="flex items-center gap-2 border-b border-white/10 px-3 py-2">
               <span className="size-2 rounded-full bg-white/25" />
-              <span className="font-mono text-[11px] text-white/50">GET /v1/influencers</span>
+              <span className="font-num text-[11px] text-white/50">GET /v1/influencers</span>
             </div>
-            <pre className="scroll-x px-3 py-3 font-mono text-[12px] leading-5 text-white/80">
+            <pre className="scroll-x px-3 py-3 font-num text-[12px] leading-5 text-white/80">
               <code>{`GET /v1/influencers
   ?country=IN
   &language=en
@@ -362,7 +394,7 @@ function Workflow({
         <ol className="space-y-2">
           {steps.map((step, index) => (
             <li key={step} className="flex gap-2.5 text-[13px] leading-5 text-ink-muted">
-              <span className="mt-0.5 font-mono text-[11px] text-ink-subtle">
+              <span className="mt-0.5 font-num text-[11px] text-ink-subtle">
                 {String(index + 1).padStart(2, "0")}
               </span>
               {step}

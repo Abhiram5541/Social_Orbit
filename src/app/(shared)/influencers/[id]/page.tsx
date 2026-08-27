@@ -57,14 +57,12 @@ export default async function InfluencerProfilePage({
   return (
     <>
       <PageHeader
-        title={profile.displayName}
-        titleAs="p"
         breadcrumbs={[
           { label: "Discovery", href: "/discovery" },
           { label: CATEGORY_LABEL[profile.categories[0]], href: `/discovery?category=${profile.categories[0]}` },
           { label: profile.displayName },
         ]}
-        className="pb-3"
+        className="py-2.5"
       />
 
       <PageBody className="space-y-4">

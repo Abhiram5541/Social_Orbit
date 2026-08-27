@@ -156,7 +156,7 @@ export function ApiKeyPanel({
                   <Tr key={key.id}>
                     <Td className="font-medium">{key.name}</Td>
                     <Td>
-                      <code className="rounded bg-sunken px-1.5 py-0.5 font-mono text-[12px] text-ink-muted">
+                      <code className="rounded bg-sunken px-1.5 py-0.5 font-num text-[12px] text-ink-muted">
                         {key.prefix}…
                       </code>
                     </Td>
@@ -293,7 +293,7 @@ function SecretReveal({ name, value }: { name: string; value: string }) {
       </Notice>
       <p className="text-[13px] text-ink-muted">{name}</p>
       <div className="flex items-center gap-2 rounded-lg border border-line bg-sunken p-2">
-        <code className="min-w-0 flex-1 break-all font-mono text-[12px] text-ink">{value}</code>
+        <code className="min-w-0 flex-1 break-all font-num text-[12px] text-ink">{value}</code>
         <Button size="sm" onClick={copy} className="shrink-0 gap-1.5">
           {copied ? <Check className="size-3.5" aria-hidden /> : <Copy className="size-3.5" aria-hidden />}
           {copied ? "Copied" : "Copy"}

@@ -48,7 +48,7 @@ export default async function UsersPage() {
                           <Avatar name={user.name} src={user.avatarUrl} size="sm" />
                           <div className="min-w-0">
                             <p className="truncate font-medium text-ink">{user.name}</p>
-                            <p className="truncate font-mono text-[12px] text-ink-muted">
+                            <p className="truncate font-num text-[12px] text-ink-muted">
                               {user.email}
                             </p>
                           </div>
@@ -107,7 +107,7 @@ export default async function UsersPage() {
                         {ROLE_PERMISSIONS[role].map((permission) => (
                           <code
                             key={permission}
-                            className="rounded bg-sunken px-1 py-0.5 font-mono text-[11px] text-ink-muted"
+                            className="rounded bg-sunken px-1 py-0.5 font-num text-[11px] text-ink-muted"
                           >
                             {permission}
                           </code>

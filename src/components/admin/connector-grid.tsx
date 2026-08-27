@@ -35,7 +35,7 @@ export function ConnectorGrid({ connectors }: { connectors: ConnectorStatus[] })
           <dl className="mt-2.5 space-y-1 border-t border-line pt-2 text-[12px]">
             <div className="flex justify-between gap-2">
               <dt className="text-ink-muted">Accounts tracked</dt>
-              <dd className="font-mono tabular-nums text-ink">
+              <dd className="font-num tabular-nums text-ink">
                 {formatCompact(connector.accountsTracked)}
               </dd>
             </div>
@@ -46,7 +46,7 @@ export function ConnectorGrid({ connectors }: { connectors: ConnectorStatus[] })
           </dl>
 
           {connector.missing.length > 0 && (
-            <p className="mt-2 rounded border border-caution-line bg-caution-soft px-2 py-1 font-mono text-[11px] text-caution">
+            <p className="mt-2 rounded border border-caution-line bg-caution-soft px-2 py-1 font-num text-[11px] text-caution">
               missing: {connector.missing.join(", ")}
             </p>
           )}

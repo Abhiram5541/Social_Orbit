@@ -92,7 +92,7 @@ export default async function CampaignDetailPage({
         }
         meta={
           <span className="flex max-w-full flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-ink-muted sm:justify-end">
-            <span className="inline-flex items-center gap-1 rounded border border-line bg-sunken px-1.5 py-0.5 font-mono text-ink">
+            <span className="inline-flex items-center gap-1 rounded border border-line bg-sunken px-1.5 py-0.5 font-num text-ink">
               <Hash className="size-3" aria-hidden />
               {campaign.hashtag}
             </span>
@@ -106,7 +106,7 @@ export default async function CampaignDetailPage({
 
       <PageBody className="space-y-4">
         <Notice tone="info" icon={Info} title="How these figures are attributed">
-          Only posts carrying <span className="font-mono">#{campaign.hashtag}</span> are counted.
+          Only posts carrying <span className="font-num">#{campaign.hashtag}</span> are counted.
           A creator&apos;s campaign performance is scored separately from their SocialOrbit
           Health — the first answers &ldquo;how did they do for us?&rdquo;, the second
           &ldquo;who are they?&rdquo;. The two are never merged.
@@ -307,7 +307,7 @@ function ParticipantRow({ participant }: { participant: CampaignParticipant }) {
               {participant.displayName}
             </Link>
             <p className="truncate text-[12px] text-ink-muted">
-              <span className="font-mono">@{participant.primaryHandle}</span> ·{" "}
+              <span className="font-num">@{participant.primaryHandle}</span> ·{" "}
               {formatCompact(participant.followers)} followers
             </p>
           </div>

@@ -110,7 +110,7 @@ export default async function CampaignsPage() {
                           {CAMPAIGN_STATUS_LABEL[campaign.status]}
                         </Badge>
                       </Td>
-                      <Td className="font-mono text-[12px]">#{campaign.hashtag}</Td>
+                      <Td className="font-num text-[12px]">#{campaign.hashtag}</Td>
                       <Td className="whitespace-nowrap text-[12px] text-ink-muted">
                         {formatDate(campaign.startsOn)} – {formatDate(campaign.endsOn)}
                       </Td>

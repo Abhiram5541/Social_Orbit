@@ -184,7 +184,7 @@ export function ShortlistManager({
                 <p className="truncate text-[14px] font-medium text-ink">
                   {pendingAdd.displayName}
                 </p>
-                <p className="truncate font-mono text-[12px] text-ink-muted">
+                <p className="truncate font-num text-[12px] text-ink-muted">
                   @{pendingAdd.primaryHandle}
                 </p>
               </div>

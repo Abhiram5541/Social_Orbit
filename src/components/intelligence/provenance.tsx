@@ -150,7 +150,7 @@ export function ConfidenceMeter({
             style={{ width: `${confidence.score}%` }}
           />
         </span>
-        <span className="font-mono text-[11px] tabular-nums text-ink-muted">
+        <span className="font-num text-[11px] tabular-nums text-ink-muted">
           {Math.round(confidence.score)}%
         </span>
       </span>
@@ -161,7 +161,7 @@ export function ConfidenceMeter({
     <div className={cn("space-y-1.5", className)}>
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-[12px] text-ink-muted">Data confidence</span>
-        <span className={cn("font-mono text-[13px] font-medium tabular-nums", style.text)}>
+        <span className={cn("font-num text-[13px] font-medium tabular-nums", style.text)}>
           {Math.round(confidence.score)}%
         </span>
       </div>
@@ -210,7 +210,7 @@ export function ProvenanceMix({
           <span key={key} className="inline-flex items-center gap-1">
             <span className={cn("size-1.5 rounded-full", colour)} aria-hidden />
             {FACT_KIND[key].label}{" "}
-            <span className="font-mono tabular-nums text-ink">{Math.round(mix[key])}%</span>
+            <span className="font-num tabular-nums text-ink">{Math.round(mix[key])}%</span>
           </span>
         ))}
       </div>
@@ -237,13 +237,13 @@ export function Delta({
   const Icon = dir === "up" ? TrendingUp : dir === "down" ? TrendingDown : Minus;
 
   if (value === null || value === undefined) {
-    return <span className={cn("font-mono text-ink-subtle", className)}>{NO_VALUE}</span>;
+    return <span className={cn("font-num text-ink-subtle", className)}>{NO_VALUE}</span>;
   }
 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 font-mono text-[12px] font-medium tabular-nums",
+        "inline-flex items-center gap-1 font-num text-[12px] font-medium tabular-nums",
         good && "text-positive",
         bad && "text-critical",
         !good && !bad && "text-ink-muted",

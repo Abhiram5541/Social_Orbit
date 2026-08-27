@@ -70,7 +70,7 @@ export default async function UsagePage() {
           <Card>
             <CardHeader>
               <CardTitle>Search allowance</CardTitle>
-              <span className="font-mono text-[13px] tabular-nums text-ink">
+              <span className="font-num text-[13px] tabular-nums text-ink">
                 {quota.remaining} left
               </span>
             </CardHeader>
@@ -130,7 +130,7 @@ export default async function UsagePage() {
                               <Minus className="size-4 text-ink-subtle" aria-label="Not included" />
                             )
                           ) : (
-                            <span className="font-mono tabular-nums text-ink">{value}</span>
+                            <span className="font-num tabular-nums text-ink">{value}</span>
                           )}
                         </td>
                       );

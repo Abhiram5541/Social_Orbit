@@ -27,12 +27,12 @@ export function DevCredentials() {
       <div className="border-t border-line px-3 py-2">
         <p className="mb-2 text-ink-muted">
           Local seed data only. Password for all accounts:{" "}
-          <code className="rounded bg-sunken px-1 font-mono text-ink">{password}</code>
+          <code className="rounded bg-sunken px-1 font-num text-ink">{password}</code>
         </p>
         <ul className="divide-y divide-line">
           {ACCOUNTS.map((account) => (
             <li key={account.email} className="flex flex-wrap justify-between gap-x-3 py-1.5">
-              <code className="font-mono text-ink">{account.email}</code>
+              <code className="font-num text-ink">{account.email}</code>
               <span className="text-ink-subtle">
                 {ROLE_LABEL[account.role]} · {account.note}
               </span>

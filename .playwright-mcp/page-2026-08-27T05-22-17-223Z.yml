@@ -1,0 +1,351 @@
+- generic [active] [ref=f19e1]:
+  - generic [ref=f19e2]:
+    - link "Skip to content" [ref=f19e3] [cursor=pointer]:
+      - /url: "#main"
+    - complementary [ref=f19e4]:
+      - link "SocialOrbit home" [ref=f19e6] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=f19e13]:
+          - generic [ref=f19e14]: SocialOrbit
+          - generic [ref=f19e15]: Influencer Intelligence
+      - navigation "Primary" [ref=f19e17]:
+        - generic [ref=f19e18]:
+          - link "Overview" [ref=f19e19] [cursor=pointer]:
+            - /url: /dashboard
+          - link "Discovery" [ref=f19e26] [cursor=pointer]:
+            - /url: /discovery
+          - link "Influencers" [ref=f19e31] [cursor=pointer]:
+            - /url: /influencers
+        - generic [ref=f19e38]:
+          - generic [ref=f19e39]: Workspace
+          - link "Shortlists" [ref=f19e40] [cursor=pointer]:
+            - /url: /shortlists
+          - link "Compare" [ref=f19e45] [cursor=pointer]:
+            - /url: /compare
+          - link "Campaigns" [ref=f19e51] [cursor=pointer]:
+            - /url: /campaigns
+          - link "Reports" [ref=f19e56] [cursor=pointer]:
+            - /url: /reports
+        - generic [ref=f19e61]:
+          - generic [ref=f19e62]: Account
+          - link "API" [ref=f19e63] [cursor=pointer]:
+            - /url: /api-portal
+          - link "Usage & billing" [ref=f19e69] [cursor=pointer]:
+            - /url: /usage
+          - link "Settings" [ref=f19e73] [cursor=pointer]:
+            - /url: /settings
+      - button "Collapse navigation" [ref=f19e79]:
+        - generic [ref=f19e83]: Collapse
+    - generic [ref=f19e84]:
+      - banner [ref=f19e85]:
+        - button "Search creators, campaigns, shortlists… /" [ref=f19e86]:
+          - generic [ref=f19e90]: Search creators, campaigns, shortlists…
+          - generic [ref=f19e91]: /
+        - generic [ref=f19e92]:
+          - link "443 of 500 searches remaining this month" [ref=f19e93] [cursor=pointer]:
+            - /url: /usage
+            - generic [ref=f19e94]: Searches
+            - generic [ref=f19e95]: 443/500
+          - link "Notifications" [ref=f19e96] [cursor=pointer]:
+            - /url: /notifications
+          - link "Help and documentation" [ref=f19e100] [cursor=pointer]:
+            - /url: /help
+          - button "Marcus Whitfield Client Owner" [ref=f19e104]:
+            - generic [ref=f19e105]: MW
+            - generic [ref=f19e107]:
+              - generic [ref=f19e108]: Marcus Whitfield
+              - generic [ref=f19e109]: Client Owner
+      - main [ref=f19e112]:
+        - generic [ref=f19e113]:
+          - navigation "Breadcrumb" [ref=f19e114]:
+            - list [ref=f19e115]:
+              - listitem [ref=f19e116]:
+                - link "Discovery" [ref=f19e117] [cursor=pointer]:
+                  - /url: /discovery
+              - listitem [ref=f19e118]:
+                - generic [ref=f19e119]: /
+                - link "Travel" [ref=f19e120] [cursor=pointer]:
+                  - /url: /discovery?category=travel
+              - listitem [ref=f19e121]:
+                - generic [ref=f19e122]: /
+                - generic [ref=f19e123]: Aria Lindqvist
+          - paragraph [ref=f19e126]: Aria Lindqvist
+        - generic [ref=f19e127]:
+          - generic [ref=f19e128]:
+            - generic [ref=f19e129]:
+              - generic [ref=f19e130]: AL
+              - generic [ref=f19e132]:
+                - generic [ref=f19e133]:
+                  - heading "Aria Lindqvist" [level=1] [ref=f19e134]
+                  - generic [ref=f19e135]: "@ariatrav"
+                  - generic "Built from public platform data. No account connection established." [ref=f19e136]: Unverified
+                - generic [ref=f19e137]:
+                  - generic [ref=f19e138]:
+                    - term [ref=f19e142]: Country
+                    - definition [ref=f19e143]: Japan
+                  - generic [ref=f19e144]:
+                    - term [ref=f19e149]: Languages
+                    - definition [ref=f19e150]: JA, EN
+                  - generic [ref=f19e151]:
+                    - term [ref=f19e155]: Categories
+                    - definition [ref=f19e156]: Travel
+                - list [ref=f19e157]:
+                  - listitem [ref=f19e158]:
+                    - link "YouTube 42K Primary" [ref=f19e159] [cursor=pointer]:
+                      - /url: https://www.youtube.com/@ariatrav
+                      - generic [ref=f19e160]: YouTube
+                      - generic [ref=f19e161]: 42K
+                      - generic [ref=f19e162]: Primary
+                  - listitem [ref=f19e167]:
+                    - link "Instagram 9.3K" [ref=f19e168] [cursor=pointer]:
+                      - /url: https://www.instagram.com/ariatrav
+                      - generic [ref=f19e169]: Instagram
+                      - generic [ref=f19e170]: 9.3K
+              - generic [ref=f19e175]:
+                - generic [ref=f19e176]:
+                  - button "Add to shortlist" [ref=f19e177]
+                  - link "Compare" [ref=f19e179] [cursor=pointer]:
+                    - /url: /compare?ids=inf_0001
+                  - link "Campaign" [ref=f19e184] [cursor=pointer]:
+                    - /url: /campaigns/new?influencer=inf_0001
+                  - button "Export this profile" [ref=f19e188]
+                - generic [ref=f19e192]: Data refreshed 24 hours ago
+            - paragraph [ref=f19e193]: itineraries and budget guides. Japan-based.
+            - paragraph [ref=f19e194]:
+              - text: Built from public platform data. No account connection established.
+              - link "How verification works" [ref=f19e195] [cursor=pointer]:
+                - /url: /help/verification
+          - generic [ref=f19e196]:
+            - generic [ref=f19e197]:
+              - generic [ref=f19e198]:
+                - heading "SocialOrbit Health" [level=2] [ref=f19e199]
+                - button "How the health score is calculated" [ref=f19e201]
+              - generic [ref=f19e205]: health-1.0.0
+            - generic [ref=f19e206]:
+              - generic [ref=f19e207]:
+                - 'img "SocialOrbit Health: 69 out of 100" [ref=f19e208]':
+                  - generic [ref=f19e212]:
+                    - generic [ref=f19e213]: "69"
+                    - generic [ref=f19e214]: /100
+                - generic [ref=f19e215]:
+                  - paragraph [ref=f19e216]: Fair
+                  - paragraph [ref=f19e217]: Not enough indexed creators in this category and size band to rank against yet.
+                  - generic [ref=f19e218]: Low risk
+              - generic [ref=f19e221]:
+                - generic [ref=f19e222]:
+                  - generic [ref=f19e223]:
+                    - generic [ref=f19e224]: Audience authenticity
+                    - generic [ref=f19e225]: 20%
+                  - generic [ref=f19e226]: "84"
+                - generic [ref=f19e229]:
+                  - generic [ref=f19e230]:
+                    - generic [ref=f19e231]: Engagement quality
+                    - generic [ref=f19e232]: 15%
+                  - generic [ref=f19e233]: "56"
+                - generic [ref=f19e236]:
+                  - generic [ref=f19e237]:
+                    - generic [ref=f19e238]: Engagement rate
+                    - generic [ref=f19e239]: 15%
+                  - generic [ref=f19e240]: "61"
+                - generic [ref=f19e242]:
+                  - generic [ref=f19e243]:
+                    - generic [ref=f19e244]: Growth pattern
+                    - generic [ref=f19e245]: 15%
+                  - generic [ref=f19e246]: —
+                - generic [ref=f19e248]:
+                  - generic [ref=f19e249]:
+                    - generic [ref=f19e250]: View consistency
+                    - generic [ref=f19e251]: 10%
+                  - generic [ref=f19e252]: "26"
+                - generic [ref=f19e254]:
+                  - generic [ref=f19e255]:
+                    - generic [ref=f19e256]: Audience activity
+                    - generic [ref=f19e257]: 10%
+                  - generic [ref=f19e258]: "100"
+                - generic [ref=f19e260]:
+                  - generic [ref=f19e261]:
+                    - generic [ref=f19e262]: Comment quality
+                    - generic [ref=f19e263]: 5%
+                  - generic [ref=f19e264]: "73"
+                - generic [ref=f19e266]:
+                  - generic [ref=f19e267]:
+                    - generic [ref=f19e268]: Upload consistency
+                    - generic [ref=f19e269]: 5%
+                  - generic [ref=f19e270]: "74"
+                - generic [ref=f19e272]:
+                  - generic [ref=f19e273]:
+                    - generic [ref=f19e274]: Brand safety
+                    - generic [ref=f19e275]: 5%
+                  - generic [ref=f19e276]: "90"
+            - generic [ref=f19e278]:
+              - generic [ref=f19e279]:
+                - generic [ref=f19e280]:
+                  - generic [ref=f19e281]: Data confidence
+                  - generic [ref=f19e282]: 61%
+                - paragraph [ref=f19e284]: moderate confidence
+              - generic [ref=f19e285]:
+                - generic [ref=f19e286]:
+                  - generic [ref=f19e287]: Formula coverage
+                  - generic [ref=f19e288]: 85%
+                - paragraph [ref=f19e290]: 1 not measurable
+              - generic [ref=f19e291]: Computed 20 hours ago
+            - paragraph [ref=f19e292]: One component is not measurable yet (growth pattern). The remaining weights are renormalised rather than counted as zero.
+            - generic [ref=f19e293]:
+              - generic [ref=f19e294]:
+                - generic [ref=f19e295]: What the signals say
+                - generic [ref=f19e300]: AI interpretation
+              - paragraph [ref=f19e301]: Median engagement sits at 2.26% across indexed content; growth pattern cannot be assessed yet — there is not enough snapshot history; audience-quality signals are clean. Overall health resolves to 69/100 under formula health-1.0.0.
+              - paragraph [ref=f19e302]: openai gpt-5.1 · prompt profile-enrichment@3 · 6 days ago. An explanation of stored measurements, not a source of them.
+          - generic [ref=f19e303]:
+            - tablist "Profile sections" [ref=f19e304]:
+              - tab "Overview" [selected] [ref=f19e305]
+              - tab "Growth" [ref=f19e306]
+              - tab "Audience" [ref=f19e307]
+              - tab "Content" [ref=f19e308]
+              - tab "Authenticity" [ref=f19e309]
+              - tab "Benchmarks" [ref=f19e310]
+            - tabpanel "Overview" [ref=f19e311]:
+              - generic [ref=f19e312]:
+                - generic [ref=f19e313]:
+                  - generic [ref=f19e314]:
+                    - generic [ref=f19e315]: Followers
+                    - generic [ref=f19e316]: Observed, collected 24 hours ago
+                  - generic [ref=f19e322]: 42K
+                - generic [ref=f19e323]:
+                  - generic [ref=f19e324]:
+                    - generic [ref=f19e325]: Total views
+                    - generic [ref=f19e326]: Observed, collected 24 hours ago
+                  - generic [ref=f19e332]: 2.4M
+                - generic [ref=f19e333]:
+                  - generic [ref=f19e334]:
+                    - generic [ref=f19e335]: Median views
+                    - button "About Median views" [ref=f19e337]
+                    - generic [ref=f19e341]: Derived, collected 24 hours ago
+                  - generic [ref=f19e346]: 16.1K
+                - generic [ref=f19e347]:
+                  - generic [ref=f19e348]:
+                    - generic [ref=f19e349]: Engagement
+                    - button "About Engagement" [ref=f19e351]
+                    - generic [ref=f19e355]: Derived, collected 24 hours ago
+                  - generic [ref=f19e360]: 2.3%
+                - generic [ref=f19e361]:
+                  - generic [ref=f19e362]:
+                    - generic [ref=f19e363]: Content indexed
+                    - generic [ref=f19e364]: Observed, collected 24 hours ago
+                  - generic [ref=f19e370]: "274"
+                - generic [ref=f19e371]:
+                  - generic [ref=f19e372]:
+                    - generic [ref=f19e373]: Upload freq.
+                    - generic [ref=f19e374]: Derived, collected 24 hours ago
+                  - generic [ref=f19e379]: 2.5/wk
+                - generic [ref=f19e380]:
+                  - generic [ref=f19e381]:
+                    - generic [ref=f19e382]: Avg. length
+                    - generic [ref=f19e383]: Observed, collected 24 hours ago
+                  - generic [ref=f19e389]: 16m 58s
+                - generic [ref=f19e390]:
+                  - generic [ref=f19e391]:
+                    - generic [ref=f19e392]: Est. reach/mo
+                    - button "About Est. reach/mo" [ref=f19e394]
+                    - generic [ref=f19e398]: Estimated, collected 24 hours ago
+                  - generic [ref=f19e403]: 175.8K
+              - generic [ref=f19e404]:
+                - generic [ref=f19e405]:
+                  - heading "Follower history" [level=2] [ref=f19e407]
+                  - generic [ref=f19e409]:
+                    - paragraph [ref=f19e410]: Growth history still building
+                    - paragraph [ref=f19e411]: 3 of 8 snapshots collected. A trend is shown once there is enough history to read one honestly.
+                - generic [ref=f19e414]:
+                  - heading "Total views" [level=2] [ref=f19e416]
+                  - generic [ref=f19e418]:
+                    - paragraph [ref=f19e419]: Growth history still building
+                    - paragraph [ref=f19e420]: 3 of 8 snapshots collected. A trend is shown once there is enough history to read one honestly.
+              - generic [ref=f19e423]:
+                - generic [ref=f19e424]:
+                  - generic [ref=f19e425]:
+                    - heading "Profile intelligence" [level=2] [ref=f19e426]
+                    - generic [ref=f19e427]: AI classified
+                  - generic [ref=f19e431]:
+                    - paragraph [ref=f19e432]: Aria Lindqvist is a micro travel creator based in Japan, publishing at a high cadence on YouTube. The profile is built from public platform data; no account connection has been established.
+                    - generic [ref=f19e433]:
+                      - text: Creator type
+                      - paragraph [ref=f19e434]: Established travel creator with strong audience trust.
+                      - text: Audience intent
+                      - paragraph [ref=f19e435]: Discovery-led; audience follows for routine and inspiration rather than a specific purchase.
+                    - generic [ref=f19e436]:
+                      - generic [ref=f19e437]:
+                        - text: Strengths
+                        - list [ref=f19e438]:
+                          - listitem [ref=f19e439]: Publishing cadence is above the category median
+                          - listitem [ref=f19e441]: Audience-quality signals are clean
+                      - generic [ref=f19e443]:
+                        - text: Risks
+                        - list [ref=f19e444]:
+                          - listitem [ref=f19e445]: Publishing cadence has softened recently
+                          - listitem [ref=f19e447]: No material risk signals detected
+                - generic [ref=f19e449]:
+                  - heading "Commercial signals" [level=2] [ref=f19e451]
+                  - generic [ref=f19e452]:
+                    - generic [ref=f19e453]:
+                      - generic [ref=f19e454]: Commercial intent
+                      - generic [ref=f19e456]: "90"
+                    - generic [ref=f19e459]:
+                      - generic [ref=f19e460]: Brand safety
+                      - generic [ref=f19e462]: "90"
+                    - generic [ref=f19e465]:
+                      - text: Content themes
+                      - list [ref=f19e466]:
+                        - listitem [ref=f19e467]:
+                          - generic [ref=f19e468]: itineraries
+                        - listitem [ref=f19e469]:
+                          - generic [ref=f19e470]: budget guides
+                        - listitem [ref=f19e471]:
+                          - generic [ref=f19e472]: solo travel
+                    - generic [ref=f19e473]:
+                      - text: Recommended industries
+                      - list [ref=f19e474]:
+                        - listitem [ref=f19e475]:
+                          - generic [ref=f19e476]: Travel
+                    - generic [ref=f19e477]:
+                      - text: Sponsorship signals
+                      - list [ref=f19e478]:
+                        - listitem [ref=f19e479]: 18% of indexed posts carry a paid-partnership marker
+                        - listitem [ref=f19e480]: Occasional brand integrations
+                    - generic [ref=f19e481]:
+                      - generic [ref=f19e482]:
+                        - generic [ref=f19e483]: Est. monthly earnings
+                        - generic [ref=f19e484]: Estimated, collected 24 hours ago
+                      - paragraph [ref=f19e489]: $211 – $967
+                      - paragraph [ref=f19e490]: Modelled range, not a rate card. SocialOrbit does not hold this creator's asking rate.
+          - generic [ref=f19e492]:
+            - generic [ref=f19e499]:
+              - generic [ref=f19e500]:
+                - text: Observed
+                - generic [ref=f19e502]: 62%
+              - generic [ref=f19e503]:
+                - text: Derived
+                - generic [ref=f19e505]: 18%
+              - generic [ref=f19e506]:
+                - text: Estimated
+                - generic [ref=f19e508]: 6%
+              - generic [ref=f19e509]:
+                - text: AI inferred
+                - generic [ref=f19e511]: 14%
+            - generic [ref=f19e512]:
+              - generic [ref=f19e513]:
+                - term [ref=f19e514]: Score version
+                - definition [ref=f19e515]:
+                  - generic [ref=f19e516]: 1.0.0
+              - generic [ref=f19e517]:
+                - term [ref=f19e518]: Formula version
+                - definition [ref=f19e519]:
+                  - generic [ref=f19e520]: health-1.0.0
+              - generic [ref=f19e521]:
+                - term [ref=f19e522]: Confidence
+                - definition [ref=f19e523]:
+                  - generic [ref=f19e524]: 61% (moderate)
+              - generic [ref=f19e525]:
+                - term [ref=f19e526]: Last refresh
+                - definition [ref=f19e527]:
+                  - generic [ref=f19e528]: 24 hours ago
+  - button "Open Next.js Dev Tools" [ref=f19e534] [cursor=pointer]

@@ -212,7 +212,7 @@ export function DiscoveryView({ initialQuota }: { initialQuota: SearchQuota }) {
               <SlidersHorizontal className="size-4" aria-hidden />
               Filters
               {activeFilters > 0 && (
-                <span className="rounded bg-brand px-1 font-mono text-[11px] text-white">
+                <span className="rounded bg-brand px-1 font-num text-[11px] text-white">
                   {activeFilters}
                 </span>
               )}
@@ -324,7 +324,7 @@ export function DiscoveryView({ initialQuota }: { initialQuota: SearchQuota }) {
               <>
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-2.5">
                   <p className="text-[13px] text-ink-muted">
-                    <span className="font-mono tabular-nums text-ink">
+                    <span className="font-num tabular-nums text-ink">
                       {formatCompact(data.page.total)}
                     </span>{" "}
                     {data.page.total === 1 ? "creator" : "creators"}

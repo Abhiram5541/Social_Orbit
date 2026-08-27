@@ -37,7 +37,7 @@ export function QueueList({
           <Icon className="size-4 text-ink-subtle" aria-hidden />
           <CardTitle className="text-[14px]">{title}</CardTitle>
         </span>
-        <span className="font-mono text-[13px] tabular-nums text-ink">{items.length}</span>
+        <span className="font-num text-[13px] tabular-nums text-ink">{items.length}</span>
       </CardHeader>
 
       {items.length === 0 ? (

@@ -53,7 +53,7 @@ export function ReviewTable({
                   >
                     {item.displayName}
                   </Link>
-                  <span className="block font-mono text-[12px] text-ink-muted">
+                  <span className="block font-num text-[12px] text-ink-muted">
                     @{item.handle}
                   </span>
                 </Td>

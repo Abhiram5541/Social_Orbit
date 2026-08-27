@@ -67,7 +67,7 @@ export function SettingsPanels({ user }: { user: SessionUser }) {
           <ul className="flex flex-wrap gap-1">
             {permissions.map((permission) => (
               <li key={permission}>
-                <code className="rounded bg-sunken px-1.5 py-0.5 font-mono text-[11px] text-ink-muted">
+                <code className="rounded bg-sunken px-1.5 py-0.5 font-num text-[11px] text-ink-muted">
                   {permission}
                 </code>
               </li>

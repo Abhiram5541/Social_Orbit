@@ -97,7 +97,7 @@ export default async function AnalyticsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Health score weights</CardTitle>
-            <span className="font-mono text-[12px] text-ink-muted">health-1.0.0</span>
+            <span className="font-num text-[12px] text-ink-muted">health-1.0.0</span>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
@@ -105,7 +105,7 @@ export default async function AnalyticsPage() {
                 <li key={key} className="space-y-1">
                   <div className="flex items-baseline justify-between gap-2">
                     <span className="text-[13px] text-ink">{HEALTH_COMPONENT_LABEL[key]}</span>
-                    <span className="font-mono text-[12px] tabular-nums text-ink-muted">
+                    <span className="font-num text-[12px] tabular-nums text-ink-muted">
                       {(HEALTH_WEIGHTS[key] * 100).toFixed(0)}%
                     </span>
                   </div>

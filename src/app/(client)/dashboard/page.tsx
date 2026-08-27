@@ -159,16 +159,16 @@ export default async function DashboardPage() {
                           </Badge>
                         </p>
                         <p className="mt-0.5 truncate text-[12px] text-ink-muted">
-                          <span className="font-mono">#{campaign.hashtag}</span> ·{" "}
+                          <span className="font-num">#{campaign.hashtag}</span> ·{" "}
                           {formatDate(campaign.startsOn)} – {formatDate(campaign.endsOn)}
                         </p>
                       </div>
-                      <dl className="flex shrink-0 gap-5 text-right">
+                      <dl className="flex flex-wrap gap-x-5 gap-y-1 sm:shrink-0 sm:text-right">
                         <div>
                           <dt className="text-[11px] uppercase tracking-[0.05em] text-ink-muted">
                             Creators
                           </dt>
-                          <dd className="font-mono text-[14px] tabular-nums text-ink">
+                          <dd className="font-num text-[14px] tabular-nums text-ink">
                             {campaign.confirmedCount}/{campaign.participantCount}
                           </dd>
                         </div>
@@ -176,7 +176,7 @@ export default async function DashboardPage() {
                           <dt className="text-[11px] uppercase tracking-[0.05em] text-ink-muted">
                             Reach
                           </dt>
-                          <dd className="font-mono text-[14px] tabular-nums text-ink">
+                          <dd className="font-num text-[14px] tabular-nums text-ink">
                             {formatCompact(campaign.totalReach)}
                           </dd>
                         </div>
@@ -280,7 +280,7 @@ export default async function DashboardPage() {
                         <span className="block text-[11px] uppercase tracking-[0.05em] text-ink-muted">
                           Engagement
                         </span>
-                        <span className="font-mono text-[13px] tabular-nums text-ink">
+                        <span className="font-num text-[13px] tabular-nums text-ink">
                           {formatPercent(item.engagementRate)}
                         </span>
                       </span>

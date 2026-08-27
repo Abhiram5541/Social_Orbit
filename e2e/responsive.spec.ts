@@ -76,6 +76,9 @@ test.describe("keyboard and focus", () => {
     test.skip(testInfo.project.name === "mobile", "keyboard shortcuts need a hardware keyboard");
     await signIn(page, ACCOUNTS.clientOwner);
     await page.goto("/dashboard");
+    // The shortcut is bound on mount, so wait for the client to hydrate before
+    // pressing — otherwise the keypress lands on a server-rendered page.
+    await expect(page.getByRole("button", { name: /Search creators/ })).toBeVisible();
 
     await page.keyboard.press("/");
     const palette = page.getByRole("dialog", { name: "Command palette" });
@@ -89,6 +92,7 @@ test.describe("keyboard and focus", () => {
     test.skip(testInfo.project.name === "mobile", "keyboard shortcuts need a hardware keyboard");
     await signIn(page, ACCOUNTS.clientOwner);
     await page.goto("/dashboard");
+    await expect(page.getByRole("button", { name: /Search creators/ })).toBeVisible();
 
     await page.keyboard.press("/");
     await page.getByLabel("Search creators or jump to a page").fill("aria");

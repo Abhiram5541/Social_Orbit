@@ -149,7 +149,7 @@ export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailD
                           {item.displayName}
                         </Link>
                         <p className="truncate text-[12px] text-ink-muted">
-                          <span className="font-mono">@{item.primaryHandle}</span> ·{" "}
+                          <span className="font-num">@{item.primaryHandle}</span> ·{" "}
                           {PLATFORM_LABEL[item.primaryPlatform]}
                         </p>
                       </div>

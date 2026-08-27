@@ -111,7 +111,7 @@ export default async function AdminOverviewPage() {
                     </Badge>
                   </div>
                   <p className="mt-1 text-[12px] leading-5 text-ink-muted">{provider.role}</p>
-                  <p className="mt-1.5 font-mono text-[11px] text-ink-subtle">
+                  <p className="mt-1.5 font-num text-[11px] text-ink-subtle">
                     {provider.configured
                       ? (provider.model ?? "default model")
                       : `needs ${provider.requires.join(", ")}`}
@@ -183,7 +183,7 @@ export default async function AdminOverviewPage() {
             <ul className="divide-y divide-line">
               {auditLog(6).map((entry) => (
                 <li key={entry.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 px-4 py-2">
-                  <span className="font-mono text-[12px] text-brand-ink">{entry.action}</span>
+                  <span className="font-num text-[12px] text-brand-ink">{entry.action}</span>
                   <span className="text-[13px] text-ink">{entry.detail}</span>
                   <span className="ml-auto text-[12px] text-ink-muted">
                     {entry.actor} · {formatRelativeTime(entry.at)}
@@ -212,7 +212,7 @@ function Distribution({
         <div key={row.label} className="space-y-1">
           <div className="flex items-baseline justify-between gap-2">
             <span className="truncate text-[13px] capitalize text-ink">{row.label}</span>
-            <span className="shrink-0 font-mono text-[12px] tabular-nums text-ink-muted">
+            <span className="shrink-0 font-num text-[12px] tabular-nums text-ink-muted">
               {row.value} · {((row.value / total) * 100).toFixed(1)}%
             </span>
           </div>

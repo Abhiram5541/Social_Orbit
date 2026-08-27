@@ -302,7 +302,7 @@ function CheckRow({
         {label}
       </label>
       {count !== undefined && (
-        <span className="shrink-0 font-mono text-[11px] tabular-nums text-ink-subtle">
+        <span className="shrink-0 font-num text-[11px] tabular-nums text-ink-subtle">
           {formatCompact(count)}
         </span>
       )}
@@ -326,7 +326,7 @@ function RangeRow({
         <label htmlFor={id} className="text-[12px] text-ink-muted">
           {label}
         </label>
-        <span className="font-mono text-[12px] tabular-nums text-ink">
+        <span className="font-num text-[12px] tabular-nums text-ink">
           {value === undefined ? "Any" : value}
         </span>
       </div>

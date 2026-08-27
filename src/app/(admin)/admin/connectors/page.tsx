@@ -33,7 +33,7 @@ export default async function ConnectorsPage() {
           <Card key={connector.platform}>
             <CardHeader>
               <CardTitle>{PLATFORM_LABEL[connector.platform]}</CardTitle>
-              <span className="font-mono text-[12px] text-ink-muted">
+              <span className="font-num text-[12px] text-ink-muted">
                 connectors/{connector.platform}
               </span>
             </CardHeader>
@@ -52,7 +52,7 @@ export default async function ConnectorsPage() {
                         }`}
                         aria-hidden
                       />
-                      <code className="font-mono text-[12px] text-ink">{key}</code>
+                      <code className="font-num text-[12px] text-ink">{key}</code>
                       <span className="text-[12px] text-ink-muted">
                         {connector.missing.includes(key) ? "not set" : "set"}
                       </span>

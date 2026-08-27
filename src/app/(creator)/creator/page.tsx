@@ -100,7 +100,7 @@ export default async function CreatorOverviewPage() {
           <Card>
             <CardHeader>
               <CardTitle>Profile completion</CardTitle>
-              <span className="font-mono text-[13px] tabular-nums text-ink">{completion}%</span>
+              <span className="font-num text-[13px] tabular-nums text-ink">{completion}%</span>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="h-1.5 overflow-hidden rounded-full bg-line">
@@ -150,11 +150,11 @@ export default async function CreatorOverviewPage() {
                   <span className="block text-[14px] font-medium text-ink">
                     {PLATFORM_LABEL[account.platform]}
                   </span>
-                  <span className="block font-mono text-[12px] text-ink-muted">
+                  <span className="block font-num text-[12px] text-ink-muted">
                     {account.handle}
                   </span>
                 </span>
-                <span className="font-mono text-[13px] tabular-nums text-ink">
+                <span className="font-num text-[13px] tabular-nums text-ink">
                   {formatCompact(account.followers)}
                 </span>
                 <Badge

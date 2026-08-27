@@ -1,0 +1,350 @@
+- generic [active] [ref=f20e1]:
+  - generic [ref=f20e2]:
+    - link "Skip to content" [ref=f20e3] [cursor=pointer]:
+      - /url: "#main"
+    - complementary [ref=f20e4]:
+      - link "SocialOrbit home" [ref=f20e6] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=f20e13]:
+          - generic [ref=f20e14]: SocialOrbit
+          - generic [ref=f20e15]: Influencer Intelligence
+      - navigation "Primary" [ref=f20e17]:
+        - generic [ref=f20e18]:
+          - link "Overview" [ref=f20e19] [cursor=pointer]:
+            - /url: /dashboard
+          - link "Discovery" [ref=f20e26] [cursor=pointer]:
+            - /url: /discovery
+          - link "Influencers" [ref=f20e31] [cursor=pointer]:
+            - /url: /influencers
+        - generic [ref=f20e38]:
+          - generic [ref=f20e39]: Workspace
+          - link "Shortlists" [ref=f20e40] [cursor=pointer]:
+            - /url: /shortlists
+          - link "Compare" [ref=f20e45] [cursor=pointer]:
+            - /url: /compare
+          - link "Campaigns" [ref=f20e51] [cursor=pointer]:
+            - /url: /campaigns
+          - link "Reports" [ref=f20e56] [cursor=pointer]:
+            - /url: /reports
+        - generic [ref=f20e61]:
+          - generic [ref=f20e62]: Account
+          - link "API" [ref=f20e63] [cursor=pointer]:
+            - /url: /api-portal
+          - link "Usage & billing" [ref=f20e69] [cursor=pointer]:
+            - /url: /usage
+          - link "Settings" [ref=f20e73] [cursor=pointer]:
+            - /url: /settings
+      - button "Collapse navigation" [ref=f20e79]:
+        - generic [ref=f20e83]: Collapse
+    - generic [ref=f20e84]:
+      - banner [ref=f20e85]:
+        - button "Search creators, campaigns, shortlists… /" [ref=f20e86]:
+          - generic [ref=f20e90]: Search creators, campaigns, shortlists…
+          - generic [ref=f20e91]: /
+        - generic [ref=f20e92]:
+          - link "443 of 500 searches remaining this month" [ref=f20e93] [cursor=pointer]:
+            - /url: /usage
+            - generic [ref=f20e94]: Searches
+            - generic [ref=f20e95]: 443/500
+          - link "Notifications" [ref=f20e96] [cursor=pointer]:
+            - /url: /notifications
+          - link "Help and documentation" [ref=f20e100] [cursor=pointer]:
+            - /url: /help
+          - button "Marcus Whitfield Client Owner" [ref=f20e104]:
+            - generic [ref=f20e105]: MW
+            - generic [ref=f20e107]:
+              - generic [ref=f20e108]: Marcus Whitfield
+              - generic [ref=f20e109]: Client Owner
+      - main [ref=f20e112]:
+        - navigation "Breadcrumb" [ref=f20e114]:
+          - list [ref=f20e115]:
+            - listitem [ref=f20e116]:
+              - link "Discovery" [ref=f20e117] [cursor=pointer]:
+                - /url: /discovery
+            - listitem [ref=f20e118]:
+              - generic [ref=f20e119]: /
+              - link "Lifestyle" [ref=f20e120] [cursor=pointer]:
+                - /url: /discovery?category=lifestyle
+            - listitem [ref=f20e121]:
+              - generic [ref=f20e122]: /
+              - generic [ref=f20e123]: Talia Okafor
+        - generic [ref=f20e124]:
+          - generic [ref=f20e125]:
+            - generic [ref=f20e126]:
+              - generic [ref=f20e127]: TO
+              - generic [ref=f20e129]:
+                - generic [ref=f20e130]:
+                  - heading "Talia Okafor" [level=1] [ref=f20e131]
+                  - generic [ref=f20e132]: "@talia_life"
+                  - generic "Built from public platform data. No account connection established." [ref=f20e133]: Unverified
+                - generic [ref=f20e134]:
+                  - generic [ref=f20e135]:
+                    - term [ref=f20e139]: Country
+                    - definition [ref=f20e140]: Brazil
+                  - generic [ref=f20e141]:
+                    - term [ref=f20e146]: Languages
+                    - definition [ref=f20e147]: PT
+                  - generic [ref=f20e148]:
+                    - term [ref=f20e152]: Categories
+                    - definition [ref=f20e153]: Lifestyle, Business
+                - list [ref=f20e154]:
+                  - listitem [ref=f20e155]:
+                    - link "YouTube 43.4K Primary" [ref=f20e156] [cursor=pointer]:
+                      - /url: https://www.youtube.com/@talia_life
+                      - generic [ref=f20e157]: YouTube
+                      - generic [ref=f20e158]: 43.4K
+                      - generic [ref=f20e159]: Primary
+                  - listitem [ref=f20e164]:
+                    - link "Instagram 22K" [ref=f20e165] [cursor=pointer]:
+                      - /url: https://www.instagram.com/talia_life
+                      - generic [ref=f20e166]: Instagram
+                      - generic [ref=f20e167]: 22K
+              - generic [ref=f20e172]:
+                - generic [ref=f20e173]:
+                  - button "Add to shortlist" [ref=f20e174]
+                  - link "Compare" [ref=f20e176] [cursor=pointer]:
+                    - /url: /compare?ids=inf_0004
+                  - link "Campaign" [ref=f20e181] [cursor=pointer]:
+                    - /url: /campaigns/new?influencer=inf_0004
+                  - button "Export this profile" [ref=f20e185]
+                - generic [ref=f20e189]: Data refreshed 2 days ago
+            - paragraph [ref=f20e190]: home organisation and daily vlogs. Brazil-based.
+            - paragraph [ref=f20e191]:
+              - text: Built from public platform data. No account connection established.
+              - link "How verification works" [ref=f20e192] [cursor=pointer]:
+                - /url: /help/verification
+          - generic [ref=f20e193]:
+            - generic [ref=f20e194]:
+              - generic [ref=f20e195]:
+                - heading "SocialOrbit Health" [level=2] [ref=f20e196]
+                - button "How the health score is calculated" [ref=f20e198]
+              - generic [ref=f20e202]: health-1.0.0
+            - generic [ref=f20e203]:
+              - generic [ref=f20e204]:
+                - 'img "SocialOrbit Health: 51 out of 100" [ref=f20e205]':
+                  - generic [ref=f20e209]:
+                    - generic [ref=f20e210]: "51"
+                    - generic [ref=f20e211]: /100
+                - generic [ref=f20e212]:
+                  - paragraph [ref=f20e213]: Fair
+                  - paragraph [ref=f20e214]: Not enough indexed creators in this category and size band to rank against yet.
+                  - generic [ref=f20e215]: Low risk
+              - generic [ref=f20e218]:
+                - generic [ref=f20e219]:
+                  - generic [ref=f20e220]:
+                    - generic [ref=f20e221]: Audience authenticity
+                    - generic [ref=f20e222]: 20%
+                  - generic [ref=f20e223]: "85"
+                - generic [ref=f20e225]:
+                  - generic [ref=f20e226]:
+                    - generic [ref=f20e227]: Engagement quality
+                    - generic [ref=f20e228]: 15%
+                  - generic [ref=f20e229]: "36"
+                - generic [ref=f20e231]:
+                  - generic [ref=f20e232]:
+                    - generic [ref=f20e233]: Engagement rate
+                    - generic [ref=f20e234]: 15%
+                  - generic [ref=f20e235]: "43"
+                - generic [ref=f20e237]:
+                  - generic [ref=f20e238]:
+                    - generic [ref=f20e239]: Growth pattern
+                    - generic [ref=f20e240]: 15%
+                  - generic [ref=f20e241]: "23"
+                - generic [ref=f20e243]:
+                  - generic [ref=f20e244]:
+                    - generic [ref=f20e245]: View consistency
+                    - generic [ref=f20e246]: 10%
+                  - generic [ref=f20e247]: "10"
+                - generic [ref=f20e249]:
+                  - generic [ref=f20e250]:
+                    - generic [ref=f20e251]: Audience activity
+                    - generic [ref=f20e252]: 10%
+                  - generic [ref=f20e253]: "72"
+                - generic [ref=f20e255]:
+                  - generic [ref=f20e256]:
+                    - generic [ref=f20e257]: Comment quality
+                    - generic [ref=f20e258]: 5%
+                  - generic [ref=f20e259]: "65"
+                - generic [ref=f20e261]:
+                  - generic [ref=f20e262]:
+                    - generic [ref=f20e263]: Upload consistency
+                    - generic [ref=f20e264]: 5%
+                  - generic [ref=f20e265]: "63"
+                - generic [ref=f20e267]:
+                  - generic [ref=f20e268]:
+                    - generic [ref=f20e269]: Brand safety
+                    - generic [ref=f20e270]: 5%
+                  - generic [ref=f20e271]: "72"
+            - generic [ref=f20e273]:
+              - generic [ref=f20e274]:
+                - generic [ref=f20e275]:
+                  - generic [ref=f20e276]: Data confidence
+                  - generic [ref=f20e277]: 89%
+                - paragraph [ref=f20e279]: good confidence
+              - generic [ref=f20e280]:
+                - generic [ref=f20e281]:
+                  - generic [ref=f20e282]: Formula coverage
+                  - generic [ref=f20e283]: 100%
+                - paragraph [ref=f20e285]: all components measurable
+              - generic [ref=f20e286]: Computed 20 hours ago
+            - generic [ref=f20e287]:
+              - generic [ref=f20e288]:
+                - generic [ref=f20e289]: What the signals say
+                - generic [ref=f20e294]: AI interpretation
+              - paragraph [ref=f20e295]: Median engagement sits at 3.24% across indexed content; follower growth is uneven period on period; audience-quality signals are clean. Overall health resolves to 51/100 under formula health-1.0.0.
+              - paragraph [ref=f20e296]: openai gpt-5.1 · prompt profile-enrichment@3 · 3 days ago. An explanation of stored measurements, not a source of them.
+          - generic [ref=f20e297]:
+            - tablist "Profile sections" [ref=f20e298]:
+              - tab "Overview" [selected] [ref=f20e299]
+              - tab "Growth" [ref=f20e300]
+              - tab "Audience" [ref=f20e301]
+              - tab "Content" [ref=f20e302]
+              - tab "Authenticity" [ref=f20e303]
+              - tab "Benchmarks" [ref=f20e304]
+            - tabpanel "Overview" [ref=f20e305]:
+              - generic [ref=f20e306]:
+                - generic [ref=f20e307]:
+                  - generic [ref=f20e308]:
+                    - generic [ref=f20e309]: Followers
+                    - generic [ref=f20e310]: Observed, collected 2 days ago
+                  - generic [ref=f20e316]: 43.4K
+                - generic [ref=f20e317]:
+                  - generic [ref=f20e318]:
+                    - generic [ref=f20e319]: Total views
+                    - generic [ref=f20e320]: Observed, collected 2 days ago
+                  - generic [ref=f20e326]: 3.5M
+                - generic [ref=f20e327]:
+                  - generic [ref=f20e328]:
+                    - generic [ref=f20e329]: Median views
+                    - button "About Median views" [ref=f20e331]
+                    - generic [ref=f20e335]: Derived, collected 2 days ago
+                  - generic [ref=f20e340]: 12.5K
+                - generic [ref=f20e341]:
+                  - generic [ref=f20e342]:
+                    - generic [ref=f20e343]: Engagement
+                    - button "About Engagement" [ref=f20e345]
+                    - generic [ref=f20e349]: Derived, collected 2 days ago
+                  - generic [ref=f20e354]: 3.2%
+                - generic [ref=f20e355]:
+                  - generic [ref=f20e356]:
+                    - generic [ref=f20e357]: Content indexed
+                    - generic [ref=f20e358]: Observed, collected 2 days ago
+                  - generic [ref=f20e364]: "358"
+                - generic [ref=f20e365]:
+                  - generic [ref=f20e366]:
+                    - generic [ref=f20e367]: Upload freq.
+                    - generic [ref=f20e368]: Derived, collected 2 days ago
+                  - generic [ref=f20e373]: 3.5/wk
+                - generic [ref=f20e374]:
+                  - generic [ref=f20e375]:
+                    - generic [ref=f20e376]: Avg. length
+                    - generic [ref=f20e377]: Observed, collected 2 days ago
+                  - generic [ref=f20e383]: 16m 3s
+                - generic [ref=f20e384]:
+                  - generic [ref=f20e385]:
+                    - generic [ref=f20e386]: Est. reach/mo
+                    - button "About Est. reach/mo" [ref=f20e388]
+                    - generic [ref=f20e392]: Estimated, collected 2 days ago
+                  - generic [ref=f20e397]: 190.5K
+              - generic [ref=f20e398]:
+                - generic [ref=f20e399]:
+                  - generic [ref=f20e400]:
+                    - heading "Follower history" [level=2] [ref=f20e401]
+                    - generic [ref=f20e402]: 40K → 41.2K
+                  - 'img "Follower history: followers over time. 51 observations from 2025-09-10 to 2026-08-26." [ref=f20e404]'
+                - generic [ref=f20e406]:
+                  - generic [ref=f20e407]:
+                    - heading "Total views" [level=2] [ref=f20e408]
+                    - generic [ref=f20e409]: 2M → 3.5M
+                  - 'img "Total views: views over time. 51 observations from 2025-09-10 to 2026-08-26." [ref=f20e411]'
+              - generic [ref=f20e413]:
+                - generic [ref=f20e414]:
+                  - generic [ref=f20e415]:
+                    - heading "Profile intelligence" [level=2] [ref=f20e416]
+                    - generic [ref=f20e417]: AI classified
+                  - generic [ref=f20e421]:
+                    - paragraph [ref=f20e422]: Talia Okafor is a micro lifestyle creator based in Brazil, publishing at a high cadence on YouTube. The profile is built from public platform data; no account connection has been established.
+                    - generic [ref=f20e423]:
+                      - text: Creator type
+                      - paragraph [ref=f20e424]: Established lifestyle creator with strong audience trust.
+                      - text: Audience intent
+                      - paragraph [ref=f20e425]: Discovery-led; audience follows for routine and inspiration rather than a specific purchase.
+                    - generic [ref=f20e426]:
+                      - generic [ref=f20e427]:
+                        - text: Strengths
+                        - list [ref=f20e428]:
+                          - listitem [ref=f20e429]: Publishing cadence is above the category median
+                          - listitem [ref=f20e431]: Audience-quality signals are clean
+                      - generic [ref=f20e433]:
+                        - text: Risks
+                        - list [ref=f20e434]:
+                          - listitem [ref=f20e435]: Publishing cadence has softened recently
+                          - listitem [ref=f20e437]: No material risk signals detected
+                - generic [ref=f20e439]:
+                  - heading "Commercial signals" [level=2] [ref=f20e441]
+                  - generic [ref=f20e442]:
+                    - generic [ref=f20e443]:
+                      - generic [ref=f20e444]: Commercial intent
+                      - generic [ref=f20e446]: "73"
+                    - generic [ref=f20e448]:
+                      - generic [ref=f20e449]: Brand safety
+                      - generic [ref=f20e451]: "72"
+                    - generic [ref=f20e453]:
+                      - text: Content themes
+                      - list [ref=f20e454]:
+                        - listitem [ref=f20e455]:
+                          - generic [ref=f20e456]: home organisation
+                        - listitem [ref=f20e457]:
+                          - generic [ref=f20e458]: daily vlogs
+                        - listitem [ref=f20e459]:
+                          - generic [ref=f20e460]: productivity
+                    - generic [ref=f20e461]:
+                      - text: Recommended industries
+                      - list [ref=f20e462]:
+                        - listitem [ref=f20e463]:
+                          - generic [ref=f20e464]: Lifestyle
+                        - listitem [ref=f20e465]:
+                          - generic [ref=f20e466]: Business
+                    - generic [ref=f20e467]:
+                      - text: Sponsorship signals
+                      - list [ref=f20e468]:
+                        - listitem [ref=f20e469]: 17% of indexed posts carry a paid-partnership marker
+                        - listitem [ref=f20e470]: Consistent affiliate linking in descriptions
+                    - generic [ref=f20e471]:
+                      - generic [ref=f20e472]:
+                        - generic [ref=f20e473]: Est. monthly earnings
+                        - generic [ref=f20e474]: Estimated, collected 2 days ago
+                      - paragraph [ref=f20e479]: $229 – $1K
+                      - paragraph [ref=f20e480]: Modelled range, not a rate card. SocialOrbit does not hold this creator's asking rate.
+          - generic [ref=f20e482]:
+            - generic [ref=f20e489]:
+              - generic [ref=f20e490]:
+                - text: Observed
+                - generic [ref=f20e492]: 62%
+              - generic [ref=f20e493]:
+                - text: Derived
+                - generic [ref=f20e495]: 18%
+              - generic [ref=f20e496]:
+                - text: Estimated
+                - generic [ref=f20e498]: 6%
+              - generic [ref=f20e499]:
+                - text: AI inferred
+                - generic [ref=f20e501]: 14%
+            - generic [ref=f20e502]:
+              - generic [ref=f20e503]:
+                - term [ref=f20e504]: Score version
+                - definition [ref=f20e505]:
+                  - generic [ref=f20e506]: 1.0.0
+              - generic [ref=f20e507]:
+                - term [ref=f20e508]: Formula version
+                - definition [ref=f20e509]:
+                  - generic [ref=f20e510]: health-1.0.0
+              - generic [ref=f20e511]:
+                - term [ref=f20e512]: Confidence
+                - definition [ref=f20e513]:
+                  - generic [ref=f20e514]: 89% (good)
+              - generic [ref=f20e515]:
+                - term [ref=f20e516]: Last refresh
+                - definition [ref=f20e517]:
+                  - generic [ref=f20e518]: 2 days ago
+  - button "Open Next.js Dev Tools" [ref=f20e524] [cursor=pointer]

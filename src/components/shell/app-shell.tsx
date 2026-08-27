@@ -154,11 +154,13 @@ export function PageHeader({
   className,
   titleAs = "h1",
 }: {
-  title: React.ReactNode;
   /**
-   * A page that renders its own <h1> lower down (the influencer profile does)
-   * passes "p" here, so the document keeps exactly one level-1 heading.
+   * Optional. A page that carries its own heading lower down — the influencer
+   * profile puts it in the header card — omits this so the name is not printed
+   * twice, and the breadcrumb alone carries the location.
    */
+  title?: React.ReactNode;
+  /** Yields the level-1 heading to a page that renders its own. */
   titleAs?: "h1" | "p";
   description?: React.ReactNode;
   breadcrumbs?: { label: string; href?: string }[];
@@ -193,18 +195,19 @@ export function PageHeader({
           </ol>
         </nav>
       )}
-      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3 empty:hidden">
         <div className="min-w-0 space-y-1">
-          {React.createElement(
-            titleAs,
-            {
-              className:
-                "text-[20px] font-semibold leading-tight tracking-[-0.015em] text-ink",
-            },
-            title,
-          )}
+          {title !== undefined &&
+            React.createElement(
+              titleAs,
+              {
+                className:
+                  "text-[21px] font-bold leading-tight tracking-[-0.028em] text-ink",
+              },
+              title,
+            )}
           {description && (
-            <p className="max-w-2xl text-[13px] text-ink-muted">{description}</p>
+            <p className="max-w-2xl text-[13px] leading-5 text-ink-muted">{description}</p>
           )}
         </div>
         {(actions || meta) && (

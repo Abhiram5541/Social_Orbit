@@ -61,9 +61,9 @@ export default async function AdminApiPage() {
                   <Tr key={key.id}>
                     <Td className="font-medium">{key.name}</Td>
                     <Td>
-                      <code className="font-mono text-[12px] text-ink-muted">{key.prefix}…</code>
+                      <code className="font-num text-[12px] text-ink-muted">{key.prefix}…</code>
                     </Td>
-                    <Td className="font-mono text-[11px] text-ink-muted">
+                    <Td className="font-num text-[11px] text-ink-muted">
                       {key.scopes.join(", ")}
                     </Td>
                     <Td className="whitespace-nowrap text-[12px] text-ink-muted">

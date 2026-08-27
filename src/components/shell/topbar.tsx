@@ -56,7 +56,7 @@ export function Topbar({
       >
         <Search className="size-4 shrink-0" aria-hidden />
         <span className="truncate">Search creators, campaigns, shortlists…</span>
-        <kbd className="ml-auto hidden shrink-0 rounded border border-line bg-surface px-1 font-mono text-[10px] text-ink-subtle sm:block">
+        <kbd className="ml-auto hidden shrink-0 rounded border border-line bg-surface px-1 font-num text-[10px] text-ink-subtle sm:block">
           /
         </kbd>
       </button>
@@ -150,7 +150,7 @@ function QuotaChip({ quota }: { quota: SearchQuota }) {
       <span className="text-ink-muted">Searches</span>
       <span
         className={cn(
-          "font-mono font-medium tabular-nums",
+          "font-num font-medium tabular-nums",
           exhausted ? "text-critical" : low ? "text-caution" : "text-ink",
         )}
       >

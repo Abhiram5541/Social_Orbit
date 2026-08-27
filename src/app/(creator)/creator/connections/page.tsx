@@ -104,7 +104,7 @@ export default async function ConnectionsPage() {
                     </p>
                     <ul className="mt-1 space-y-1">
                       {SCOPES[platform].map((scope) => (
-                        <li key={scope} className="font-mono text-[11px] leading-5 text-ink-muted">
+                        <li key={scope} className="font-num text-[11px] leading-5 text-ink-muted">
                           {scope}
                         </li>
                       ))}

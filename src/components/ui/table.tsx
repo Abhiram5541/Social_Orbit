@@ -107,7 +107,7 @@ export function Td({
     <td
       className={cn(
         "px-2.5 py-2 align-middle text-ink",
-        numeric && "text-right font-mono tabular-nums",
+        numeric && "text-right font-num tabular-nums",
         className,
       )}
       {...props}
@@ -187,17 +187,17 @@ export function Pagination({
       )}
     >
       <p className="text-[12px] text-ink-muted">
-        <span className="font-mono tabular-nums text-ink">{from.toLocaleString()}</span>–
-        <span className="font-mono tabular-nums text-ink">{to.toLocaleString()}</span> of{" "}
-        <span className="font-mono tabular-nums text-ink">{total.toLocaleString()}</span>
+        <span className="font-num tabular-nums text-ink">{from.toLocaleString()}</span>–
+        <span className="font-num tabular-nums text-ink">{to.toLocaleString()}</span> of{" "}
+        <span className="font-num tabular-nums text-ink">{total.toLocaleString()}</span>
       </p>
       <div className="flex items-center gap-1">
         <PageButton onClick={() => onPageChange(page - 1)} disabled={page <= 1}>
           Previous
         </PageButton>
         <span className="px-2 text-[12px] text-ink-muted">
-          Page <span className="font-mono tabular-nums text-ink">{page}</span> of{" "}
-          <span className="font-mono tabular-nums text-ink">{totalPages}</span>
+          Page <span className="font-num tabular-nums text-ink">{page}</span> of{" "}
+          <span className="font-num tabular-nums text-ink">{totalPages}</span>
         </span>
         <PageButton onClick={() => onPageChange(page + 1)} disabled={page >= totalPages}>
           Next

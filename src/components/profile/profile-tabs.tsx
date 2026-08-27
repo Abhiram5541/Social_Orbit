@@ -201,7 +201,7 @@ export function ProfileTabs({ profile }: { profile: InfluencerProfile }) {
                       <Eyebrow>Est. monthly earnings</Eyebrow>
                       <ProvenanceMark provenance={estimated} />
                     </div>
-                    <p className="mt-1 font-mono text-[15px] tabular-nums text-ink">
+                    <p className="mt-1 font-num text-[15px] tabular-nums text-ink">
                       {formatCurrencyRange(
                         profile.glance.estimatedMonthlyEarnings.low,
                         profile.glance.estimatedMonthlyEarnings.high,
@@ -347,7 +347,7 @@ export function ProfileTabs({ profile }: { profile: InfluencerProfile }) {
           <Card>
             <CardHeader>
               <CardTitle>Evidence</CardTitle>
-              <Badge tone="neutral" className="font-mono">
+              <Badge tone="neutral" className="font-num">
                 risk-1.0.0
               </Badge>
             </CardHeader>
@@ -503,7 +503,7 @@ function HistoryCard({
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         {series.sufficient && measurable.length > 1 && (
-          <span className="font-mono text-[12px] tabular-nums text-ink-muted">
+          <span className="font-num text-[12px] tabular-nums text-ink-muted">
             {formatCompact(measurable[0].value)} → {formatCompact(measurable[measurable.length - 1].value)}
           </span>
         )}
@@ -617,7 +617,7 @@ function ShareCard({
           <div key={row.label} className="space-y-1">
             <div className="flex items-baseline justify-between gap-2">
               <span className="truncate text-[12px] text-ink">{row.label}</span>
-              <span className="shrink-0 font-mono text-[12px] tabular-nums text-ink-muted">
+              <span className="shrink-0 font-num text-[12px] tabular-nums text-ink-muted">
                 {row.share.toFixed(1)}%
               </span>
             </div>

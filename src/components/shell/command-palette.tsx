@@ -191,7 +191,7 @@ export function CommandPalette({
                     <span className="font-medium text-ink">{item.displayName}</span>{" "}
                     <span className="text-ink-muted">@{item.primaryHandle}</span>
                   </span>
-                  <span className="shrink-0 font-mono text-[12px] tabular-nums text-ink-muted">
+                  <span className="shrink-0 font-num text-[12px] tabular-nums text-ink-muted">
                     {formatCompact(item.followers)}
                   </span>
                   <ScorePill value={item.healthScore} label="Health" />
@@ -290,7 +290,7 @@ function Row({
 
 function Key({ children }: { children: React.ReactNode }) {
   return (
-    <kbd className="inline-grid h-4 min-w-4 place-items-center rounded border border-line bg-surface px-1 font-mono text-[10px] text-ink-muted">
+    <kbd className="inline-grid h-4 min-w-4 place-items-center rounded border border-line bg-surface px-1 font-num text-[10px] text-ink-muted">
       {children}
     </kbd>
   );

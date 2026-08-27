@@ -1,16 +1,23 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+/**
+ * One family, the full weight range.
+ *
+ * Montserrat is a geometric sans whose digits are all exactly the same width
+ * with no feature flags needed, so metric columns align without a companion
+ * monospace — and its zero is a clean oval with no slash through it. That makes
+ * a single family viable for interface text and data alike, which is why the
+ * earlier Geist/Geist Mono pairing was dropped.
+ *
+ * The wide weight range is the point: hierarchy here comes from weight contrast
+ * (300 against 800) rather than from stacking more type sizes.
+ */
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -28,7 +35,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#f8fafc",
+  themeColor: "#16161a",
 };
 
 export default function RootLayout({
@@ -37,7 +44,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
+    <html lang="en" className={`${montserrat.variable} h-full`}>
       <body className="min-h-full antialiased">{children}</body>
     </html>
   );

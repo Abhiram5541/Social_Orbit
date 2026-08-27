@@ -10,18 +10,22 @@ import type { DataConfidence } from "@/lib/contracts/common";
 import type { AiProfileIntelligence, BenchmarkPosition } from "@/lib/contracts/influencer";
 import { formatRelativeTime } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
-import { AiPanel, Card, CardContent, CardHeader, CardTitle, Eyebrow } from "@/components/ui/card";
 import { InfoHint } from "@/components/ui/overlay";
-import { ConfidenceMeter } from "@/components/intelligence/provenance";
 import { HEALTH_BAND_LABEL, RiskBadge, ScoreBar, ScoreRing } from "@/components/intelligence/score";
 
 /* ---------------------------------------------------------------------------
- * The SocialOrbit Health panel.
+ * The SocialOrbit Health readout.
  *
- * Three things are kept visibly separate because conflating them is the whole
+ * This is the one dark surface in the product, and the one place the design
+ * spends its boldness. The reasoning: a measurement reported with its own
+ * uncertainty is the most characteristic artifact in this product's world, and
+ * rendering it as another white card would make it look like every other block
+ * on the page. As an instrument panel it reads as the thing you came to check.
+ *
+ * Three quantities stay visibly separate, because conflating them is the
  * failure mode this product exists to avoid:
  *   the score (quality) · the confidence (how much to trust it) · the AI
- *   reading (interpretation, on its own tonal ground).
+ *   reading (interpretation, on its own ground, clearly labelled).
  * ------------------------------------------------------------------------ */
 
 export function HealthPanel({
@@ -39,93 +43,159 @@ export function HealthPanel({
 }) {
   const unavailable = health.components.filter((component) => !component.available);
   const percentile = benchmarks?.metrics[0]?.percentile;
+  const measured = health.weightCovered > 0;
 
   return (
-    <Card>
-      <CardHeader>
+    <section className="animate-rise overflow-hidden rounded-xl bg-instrument text-instrument-ink shadow-instrument">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-instrument-line px-4 py-2.5">
         <div className="flex items-center gap-2">
-          <CardTitle>SocialOrbit Health</CardTitle>
+          <h2 className="label-caps text-instrument-muted">SocialOrbit Health</h2>
           <InfoHint label="How the health score is calculated">
             Nine weighted components, computed in backend code by formula{" "}
             {health.formulaVersion}. AI classifies some inputs; it never sets the score.
           </InfoHint>
         </div>
-        <Badge tone="neutral" className="font-mono">
+        <span className="font-num text-[11px] tracking-[0.04em] text-instrument-muted">
           {health.formulaVersion}
-        </Badge>
-      </CardHeader>
+        </span>
+      </header>
 
-      <CardContent className="space-y-5">
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-4">
-          <ScoreRing value={health.weightCovered > 0 ? health.value : null} size={96} />
-          <div className="min-w-40 flex-1 space-y-1.5">
-            <p className="text-[17px] font-semibold leading-tight text-ink">
+      <div className="grid gap-x-8 gap-y-6 p-5 lg:grid-cols-[auto_1fr]">
+        <div className="flex items-center gap-5">
+          <ScoreRing value={measured ? health.value : null} size={124} tone="instrument" />
+          <div className="min-w-0 space-y-2">
+            <p className="text-[19px] font-semibold leading-tight tracking-[-0.02em]">
               {HEALTH_BAND_LABEL[health.band]}
             </p>
             {benchmarks && percentile !== undefined ? (
-              <p className="text-[13px] text-ink-muted">
+              <p className="max-w-56 text-[12px] leading-5 text-instrument-muted">
                 {ordinal(percentile)} percentile of {benchmarks.cohortSize} creators in{" "}
                 {benchmarks.category} · {benchmarks.followerBand}
               </p>
             ) : (
-              <p className="text-[13px] text-ink-muted">
-                Not enough indexed creators in this category and size band to rank
-                against yet.
+              <p className="max-w-56 text-[12px] leading-5 text-instrument-muted">
+                Not enough indexed creators in this category and size band to rank against
+                yet.
               </p>
             )}
             <div className="flex flex-wrap items-center gap-2 pt-0.5">
-              <RiskBadge level={risk.level} />
-              <span className="text-[12px] text-ink-muted">
-                Computed {formatRelativeTime(health.computedAt)}
-              </span>
+              <RiskBadge level={risk.level} onInstrument />
             </div>
           </div>
-          <ConfidenceMeter confidence={confidence} className="w-full sm:w-48" />
         </div>
 
-        <div className="grid gap-x-6 gap-y-2.5 border-t border-line pt-4 sm:grid-cols-2">
-          {health.components.map((component) => (
+        {/* Components: two columns of hairline bars, staggered on entry. */}
+        <div className="grid gap-x-7 gap-y-3 sm:grid-cols-2">
+          {health.components.map((component, index) => (
             <ScoreBar
               key={component.key}
               label={HEALTH_COMPONENT_LABEL[component.key as HealthComponentKey]}
               weight={component.weight}
               value={component.available ? component.value : null}
               available={component.available}
+              tone="instrument"
+              index={index}
             />
           ))}
         </div>
+      </div>
 
-        {unavailable.length > 0 && (
-          <p className="border-t border-line pt-3 text-[12px] text-ink-muted">
-            {unavailable.length === 1 ? "One component is" : `${unavailable.length} components are`}{" "}
-            not measurable yet (
-            {unavailable
-              .map((component) => HEALTH_COMPONENT_LABEL[component.key as HealthComponentKey].toLowerCase())
-              .join(", ")}
-            ). The remaining weights are renormalised rather than counted as zero, so{" "}
-            {(health.weightCovered * 100).toFixed(0)}% of the formula produced this score.
+      {/* Confidence sits on its own rule, not inside the score block — it
+          answers a different question and must not read as part of the value. */}
+      <div className="flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-instrument-line px-5 py-3">
+        <InstrumentReadout
+          label="Data confidence"
+          value={`${Math.round(confidence.score)}%`}
+          note={`${confidence.band} confidence`}
+          bar={confidence.score}
+          barTone={
+            confidence.band === "preliminary"
+              ? "bg-critical"
+              : confidence.band === "moderate"
+                ? "bg-caution"
+                : "bg-brand-glow"
+          }
+        />
+        <InstrumentReadout
+          label="Formula coverage"
+          value={`${Math.round(health.weightCovered * 100)}%`}
+          note={
+            unavailable.length === 0
+              ? "all components measurable"
+              : `${unavailable.length} not measurable`
+          }
+          bar={health.weightCovered * 100}
+          barTone="bg-instrument-muted"
+        />
+        <span className="text-[11px] text-instrument-muted">
+          Computed {formatRelativeTime(health.computedAt)}
+        </span>
+      </div>
+
+      {unavailable.length > 0 && (
+        <p className="border-t border-instrument-line px-5 py-2.5 text-[12px] leading-5 text-instrument-muted">
+          {unavailable.length === 1 ? "One component is" : `${unavailable.length} components are`}{" "}
+          not measurable yet (
+          {unavailable
+            .map((component) =>
+              HEALTH_COMPONENT_LABEL[component.key as HealthComponentKey].toLowerCase(),
+            )
+            .join(", ")}
+          ). The remaining weights are renormalised rather than counted as zero.
+        </p>
+      )}
+
+      {ai && (
+        <div className="border-t border-instrument-line bg-instrument-raised px-5 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="flex items-center gap-1.5">
+              <Sparkles className="size-3.5 text-inferred" aria-hidden />
+              <span className="label-caps text-instrument-muted">What the signals say</span>
+            </span>
+            <Badge tone="inferred" onInstrument>AI interpretation</Badge>
+          </div>
+          <p className="mt-2.5 max-w-3xl text-[13px] leading-6 text-instrument-ink">
+            {ai.signalReading}
           </p>
-        )}
+          <p className="mt-2 text-[11px] leading-5 text-instrument-muted">
+            {ai.provider} {ai.model} · prompt {ai.promptVersion} ·{" "}
+            {formatRelativeTime(ai.generatedAt)}. An explanation of stored measurements, not a
+            source of them.
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}
 
-        {ai && (
-          <AiPanel className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="flex items-center gap-1.5">
-                <Sparkles className="size-3.5 text-inferred" aria-hidden />
-                <Eyebrow className="text-inferred">What the signals say</Eyebrow>
-              </span>
-              <Badge tone="inferred">AI interpretation</Badge>
-            </div>
-            <p className="text-[13px] leading-5 text-ink">{ai.signalReading}</p>
-            <p className="text-[11px] text-ink-muted">
-              Generated by {ai.provider} {ai.model} · prompt {ai.promptVersion} ·{" "}
-              {formatRelativeTime(ai.generatedAt)}. This is an explanation of stored
-              measurements, not a source of them.
-            </p>
-          </AiPanel>
-        )}
-      </CardContent>
-    </Card>
+/** A labelled value with a hairline bar — the panel's repeating unit. */
+function InstrumentReadout({
+  label,
+  value,
+  note,
+  bar,
+  barTone,
+}: {
+  label: string;
+  value: string;
+  note: string;
+  bar: number;
+  barTone: string;
+}) {
+  return (
+    <div className="min-w-40 flex-1 space-y-1">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="label-caps text-instrument-muted">{label}</span>
+        <span className="font-num text-[13px] font-semibold tabular-nums">{value}</span>
+      </div>
+      <div className="h-1 overflow-hidden rounded-sm bg-instrument-line">
+        <div
+          className={`animate-extend h-full rounded-sm ${barTone}`}
+          style={{ width: `${Math.min(100, bar)}%`, "--stagger": "260ms" } as React.CSSProperties}
+        />
+      </div>
+      <p className="text-[11px] text-instrument-muted">{note}</p>
+    </div>
   );
 }
 
@@ -134,6 +204,6 @@ function ordinal(value: number): string {
   const suffix =
     rounded % 100 >= 11 && rounded % 100 <= 13
       ? "th"
-      : ["th", "st", "nd", "rd"][rounded % 10] ?? "th";
+      : (["th", "st", "nd", "rd"][rounded % 10] ?? "th");
   return `${rounded}${suffix}`;
 }

@@ -54,7 +54,7 @@ export function StatTile({
       </div>
       <span
         className={cn(
-          "font-mono font-semibold tabular-nums leading-tight text-ink",
+          "font-num font-semibold tabular-nums leading-tight text-ink",
           emphasis ? "text-[22px]" : "text-[19px]",
         )}
       >
@@ -110,7 +110,7 @@ export function DataRow({
       <dt className="shrink-0 text-[12px] text-ink-muted">{label}</dt>
       <dd className="flex min-w-0 items-center gap-1.5">
         {provenance && <ProvenanceMark provenance={provenance} />}
-        <span className="truncate font-mono text-[13px] tabular-nums text-ink">{value}</span>
+        <span className="truncate font-num text-[13px] tabular-nums text-ink">{value}</span>
       </dd>
     </div>
   );

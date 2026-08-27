@@ -37,15 +37,15 @@ export default async function AuditPage() {
                 {entries.map((entry) => (
                   <Tr key={entry.id}>
                     <Td className="whitespace-nowrap text-ink-muted">{formatDateTime(entry.at)}</Td>
-                    <Td className="font-mono text-[12px]">{entry.actor}</Td>
+                    <Td className="font-num text-[12px]">{entry.actor}</Td>
                     <Td>
-                      <code className="rounded bg-sunken px-1.5 py-0.5 font-mono text-[12px] text-brand-ink">
+                      <code className="rounded bg-sunken px-1.5 py-0.5 font-num text-[12px] text-brand-ink">
                         {entry.action}
                       </code>
                     </Td>
-                    <Td className="font-mono text-[12px] text-ink-muted">{entry.target}</Td>
+                    <Td className="font-num text-[12px] text-ink-muted">{entry.target}</Td>
                     <Td>{entry.detail}</Td>
-                    <Td className="font-mono text-[12px] text-ink-muted">{entry.ip}</Td>
+                    <Td className="font-num text-[12px] text-ink-muted">{entry.ip}</Td>
                   </Tr>
                 ))}
               </Tbody>

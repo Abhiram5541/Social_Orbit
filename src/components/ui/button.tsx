@@ -4,13 +4,23 @@ import { cn } from "@/lib/cn";
 type Variant = "primary" | "secondary" | "ghost" | "danger" | "link";
 type Size = "sm" | "md" | "lg" | "icon";
 
+/*
+ * The primary action is ink, not the accent colour.
+ *
+ * A blue primary button on a blue-accented dashboard is the single most
+ * templated thing in this category, and it spends the accent on every screen
+ * until the accent stops meaning anything. Ink reads as the deliberate,
+ * committed action; cobalt is then free to mean exactly one thing — active
+ * state, focus, verified provenance and the score.
+ */
 const VARIANTS: Record<Variant, string> = {
   primary:
-    "bg-brand text-white shadow-raised hover:bg-brand-hover active:bg-brand-active " +
-    "disabled:bg-brand/40 disabled:shadow-none",
+    "bg-ink text-ink-inverse shadow-raised hover:bg-instrument-raised " +
+    "disabled:bg-ink/35 disabled:shadow-none",
   secondary:
     "bg-surface text-ink border border-line-strong shadow-raised hover:bg-sunken " +
-    "active:bg-sunken-strong disabled:bg-surface disabled:text-ink-subtle",
+    "hover:border-ink-subtle active:bg-sunken-strong " +
+    "disabled:bg-surface disabled:text-ink-subtle disabled:hover:border-line-strong",
   ghost:
     "text-ink-muted hover:bg-sunken hover:text-ink active:bg-sunken-strong " +
     "disabled:text-ink-subtle disabled:hover:bg-transparent",
@@ -42,8 +52,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={cn(
-        "relative inline-flex select-none items-center justify-center whitespace-nowrap",
-        "font-medium transition-colors duration-100",
+        "press relative inline-flex select-none items-center justify-center whitespace-nowrap",
+        "font-semibold tracking-[-0.005em]",
         "disabled:pointer-events-none",
         VARIANTS[variant],
         SIZES[size],
@@ -110,9 +120,9 @@ export function SegmentButton({
       type="button"
       aria-pressed={active}
       className={cn(
-        "h-7 rounded-md px-2.5 text-[13px] font-medium transition-colors",
+        "press h-7 rounded-md px-2.5 text-[13px] font-semibold",
         active
-          ? "bg-brand text-white"
+          ? "bg-ink text-ink-inverse"
           : "text-ink-muted hover:bg-sunken hover:text-ink",
         className,
       )}
@@ -139,8 +149,8 @@ export function LinkButton({
   return (
     <a
       className={cn(
-        "inline-flex select-none items-center justify-center whitespace-nowrap",
-        "font-medium no-underline transition-colors duration-100",
+        "press inline-flex select-none items-center justify-center whitespace-nowrap",
+        "font-semibold tracking-[-0.005em] no-underline",
         VARIANTS[variant],
         SIZES[size],
         className,
