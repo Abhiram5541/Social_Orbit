@@ -31,13 +31,21 @@ const ROUTES = [
 
 test.describe("responsive layout", () => {
   for (const width of [390, 768, 1024, 1440]) {
-    test(`no page-level horizontal scroll at ${width}px`, async ({ page }) => {
+    test(`no page-level horizontal scroll at ${width}px`, async ({ page }, testInfo) => {
+      // The viewport is set explicitly below, so the project's device profile
+      // adds nothing — running this under both projects just doubled a long
+      // navigation loop and made it time out under load.
+      test.skip(
+        testInfo.project.name === "mobile",
+        "width is set explicitly; the device profile is irrelevant here",
+      );
+      testInfo.setTimeout(120_000);
+
       await page.setViewportSize({ width, height: 900 });
       await signIn(page, ACCOUNTS.clientOwner);
 
       for (const route of ROUTES) {
-        await page.goto(route);
-        await page.waitForLoadState("networkidle");
+        await page.goto(route, { waitUntil: "networkidle" });
         await expectNoHorizontalPageScroll(page);
       }
     });
@@ -76,13 +84,20 @@ test.describe("keyboard and focus", () => {
     test.skip(testInfo.project.name === "mobile", "keyboard shortcuts need a hardware keyboard");
     await signIn(page, ACCOUNTS.clientOwner);
     await page.goto("/dashboard");
-    // The shortcut is bound on mount, so wait for the client to hydrate before
-    // pressing — otherwise the keypress lands on a server-rendered page.
-    await expect(page.getByRole("button", { name: /Search creators/ })).toBeVisible();
-
-    await page.keyboard.press("/");
     const palette = page.getByRole("dialog", { name: "Command palette" });
-    await expect(palette).toBeVisible();
+
+    // The shortcut binds on mount. A single press can land before hydration
+    // completes, so press until it takes rather than assuming the first one does.
+    await expect
+      .poll(
+        async () => {
+          if (await palette.isVisible()) return true;
+          await page.keyboard.press("/");
+          return palette.isVisible();
+        },
+        { timeout: 15_000, intervals: [200, 400, 800] },
+      )
+      .toBe(true);
 
     await page.keyboard.press("Escape");
     await expect(palette).toBeHidden();

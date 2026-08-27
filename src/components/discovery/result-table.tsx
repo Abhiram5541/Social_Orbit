@@ -68,7 +68,8 @@ export function ResultTable({
   onSortChange: (sort: SortKey) => void;
   selected: Set<string>;
   onToggleSelect: (id: string) => void;
-  onShortlist: (item: InfluencerSummary) => void;
+  /** Omitted where shortlists are not reachable, e.g. the operator view. */
+  onShortlist?: (item: InfluencerSummary) => void;
 }) {
   return (
     <>
@@ -166,16 +167,18 @@ export function ResultTable({
                   </div>
                 </Td>
                 <Td className="text-right">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => onShortlist(item)}
-                    aria-label={`Add ${item.displayName} to a shortlist`}
-                    className="gap-1"
-                  >
-                    <Plus className="size-3.5" aria-hidden />
-                    Shortlist
-                  </Button>
+                  {onShortlist && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => onShortlist(item)}
+                      aria-label={`Add ${item.displayName} to a shortlist`}
+                      className="gap-1"
+                    >
+                      <Plus className="size-3.5" aria-hidden />
+                      Shortlist
+                    </Button>
+                  )}
                 </Td>
               </Tr>
             ))}
@@ -213,14 +216,20 @@ export function ResultTable({
                   <Badge tone={ACTIVITY[item.activity].tone} dot>
                     {ACTIVITY[item.activity].label}
                   </Badge>
-                  <Button
-                    size="sm"
-                    onClick={() => onShortlist(item)}
-                    className="ml-auto gap-1"
-                  >
-                    <Plus className="size-3.5" aria-hidden />
-                    Shortlist
-                  </Button>
+                  {onShortlist && (
+                    <Button
+                      size="sm"
+                      onClick={() => onShortlist(item)}
+                      // Named for the creator, matching the table view. A list
+                      // of 25 buttons all announcing "Shortlist" gives a screen
+                      // reader user no way to tell which one they are on.
+                      aria-label={`Add ${item.displayName} to a shortlist`}
+                      className="ml-auto gap-1"
+                    >
+                      <Plus className="size-3.5" aria-hidden />
+                      Shortlist
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

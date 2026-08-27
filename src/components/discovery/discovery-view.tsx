@@ -56,7 +56,22 @@ type QuotaAwareError = Error & {
   quota?: { limit: number; used: number; resetsAt: string };
 };
 
-export function DiscoveryView({ initialQuota }: { initialQuota: SearchQuota }) {
+export function DiscoveryView({
+  initialQuota,
+  basePath = "/discovery",
+  canShortlist = true,
+}: {
+  initialQuota: SearchQuota;
+  /**
+   * Where filter changes are written. This view backs both the client's
+   * Discovery and the operators' influencer database, and hardcoding
+   * `/discovery` sent an operator's every filter click through a layout that
+   * rejects them — the filters looked dead because each one bounced to /admin.
+   */
+  basePath?: string;
+  /** Shortlists are client-owned, so the action is hidden for operators. */
+  canShortlist?: boolean;
+}) {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -130,9 +145,9 @@ export function DiscoveryView({ initialQuota }: { initialQuota: SearchQuota }) {
   const apply = React.useCallback(
     (next: Draft, { resetPage = true }: { resetPage?: boolean } = {}) => {
       const merged = { ...next, page: resetPage ? 1 : next.page };
-      router.push(`/discovery?${toSearchParams(merged)}`, { scroll: false });
+      router.push(`${basePath}?${toSearchParams(merged)}`, { scroll: false });
     },
-    [router],
+    [router, basePath],
   );
 
   const quota = data?.quota ?? initialQuota;
@@ -305,9 +320,11 @@ export function DiscoveryView({ initialQuota }: { initialQuota: SearchQuota }) {
                     <LinkButton href="/usage" variant="primary" size="sm">
                       See plans
                     </LinkButton>
-                    <LinkButton href="/shortlists" size="sm">
-                      Open shortlists
-                    </LinkButton>
+                    {canShortlist && (
+                      <LinkButton href="/shortlists" size="sm">
+                        Open shortlists
+                      </LinkButton>
+                    )}
                   </div>
                 }
               />
@@ -365,7 +382,11 @@ export function DiscoveryView({ initialQuota }: { initialQuota: SearchQuota }) {
                       return next;
                     })
                   }
-                  onShortlist={(item) => router.push(`/shortlists?add=${item.id}`)}
+                  onShortlist={
+                    canShortlist
+                      ? (item) => router.push(`/shortlists?add=${item.id}`)
+                      : undefined
+                  }
                 />
 
                 <Pagination

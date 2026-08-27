@@ -1,0 +1,138 @@
+- generic [active] [ref=f31e1]:
+  - generic [ref=f31e2]:
+    - link "Skip to content" [ref=f31e3] [cursor=pointer]:
+      - /url: "#main"
+    - complementary [ref=f31e4]:
+      - link "SocialOrbit home" [ref=f31e6] [cursor=pointer]:
+        - /url: /admin
+        - generic [ref=f31e13]:
+          - generic [ref=f31e14]: SocialOrbit
+          - generic [ref=f31e15]: Influencer Intelligence
+      - navigation "Primary" [ref=f31e17]:
+        - generic [ref=f31e18]:
+          - link "Overview" [ref=f31e19] [cursor=pointer]:
+            - /url: /admin
+          - link "Influencers" [ref=f31e26] [cursor=pointer]:
+            - /url: /admin/influencers
+        - generic [ref=f31e33]:
+          - generic [ref=f31e34]: Intelligence
+          - link "Analytics" [ref=f31e35] [cursor=pointer]:
+            - /url: /admin/analytics
+          - link "Benchmarks" [ref=f31e39] [cursor=pointer]:
+            - /url: /admin/benchmarks
+          - link "Anomaly queue" [ref=f31e44] [cursor=pointer]:
+            - /url: /admin/anomalies
+          - link "AI enrichment" [ref=f31e48] [cursor=pointer]:
+            - /url: /admin/ai
+        - generic [ref=f31e53]:
+          - generic [ref=f31e54]: Administration
+          - link "Settings" [ref=f31e55] [cursor=pointer]:
+            - /url: /admin/settings
+      - button "Collapse navigation" [ref=f31e61]:
+        - generic [ref=f31e65]: Collapse
+    - generic [ref=f31e66]:
+      - banner [ref=f31e67]:
+        - button "Search creators, campaigns, shortlists… /" [ref=f31e68]:
+          - generic [ref=f31e72]: Search creators, campaigns, shortlists…
+          - generic [ref=f31e73]: /
+        - generic [ref=f31e74]:
+          - link "Notifications" [ref=f31e75] [cursor=pointer]:
+            - /url: /notifications
+          - link "Help and documentation" [ref=f31e79] [cursor=pointer]:
+            - /url: /help
+          - button "Hana Sato Analytics Manager" [ref=f31e83]:
+            - generic [ref=f31e84]: HS
+            - generic [ref=f31e86]:
+              - generic [ref=f31e87]: Hana Sato
+              - generic [ref=f31e88]: Analytics Manager
+      - main [ref=f31e91]:
+        - generic [ref=f31e92]:
+          - generic [ref=f31e94]:
+            - generic [ref=f31e95]:
+              - heading "Influencer database" [level=1] [ref=f31e96]
+              - paragraph [ref=f31e97]: The canonical creator index. Operators are not metered against a client search allowance.
+            - generic [ref=f31e98]: 79 published · 5 in review · 28 verified
+          - generic [ref=f31e101]:
+            - complementary [ref=f31e102]:
+              - generic [ref=f31e103]:
+                - generic [ref=f31e104]:
+                  - generic [ref=f31e105]: Filters
+                  - button "Reset" [ref=f31e106]
+                - generic [ref=f31e110]:
+                  - group [ref=f31e111]:
+                    - generic "Platform" [ref=f31e112] [cursor=pointer]
+                    - generic [ref=f31e115]:
+                      - generic [ref=f31e116] [cursor=pointer]:
+                        - checkbox "YouTube" [ref=f31e117]
+                        - generic [ref=f31e118]: YouTube
+                      - generic [ref=f31e119] [cursor=pointer]:
+                        - checkbox "Instagram" [ref=f31e120]
+                        - generic [ref=f31e121]: Instagram
+                      - paragraph [ref=f31e122]: TikTok is not yet connected — no creators are indexed for it.
+                  - group [ref=f31e123]:
+                    - generic "Verification" [ref=f31e124] [cursor=pointer]
+                    - generic [ref=f31e127]:
+                      - generic [ref=f31e128] [cursor=pointer]:
+                        - checkbox "SocialOrbit Verified" [ref=f31e129]
+                        - generic [ref=f31e130]: SocialOrbit Verified
+                      - generic [ref=f31e131] [cursor=pointer]:
+                        - checkbox "Connection pending" [ref=f31e132]
+                        - generic [ref=f31e133]: Connection pending
+                      - generic [ref=f31e134] [cursor=pointer]:
+                        - checkbox "Unverified" [ref=f31e135]
+                        - generic [ref=f31e136]: Unverified
+                  - group [ref=f31e137]:
+                    - generic "Audience size" [ref=f31e138] [cursor=pointer]
+                    - generic [ref=f31e141]:
+                      - generic [ref=f31e142] [cursor=pointer]:
+                        - checkbox "Nano · 1K–10K" [ref=f31e143]
+                        - generic [ref=f31e144]: Nano · 1K–10K
+                      - generic [ref=f31e145] [cursor=pointer]:
+                        - checkbox "Micro · 10K–100K" [ref=f31e146]
+                        - generic [ref=f31e147]: Micro · 10K–100K
+                      - generic [ref=f31e148] [cursor=pointer]:
+                        - checkbox "Mid · 100K–500K" [ref=f31e149]
+                        - generic [ref=f31e150]: Mid · 100K–500K
+                      - generic [ref=f31e151] [cursor=pointer]:
+                        - checkbox "Macro · 500K–1M" [ref=f31e152]
+                        - generic [ref=f31e153]: Macro · 500K–1M
+                      - generic [ref=f31e154] [cursor=pointer]:
+                        - checkbox "Mega · 1M+" [ref=f31e155]
+                        - generic [ref=f31e156]: Mega · 1M+
+                      - generic [ref=f31e157]:
+                        - generic [ref=f31e158]:
+                          - generic [ref=f31e159]: Min followers
+                          - spinbutton "Min followers" [ref=f31e162]
+                        - generic [ref=f31e163]:
+                          - generic [ref=f31e164]: Max followers
+                          - spinbutton "Max followers" [ref=f31e167]
+                  - group [ref=f31e168]:
+                    - generic "Category" [ref=f31e169] [cursor=pointer]
+                  - group [ref=f31e172]:
+                    - generic "Location" [ref=f31e173] [cursor=pointer]
+                  - group [ref=f31e176]:
+                    - generic "Performance" [ref=f31e177] [cursor=pointer]
+                  - group [ref=f31e180]:
+                    - generic "Quality" [ref=f31e181] [cursor=pointer]
+                  - group [ref=f31e184]:
+                    - generic "Risk" [ref=f31e185] [cursor=pointer]
+                  - group [ref=f31e188]:
+                    - generic "Activity" [ref=f31e189] [cursor=pointer]
+            - generic [ref=f31e192]:
+              - search [ref=f31e194]:
+                - searchbox "Search influencers" [ref=f31e196]
+                - button "Search" [ref=f31e197]
+                - generic [ref=f31e198]:
+                  - generic [ref=f31e199]: Sort
+                  - combobox "Sort results" [ref=f31e201]:
+                    - option "Best match" [selected]
+                    - option "Health score"
+                    - option "Followers — high to low"
+                    - option "Followers — low to high"
+                    - option "Engagement rate"
+                    - option "Median views"
+                    - option "Growth"
+                    - option "Campaign fit"
+                    - option "Recently active"
+              - status "Loading results" [ref=f31e204]
+  - button "Open Next.js Dev Tools" [ref=f31e290] [cursor=pointer]

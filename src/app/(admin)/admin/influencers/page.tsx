@@ -31,7 +31,11 @@ export default async function AdminInfluencersPage() {
         }
       />
       <Suspense fallback={<TableSkeleton rows={10} columns={7} />}>
-        <DiscoveryView initialQuota={quotaFor(user.orgId, user.plan)} />
+        <DiscoveryView
+          initialQuota={quotaFor(user.orgId, user.plan)}
+          basePath="/admin/influencers"
+          canShortlist={false}
+        />
       </Suspense>
     </div>
   );

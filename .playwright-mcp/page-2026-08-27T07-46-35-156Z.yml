@@ -1,0 +1,839 @@
+- generic [ref=f31e1]:
+  - generic [ref=f31e2]:
+    - link "Skip to content" [ref=f31e3] [cursor=pointer]:
+      - /url: "#main"
+    - complementary [ref=f31e4]:
+      - link "SocialOrbit home" [ref=f31e6] [cursor=pointer]:
+        - /url: /admin
+        - generic [ref=f31e13]:
+          - generic [ref=f31e14]: SocialOrbit
+          - generic [ref=f31e15]: Influencer Intelligence
+      - navigation "Primary" [ref=f31e17]:
+        - generic [ref=f31e18]:
+          - link "Overview" [ref=f31e19] [cursor=pointer]:
+            - /url: /admin
+          - link "Influencers" [ref=f31e26] [cursor=pointer]:
+            - /url: /admin/influencers
+        - generic [ref=f31e33]:
+          - generic [ref=f31e34]: Intelligence
+          - link "Analytics" [ref=f31e35] [cursor=pointer]:
+            - /url: /admin/analytics
+          - link "Benchmarks" [ref=f31e39] [cursor=pointer]:
+            - /url: /admin/benchmarks
+          - link "Anomaly queue" [ref=f31e44] [cursor=pointer]:
+            - /url: /admin/anomalies
+          - link "AI enrichment" [ref=f31e48] [cursor=pointer]:
+            - /url: /admin/ai
+        - generic [ref=f31e53]:
+          - generic [ref=f31e54]: Administration
+          - link "Settings" [ref=f31e55] [cursor=pointer]:
+            - /url: /admin/settings
+      - button "Collapse navigation" [ref=f31e61]:
+        - generic [ref=f31e65]: Collapse
+    - generic [ref=f31e66]:
+      - banner [ref=f31e67]:
+        - button "Search creators, campaigns, shortlists… /" [ref=f31e68]:
+          - generic [ref=f31e72]: Search creators, campaigns, shortlists…
+          - generic [ref=f31e73]: /
+        - generic [ref=f31e74]:
+          - link "Notifications" [ref=f31e75] [cursor=pointer]:
+            - /url: /notifications
+          - link "Help and documentation" [ref=f31e79] [cursor=pointer]:
+            - /url: /help
+          - button "Hana Sato Analytics Manager" [ref=f31e83]:
+            - generic [ref=f31e84]: HS
+            - generic [ref=f31e86]:
+              - generic [ref=f31e87]: Hana Sato
+              - generic [ref=f31e88]: Analytics Manager
+      - main [ref=f31e91]:
+        - generic [ref=f31e92]:
+          - generic [ref=f31e94]:
+            - generic [ref=f31e95]:
+              - heading "Influencer database" [level=1] [ref=f31e96]
+              - paragraph [ref=f31e97]: The canonical creator index. Operators are not metered against a client search allowance.
+            - generic [ref=f31e98]: 79 published · 5 in review · 28 verified
+          - generic [ref=f31e101]:
+            - complementary [ref=f31e102]:
+              - generic [ref=f31e103]:
+                - generic [ref=f31e104]:
+                  - generic [ref=f31e105]: Filters
+                  - button "Reset" [ref=f31e106]
+                - generic [ref=f31e110]:
+                  - group [ref=f31e111]:
+                    - generic "Platform" [ref=f31e112] [cursor=pointer]
+                    - generic [ref=f31e115]:
+                      - generic [ref=f31e116] [cursor=pointer]:
+                        - checkbox "YouTube 59" [checked] [active] [ref=f31e294]
+                        - generic [ref=f31e118]: YouTube
+                        - generic [ref=f31e295]: "59"
+                      - generic [ref=f31e119] [cursor=pointer]:
+                        - checkbox "Instagram 42" [ref=f31e296]
+                        - generic [ref=f31e121]: Instagram
+                        - generic [ref=f31e297]: "42"
+                      - paragraph [ref=f31e122]: TikTok is not yet connected — no creators are indexed for it.
+                  - group [ref=f31e123]:
+                    - generic "Verification" [ref=f31e124] [cursor=pointer]
+                    - generic [ref=f31e127]:
+                      - generic [ref=f31e128] [cursor=pointer]:
+                        - checkbox "SocialOrbit Verified 17" [ref=f31e298]
+                        - generic [ref=f31e130]: SocialOrbit Verified
+                        - generic [ref=f31e299]: "17"
+                      - generic [ref=f31e131] [cursor=pointer]:
+                        - checkbox "Connection pending 3" [ref=f31e300]
+                        - generic [ref=f31e133]: Connection pending
+                        - generic [ref=f31e301]: "3"
+                      - generic [ref=f31e134] [cursor=pointer]:
+                        - checkbox "Unverified 39" [ref=f31e302]
+                        - generic [ref=f31e136]: Unverified
+                        - generic [ref=f31e303]: "39"
+                  - group [ref=f31e137]:
+                    - generic "Audience size" [ref=f31e138] [cursor=pointer]
+                    - generic [ref=f31e141]:
+                      - generic [ref=f31e142] [cursor=pointer]:
+                        - checkbox "Nano · 1K–10K" [ref=f31e143]
+                        - generic [ref=f31e144]: Nano · 1K–10K
+                      - generic [ref=f31e145] [cursor=pointer]:
+                        - checkbox "Micro · 10K–100K" [ref=f31e146]
+                        - generic [ref=f31e147]: Micro · 10K–100K
+                      - generic [ref=f31e148] [cursor=pointer]:
+                        - checkbox "Mid · 100K–500K" [ref=f31e149]
+                        - generic [ref=f31e150]: Mid · 100K–500K
+                      - generic [ref=f31e151] [cursor=pointer]:
+                        - checkbox "Macro · 500K–1M" [ref=f31e152]
+                        - generic [ref=f31e153]: Macro · 500K–1M
+                      - generic [ref=f31e154] [cursor=pointer]:
+                        - checkbox "Mega · 1M+" [ref=f31e155]
+                        - generic [ref=f31e156]: Mega · 1M+
+                      - generic [ref=f31e157]:
+                        - generic [ref=f31e158]:
+                          - generic [ref=f31e159]: Min followers
+                          - spinbutton "Min followers" [ref=f31e162]
+                        - generic [ref=f31e163]:
+                          - generic [ref=f31e164]: Max followers
+                          - spinbutton "Max followers" [ref=f31e167]
+                  - group [ref=f31e168]:
+                    - generic "Category" [ref=f31e169] [cursor=pointer]
+                  - group [ref=f31e172]:
+                    - generic "Location" [ref=f31e173] [cursor=pointer]
+                  - group [ref=f31e176]:
+                    - generic "Performance" [ref=f31e177] [cursor=pointer]
+                  - group [ref=f31e180]:
+                    - generic "Quality" [ref=f31e181] [cursor=pointer]
+                  - group [ref=f31e184]:
+                    - generic "Risk" [ref=f31e185] [cursor=pointer]
+                  - group [ref=f31e188]:
+                    - generic "Activity" [ref=f31e189] [cursor=pointer]
+            - generic [ref=f31e192]:
+              - generic [ref=f31e193]:
+                - search [ref=f31e194]:
+                  - searchbox "Search influencers" [ref=f31e196]
+                  - button "Search" [ref=f31e197]
+                  - generic [ref=f31e198]:
+                    - generic [ref=f31e199]: Sort
+                    - combobox "Sort results" [ref=f31e201]:
+                      - option "Best match" [selected]
+                      - option "Health score"
+                      - option "Followers — high to low"
+                      - option "Followers — low to high"
+                      - option "Engagement rate"
+                      - option "Median views"
+                      - option "Growth"
+                      - option "Campaign fit"
+                      - option "Recently active"
+                - generic [ref=f31e304]:
+                  - generic [ref=f31e305]:
+                    - generic [ref=f31e306]: Platform
+                    - generic [ref=f31e307]: YouTube
+                    - button "Remove filter Platform YouTube" [ref=f31e308]
+                  - button "Clear all" [ref=f31e311]
+              - generic [ref=f31e203]:
+                - paragraph [ref=f31e313]: 59 creators matching 1 filter
+                - region "Influencer search results" [ref=f31e314]:
+                  - table [ref=f31e315]:
+                    - rowgroup [ref=f31e316]:
+                      - row [ref=f31e317]:
+                        - columnheader "Select" [ref=f31e318]
+                        - columnheader "Creator" [ref=f31e320]
+                        - columnheader [ref=f31e321]:
+                          - button "Followers" [ref=f31e322]
+                        - columnheader [ref=f31e326]:
+                          - button "Median views" [ref=f31e327]
+                        - columnheader [ref=f31e331]:
+                          - button "Engagement" [ref=f31e332]
+                        - columnheader [ref=f31e336]:
+                          - button "Health" [ref=f31e337]
+                        - columnheader [ref=f31e341]:
+                          - button "Fit" [ref=f31e342]
+                        - columnheader "Confidence" [ref=f31e346]
+                        - columnheader "Status" [ref=f31e347]
+                        - columnheader "Actions" [ref=f31e348]
+                    - rowgroup [ref=f31e350]:
+                      - row [ref=f31e351]:
+                        - cell [ref=f31e352]:
+                          - checkbox "Select Amara Bello for comparison" [ref=f31e353] [cursor=pointer]
+                        - cell "SocialOrbit Verified Amara Bello @amara_techYouTube, InstagramNigeriaTechnology, Fashion" [ref=f31e354]:
+                          - generic [ref=f31e355]:
+                            - generic [ref=f31e356]:
+                              - generic [ref=f31e357]: AB
+                              - generic "SocialOrbit Verified" [ref=f31e358]:
+                                - img "SocialOrbit Verified" [ref=f31e359]
+                            - generic [ref=f31e362]:
+                              - link "Amara Bello" [ref=f31e363] [cursor=pointer]:
+                                - /url: /influencers/inf_0003
+                              - paragraph [ref=f31e364]:
+                                - generic [ref=f31e365]: "@amara_tech"
+                                - text: · YouTube, Instagram · Nigeria · Technology, Fashion
+                        - cell "317.7K" [ref=f31e366]
+                        - cell "27.2K" [ref=f31e367]
+                        - cell "4.3%" [ref=f31e368]
+                        - cell "73" [ref=f31e369]:
+                          - 'generic "Health: Strong performance" [ref=f31e370]': "73"
+                        - cell "69" [ref=f31e373]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e374]': "69"
+                        - cell "100%" [ref=f31e377]
+                        - cell [ref=f31e382]:
+                          - generic [ref=f31e383]:
+                            - generic [ref=f31e384]: Low risk
+                            - generic [ref=f31e386]: Dormant
+                        - cell [ref=f31e388]
+                      - row [ref=f31e389]:
+                        - cell [ref=f31e390]:
+                          - checkbox "Select Talia Lindqvist for comparison" [ref=f31e391] [cursor=pointer]
+                        - cell "SocialOrbit Verified Talia Lindqvist @talia_techYouTube, InstagramUnited KingdomTechnology, Travel" [ref=f31e392]:
+                          - generic [ref=f31e393]:
+                            - generic [ref=f31e394]:
+                              - generic [ref=f31e395]: TL
+                              - generic "SocialOrbit Verified" [ref=f31e396]:
+                                - img "SocialOrbit Verified" [ref=f31e397]
+                            - generic [ref=f31e400]:
+                              - link "Talia Lindqvist" [ref=f31e401] [cursor=pointer]:
+                                - /url: /influencers/inf_0041
+                              - paragraph [ref=f31e402]:
+                                - generic [ref=f31e403]: "@talia_tech"
+                                - text: · YouTube, Instagram · United Kingdom · Technology, Travel
+                        - cell "98.5K" [ref=f31e404]
+                        - cell "31.4K" [ref=f31e405]
+                        - cell "5.3%" [ref=f31e406]
+                        - cell "72" [ref=f31e407]:
+                          - 'generic "Health: Strong performance" [ref=f31e408]': "72"
+                        - cell "68" [ref=f31e411]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e412]': "68"
+                        - cell "100%" [ref=f31e415]
+                        - cell [ref=f31e420]:
+                          - generic [ref=f31e421]:
+                            - generic [ref=f31e422]: Low risk
+                            - generic [ref=f31e424]: Recent
+                        - cell [ref=f31e426]
+                      - row [ref=f31e427]:
+                        - cell [ref=f31e428]:
+                          - checkbox "Select Rhea Lindqvist for comparison" [ref=f31e429] [cursor=pointer]
+                        - cell "SocialOrbit Verified Rhea Lindqvist @rheaautoYouTubeUnited KingdomAutomotive, Parenting" [ref=f31e430]:
+                          - generic [ref=f31e431]:
+                            - generic [ref=f31e432]:
+                              - generic [ref=f31e433]: RL
+                              - generic "SocialOrbit Verified" [ref=f31e434]:
+                                - img "SocialOrbit Verified" [ref=f31e435]
+                            - generic [ref=f31e438]:
+                              - link "Rhea Lindqvist" [ref=f31e439] [cursor=pointer]:
+                                - /url: /influencers/inf_0015
+                              - paragraph [ref=f31e440]:
+                                - generic [ref=f31e441]: "@rheaauto"
+                                - text: · YouTube · United Kingdom · Automotive, Parenting
+                        - cell "20.6K" [ref=f31e442]
+                        - cell "3.7K" [ref=f31e443]
+                        - cell "3.0%" [ref=f31e444]
+                        - cell "73" [ref=f31e445]:
+                          - 'generic "Health: Strong performance" [ref=f31e446]': "73"
+                        - cell "71" [ref=f31e449]:
+                          - 'generic "Campaign fit: Strong performance" [ref=f31e450]': "71"
+                        - cell "96%" [ref=f31e453]
+                        - cell [ref=f31e458]:
+                          - generic [ref=f31e459]:
+                            - generic [ref=f31e460]: Low risk
+                            - generic [ref=f31e462]: Active
+                        - cell [ref=f31e464]
+                      - row [ref=f31e465]:
+                        - cell [ref=f31e466]:
+                          - checkbox "Select Clara Petrov for comparison" [ref=f31e467] [cursor=pointer]
+                        - cell "SocialOrbit Verified Clara Petrov @clara.beauYouTube, InstagramUnited Arab EmiratesBeauty, Business" [ref=f31e468]:
+                          - generic [ref=f31e469]:
+                            - generic [ref=f31e470]:
+                              - generic [ref=f31e471]: CP
+                              - generic "SocialOrbit Verified" [ref=f31e472]:
+                                - img "SocialOrbit Verified" [ref=f31e473]
+                            - generic [ref=f31e476]:
+                              - link "Clara Petrov" [ref=f31e477] [cursor=pointer]:
+                                - /url: /influencers/inf_0051
+                              - paragraph [ref=f31e478]:
+                                - generic [ref=f31e479]: "@clara.beau"
+                                - text: · YouTube, Instagram · United Arab Emirates · Beauty, Business
+                        - cell "328.9K" [ref=f31e480]
+                        - cell "46.3K" [ref=f31e481]
+                        - cell "3.0%" [ref=f31e482]
+                        - cell "71" [ref=f31e483]:
+                          - 'generic "Health: Strong performance" [ref=f31e484]': "71"
+                        - cell "74" [ref=f31e487]:
+                          - 'generic "Campaign fit: Strong performance" [ref=f31e488]': "74"
+                        - cell "100%" [ref=f31e491]
+                        - cell [ref=f31e496]:
+                          - generic [ref=f31e497]:
+                            - generic [ref=f31e498]: Low risk
+                            - generic [ref=f31e500]: Recent
+                        - cell [ref=f31e502]
+                      - row [ref=f31e503]:
+                        - cell [ref=f31e504]:
+                          - checkbox "Select Farah Rao for comparison" [ref=f31e505] [cursor=pointer]
+                        - cell "Farah Rao @farah_busiYouTube, InstagramUnited KingdomBusiness, Education" [ref=f31e506]:
+                          - generic [ref=f31e507]:
+                            - generic [ref=f31e508]: FR
+                            - generic [ref=f31e510]:
+                              - link "Farah Rao" [ref=f31e511] [cursor=pointer]:
+                                - /url: /influencers/inf_0029
+                              - paragraph [ref=f31e512]:
+                                - generic [ref=f31e513]: "@farah_busi"
+                                - text: · YouTube, Instagram · United Kingdom · Business, Education
+                        - cell "35.2K" [ref=f31e514]
+                        - cell "11.2K" [ref=f31e515]
+                        - cell "3.5%" [ref=f31e516]
+                        - cell "75" [ref=f31e517]:
+                          - 'generic "Health: Strong performance" [ref=f31e518]': "75"
+                        - cell "72" [ref=f31e521]:
+                          - 'generic "Campaign fit: Strong performance" [ref=f31e522]': "72"
+                        - cell "88%" [ref=f31e525]
+                        - cell [ref=f31e530]:
+                          - generic [ref=f31e531]:
+                            - generic [ref=f31e532]: Low risk
+                            - generic [ref=f31e534]: Recent
+                        - cell [ref=f31e536]
+                      - row [ref=f31e537]:
+                        - cell [ref=f31e538]:
+                          - checkbox "Select Marcus Okafor for comparison" [ref=f31e539] [cursor=pointer]
+                        - cell "SocialOrbit Verified Marcus Okafor @marcusfinaInstagram, YouTubeIndiaFinance, Travel" [ref=f31e540]:
+                          - generic [ref=f31e541]:
+                            - generic [ref=f31e542]:
+                              - generic [ref=f31e543]: MO
+                              - generic "SocialOrbit Verified" [ref=f31e544]:
+                                - img "SocialOrbit Verified" [ref=f31e545]
+                            - generic [ref=f31e548]:
+                              - link "Marcus Okafor" [ref=f31e549] [cursor=pointer]:
+                                - /url: /influencers/inf_0050
+                              - paragraph [ref=f31e550]:
+                                - generic [ref=f31e551]: "@marcusfina"
+                                - text: · Instagram, YouTube · India · Finance, Travel
+                        - cell "70.3K" [ref=f31e552]
+                        - cell "28.7K" [ref=f31e553]
+                        - cell "3.1%" [ref=f31e554]
+                        - cell "71" [ref=f31e555]:
+                          - 'generic "Health: Strong performance" [ref=f31e556]': "71"
+                        - cell "63" [ref=f31e559]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e560]': "63"
+                        - cell "96%" [ref=f31e563]
+                        - cell [ref=f31e568]:
+                          - generic [ref=f31e569]:
+                            - generic [ref=f31e570]: Low risk
+                            - generic [ref=f31e572]: Recent
+                        - cell [ref=f31e574]
+                      - row [ref=f31e575]:
+                        - cell [ref=f31e576]:
+                          - checkbox "Select Sana Lindqvist for comparison" [ref=f31e577] [cursor=pointer]
+                        - cell "SocialOrbit Verified Sana Lindqvist @sana_foodYouTube, InstagramSingaporeFood & Beverage, Technology" [ref=f31e578]:
+                          - generic [ref=f31e579]:
+                            - generic [ref=f31e580]:
+                              - generic [ref=f31e581]: SL
+                              - generic "SocialOrbit Verified" [ref=f31e582]:
+                                - img "SocialOrbit Verified" [ref=f31e583]
+                            - generic [ref=f31e586]:
+                              - link "Sana Lindqvist" [ref=f31e587] [cursor=pointer]:
+                                - /url: /influencers/inf_0005
+                              - paragraph [ref=f31e588]:
+                                - generic [ref=f31e589]: "@sana_food"
+                                - text: · YouTube, Instagram · Singapore · Food & Beverage, Technology
+                        - cell "290.1K" [ref=f31e590]
+                        - cell "111.9K" [ref=f31e591]
+                        - cell "4.9%" [ref=f31e592]
+                        - cell "69" [ref=f31e593]:
+                          - 'generic "Health: Fair" [ref=f31e594]': "69"
+                        - cell "66" [ref=f31e597]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e598]': "66"
+                        - cell "100%" [ref=f31e601]
+                        - cell [ref=f31e606]:
+                          - generic [ref=f31e607]:
+                            - generic [ref=f31e608]: Medium risk
+                            - generic [ref=f31e610]: Dormant
+                        - cell [ref=f31e612]
+                      - row [ref=f31e613]:
+                        - cell [ref=f31e614]:
+                          - checkbox "Select Dev Kowalski for comparison" [ref=f31e615] [cursor=pointer]
+                        - cell "SocialOrbit Verified Dev Kowalski @dev_healInstagram, YouTubeNigeriaHealth & Wellness, Food & Beverage" [ref=f31e616]:
+                          - generic [ref=f31e617]:
+                            - generic [ref=f31e618]:
+                              - generic [ref=f31e619]: DK
+                              - generic "SocialOrbit Verified" [ref=f31e620]:
+                                - img "SocialOrbit Verified" [ref=f31e621]
+                            - generic [ref=f31e624]:
+                              - link "Dev Kowalski" [ref=f31e625] [cursor=pointer]:
+                                - /url: /influencers/inf_0069
+                              - paragraph [ref=f31e626]:
+                                - generic [ref=f31e627]: "@dev_heal"
+                                - text: · Instagram, YouTube · Nigeria · Health & Wellness, Food & Beverage
+                        - cell "478.9K" [ref=f31e628]
+                        - cell "143.4K" [ref=f31e629]
+                        - cell "2.1%" [ref=f31e630]
+                        - cell "70" [ref=f31e631]:
+                          - 'generic "Health: Strong performance" [ref=f31e632]': "70"
+                        - cell "65" [ref=f31e635]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e636]': "65"
+                        - cell "96%" [ref=f31e639]
+                        - cell [ref=f31e644]:
+                          - generic [ref=f31e645]:
+                            - generic [ref=f31e646]: Low risk
+                            - generic [ref=f31e648]: Dormant
+                        - cell [ref=f31e650]
+                      - row [ref=f31e651]:
+                        - cell [ref=f31e652]:
+                          - checkbox "Select Mateo Sharma for comparison" [ref=f31e653] [cursor=pointer]
+                        - cell "Mateo Sharma @mateo_healYouTubeUnited StatesHealth & Wellness, Parenting" [ref=f31e654]:
+                          - generic [ref=f31e655]:
+                            - generic [ref=f31e656]: MS
+                            - generic [ref=f31e658]:
+                              - link "Mateo Sharma" [ref=f31e659] [cursor=pointer]:
+                                - /url: /influencers/inf_0066
+                              - paragraph [ref=f31e660]:
+                                - generic [ref=f31e661]: "@mateo_heal"
+                                - text: · YouTube · United States · Health & Wellness, Parenting
+                        - cell "15.2K" [ref=f31e662]
+                        - cell "3.6K" [ref=f31e663]
+                        - cell "2.5%" [ref=f31e664]
+                        - cell "76" [ref=f31e665]:
+                          - 'generic "Health: Strong performance" [ref=f31e666]': "76"
+                        - cell "76" [ref=f31e669]:
+                          - 'generic "Campaign fit: Strong performance" [ref=f31e670]': "76"
+                        - cell "82%" [ref=f31e673]
+                        - cell [ref=f31e678]:
+                          - generic [ref=f31e679]:
+                            - generic [ref=f31e680]: Low risk
+                            - generic [ref=f31e682]: Active
+                        - cell [ref=f31e684]
+                      - row [ref=f31e685]:
+                        - cell [ref=f31e686]:
+                          - checkbox "Select Mateo Nakamura for comparison" [ref=f31e687] [cursor=pointer]
+                        - cell "SocialOrbit Verified Mateo Nakamura @mateo_educYouTube, InstagramJapanEducation, Parenting" [ref=f31e688]:
+                          - generic [ref=f31e689]:
+                            - generic [ref=f31e690]:
+                              - generic [ref=f31e691]: MN
+                              - generic "SocialOrbit Verified" [ref=f31e692]:
+                                - img "SocialOrbit Verified" [ref=f31e693]
+                            - generic [ref=f31e696]:
+                              - link "Mateo Nakamura" [ref=f31e697] [cursor=pointer]:
+                                - /url: /influencers/inf_0079
+                              - paragraph [ref=f31e698]:
+                                - generic [ref=f31e699]: "@mateo_educ"
+                                - text: · YouTube, Instagram · Japan · Education, Parenting
+                        - cell "1.3M" [ref=f31e700]
+                        - cell "236.6K" [ref=f31e701]
+                        - cell "4.2%" [ref=f31e702]
+                        - cell "67" [ref=f31e703]:
+                          - 'generic "Health: Fair" [ref=f31e704]': "67"
+                        - cell "73" [ref=f31e707]:
+                          - 'generic "Campaign fit: Strong performance" [ref=f31e708]': "73"
+                        - cell "100%" [ref=f31e711]
+                        - cell [ref=f31e716]:
+                          - generic [ref=f31e717]:
+                            - generic [ref=f31e718]: Low risk
+                            - generic [ref=f31e720]: Recent
+                        - cell [ref=f31e722]
+                      - row [ref=f31e723]:
+                        - cell [ref=f31e724]:
+                          - checkbox "Select Meera Sharma for comparison" [ref=f31e725] [cursor=pointer]
+                        - cell "Meera Sharma @meera.finaInstagram, YouTubeIndiaFinance, Business" [ref=f31e726]:
+                          - generic [ref=f31e727]:
+                            - generic [ref=f31e728]: MS
+                            - generic [ref=f31e730]:
+                              - link "Meera Sharma" [ref=f31e731] [cursor=pointer]:
+                                - /url: /influencers/inf_0010
+                              - paragraph [ref=f31e732]:
+                                - generic [ref=f31e733]: "@meera.fina"
+                                - text: · Instagram, YouTube · India · Finance, Business
+                        - cell "17.8K" [ref=f31e734]
+                        - cell "3.5K" [ref=f31e735]
+                        - cell "6.8%" [ref=f31e736]
+                        - cell "78" [ref=f31e737]:
+                          - 'generic "Health: Strong performance" [ref=f31e738]': "78"
+                        - cell "72" [ref=f31e741]:
+                          - 'generic "Campaign fit: Strong performance" [ref=f31e742]': "72"
+                        - cell "73%" [ref=f31e745]
+                        - cell [ref=f31e750]:
+                          - generic [ref=f31e751]:
+                            - generic [ref=f31e752]: Low risk
+                            - generic [ref=f31e754]: Recent
+                        - cell [ref=f31e756]
+                      - row [ref=f31e757]:
+                        - cell [ref=f31e758]:
+                          - checkbox "Select Rahul Okafor for comparison" [ref=f31e759] [cursor=pointer]
+                        - cell "SocialOrbit Verified Rahul Okafor @rahul.busiYouTubeSingaporeBusiness, Beauty" [ref=f31e760]:
+                          - generic [ref=f31e761]:
+                            - generic [ref=f31e762]:
+                              - generic [ref=f31e763]: RO
+                              - generic "SocialOrbit Verified" [ref=f31e764]:
+                                - img "SocialOrbit Verified" [ref=f31e765]
+                            - generic [ref=f31e768]:
+                              - link "Rahul Okafor" [ref=f31e769] [cursor=pointer]:
+                                - /url: /influencers/inf_0017
+                              - paragraph [ref=f31e770]:
+                                - generic [ref=f31e771]: "@rahul.busi"
+                                - text: · YouTube · Singapore · Business, Beauty
+                        - cell "4.9M" [ref=f31e772]
+                        - cell "1.3M" [ref=f31e773]
+                        - cell "0.9%" [ref=f31e774]
+                        - cell "67" [ref=f31e775]:
+                          - 'generic "Health: Fair" [ref=f31e776]': "67"
+                        - cell "62" [ref=f31e779]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e780]': "62"
+                        - cell "97%" [ref=f31e783]
+                        - cell [ref=f31e788]:
+                          - generic [ref=f31e789]:
+                            - generic [ref=f31e790]: Low risk
+                            - generic [ref=f31e792]: Dormant
+                        - cell [ref=f31e794]
+                      - row [ref=f31e795]:
+                        - cell [ref=f31e796]:
+                          - checkbox "Select Neha Lund for comparison" [ref=f31e797] [cursor=pointer]
+                        - cell "SocialOrbit Verified Neha Lund @neha.foodYouTubeUnited StatesFood & Beverage, Parenting" [ref=f31e798]:
+                          - generic [ref=f31e799]:
+                            - generic [ref=f31e800]:
+                              - generic [ref=f31e801]: NL
+                              - generic "SocialOrbit Verified" [ref=f31e802]:
+                                - img "SocialOrbit Verified" [ref=f31e803]
+                            - generic [ref=f31e806]:
+                              - link "Neha Lund" [ref=f31e807] [cursor=pointer]:
+                                - /url: /influencers/inf_0014
+                              - paragraph [ref=f31e808]:
+                                - generic [ref=f31e809]: "@neha.food"
+                                - text: · YouTube · United States · Food & Beverage, Parenting
+                        - cell "1.4M" [ref=f31e810]
+                        - cell "328.8K" [ref=f31e811]
+                        - cell "1.9%" [ref=f31e812]
+                        - cell "63" [ref=f31e813]:
+                          - 'generic "Health: Fair" [ref=f31e814]': "63"
+                        - cell "64" [ref=f31e817]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e818]': "64"
+                        - cell "97%" [ref=f31e821]
+                        - cell [ref=f31e826]:
+                          - generic [ref=f31e827]:
+                            - generic [ref=f31e828]: Low risk
+                            - generic [ref=f31e830]: Active
+                        - cell [ref=f31e832]
+                      - row [ref=f31e833]:
+                        - cell [ref=f31e834]:
+                          - checkbox "Select Mateo Sharma for comparison" [ref=f31e835] [cursor=pointer]
+                        - cell "Mateo Sharma @mateo.busiYouTube, InstagramSingaporeBusiness, Lifestyle" [ref=f31e836]:
+                          - generic [ref=f31e837]:
+                            - generic [ref=f31e838]: MS
+                            - generic [ref=f31e840]:
+                              - link "Mateo Sharma" [ref=f31e841] [cursor=pointer]:
+                                - /url: /influencers/inf_0007
+                              - paragraph [ref=f31e842]:
+                                - generic [ref=f31e843]: "@mateo.busi"
+                                - text: · YouTube, Instagram · Singapore · Business, Lifestyle
+                        - cell "645.7K" [ref=f31e844]
+                        - cell "98K" [ref=f31e845]
+                        - cell "1.8%" [ref=f31e846]
+                        - cell "72" [ref=f31e847]:
+                          - 'generic "Health: Strong performance" [ref=f31e848]': "72"
+                        - cell "75" [ref=f31e851]:
+                          - 'generic "Campaign fit: Strong performance" [ref=f31e852]': "75"
+                        - cell "78%" [ref=f31e855]
+                        - cell [ref=f31e860]:
+                          - generic [ref=f31e861]:
+                            - generic [ref=f31e862]: Low risk
+                            - generic [ref=f31e864]: Recent
+                        - cell [ref=f31e866]
+                      - row [ref=f31e867]:
+                        - cell [ref=f31e868]:
+                          - checkbox "Select Elena Vargas for comparison" [ref=f31e869] [cursor=pointer]
+                        - cell "Elena Vargas @elena_gamiInstagram, YouTubeIndiaGaming, Food & Beverage" [ref=f31e870]:
+                          - generic [ref=f31e871]:
+                            - generic [ref=f31e872]: EV
+                            - generic [ref=f31e874]:
+                              - link "Elena Vargas" [ref=f31e875] [cursor=pointer]:
+                                - /url: /influencers/inf_0026
+                              - paragraph [ref=f31e876]:
+                                - generic [ref=f31e877]: "@elena_gami"
+                                - text: · Instagram, YouTube · India · Gaming, Food & Beverage
+                        - cell "351.2K" [ref=f31e878]
+                        - cell "121.5K" [ref=f31e879]
+                        - cell "1.7%" [ref=f31e880]
+                        - cell "71" [ref=f31e881]:
+                          - 'generic "Health: Strong performance" [ref=f31e882]': "71"
+                        - cell "65" [ref=f31e885]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e886]': "65"
+                        - cell "78%" [ref=f31e889]
+                        - cell [ref=f31e894]:
+                          - generic [ref=f31e895]:
+                            - generic [ref=f31e896]: Low risk
+                            - generic [ref=f31e898]: Active
+                        - cell [ref=f31e900]
+                      - row [ref=f31e901]:
+                        - cell [ref=f31e902]:
+                          - checkbox "Select Anders Silva for comparison" [ref=f31e903] [cursor=pointer]
+                        - cell "Anders Silva @andersgamiYouTube, InstagramGermanyGaming, Health & Wellness" [ref=f31e904]:
+                          - generic [ref=f31e905]:
+                            - generic [ref=f31e906]: AS
+                            - generic [ref=f31e908]:
+                              - link "Anders Silva" [ref=f31e909] [cursor=pointer]:
+                                - /url: /influencers/inf_0031
+                              - paragraph [ref=f31e910]:
+                                - generic [ref=f31e911]: "@andersgami"
+                                - text: · YouTube, Instagram · Germany · Gaming, Health & Wellness
+                        - cell "3.8M" [ref=f31e912]
+                        - cell "1.2M" [ref=f31e913]
+                        - cell "3.3%" [ref=f31e914]
+                        - cell "68" [ref=f31e915]:
+                          - 'generic "Health: Fair" [ref=f31e916]': "68"
+                        - cell "66" [ref=f31e919]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e920]': "66"
+                        - cell "84%" [ref=f31e923]
+                        - cell [ref=f31e928]:
+                          - generic [ref=f31e929]:
+                            - generic [ref=f31e930]: Medium risk
+                            - generic [ref=f31e932]: Active
+                        - cell [ref=f31e934]
+                      - row [ref=f31e935]:
+                        - cell [ref=f31e936]:
+                          - checkbox "Select Elena Vargas for comparison" [ref=f31e937] [cursor=pointer]
+                        - cell "Elena Vargas @elena_beauYouTube, InstagramBrazilBeauty, Automotive" [ref=f31e938]:
+                          - generic [ref=f31e939]:
+                            - generic [ref=f31e940]: EV
+                            - generic [ref=f31e942]:
+                              - link "Elena Vargas" [ref=f31e943] [cursor=pointer]:
+                                - /url: /influencers/inf_0013
+                              - paragraph [ref=f31e944]:
+                                - generic [ref=f31e945]: "@elena_beau"
+                                - text: · YouTube, Instagram · Brazil · Beauty, Automotive
+                        - cell "142.4K" [ref=f31e946]
+                        - cell "28K" [ref=f31e947]
+                        - cell "1.1%" [ref=f31e948]
+                        - cell "66" [ref=f31e949]:
+                          - 'generic "Health: Fair" [ref=f31e950]': "66"
+                        - cell "59" [ref=f31e953]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e954]': "59"
+                        - cell "89%" [ref=f31e957]
+                        - cell [ref=f31e962]:
+                          - generic [ref=f31e963]:
+                            - generic [ref=f31e964]: Low risk
+                            - generic [ref=f31e966]: Dormant
+                        - cell [ref=f31e968]
+                      - row [ref=f31e969]:
+                        - cell [ref=f31e970]:
+                          - checkbox "Select Owen Iyer for comparison" [ref=f31e971] [cursor=pointer]
+                        - cell "SocialOrbit Verified Owen Iyer @owenfinaInstagram, YouTubeUnited KingdomFinance, Gaming" [ref=f31e972]:
+                          - generic [ref=f31e973]:
+                            - generic [ref=f31e974]:
+                              - generic [ref=f31e975]: OI
+                              - generic "SocialOrbit Verified" [ref=f31e976]:
+                                - img "SocialOrbit Verified" [ref=f31e977]
+                            - generic [ref=f31e980]:
+                              - link "Owen Iyer" [ref=f31e981] [cursor=pointer]:
+                                - /url: /influencers/inf_0027
+                              - paragraph [ref=f31e982]:
+                                - generic [ref=f31e983]: "@owenfina"
+                                - text: · Instagram, YouTube · United Kingdom · Finance, Gaming
+                        - cell "1.2M" [ref=f31e984]
+                        - cell "388.2K" [ref=f31e985]
+                        - cell "1.3%" [ref=f31e986]
+                        - cell "63" [ref=f31e987]:
+                          - 'generic "Health: Fair" [ref=f31e988]': "63"
+                        - cell "51" [ref=f31e991]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e992]': "51"
+                        - cell "96%" [ref=f31e995]
+                        - cell [ref=f31e1000]:
+                          - generic [ref=f31e1001]:
+                            - generic [ref=f31e1002]: Medium risk
+                            - generic [ref=f31e1004]: Active
+                        - cell [ref=f31e1006]
+                      - row [ref=f31e1007]:
+                        - cell [ref=f31e1008]:
+                          - checkbox "Select Rohan Achebe for comparison" [ref=f31e1009] [cursor=pointer]
+                        - cell "Rohan Achebe @rohan.healInstagram, YouTubeUnited Arab EmiratesHealth & Wellness, Fitness" [ref=f31e1010]:
+                          - generic [ref=f31e1011]:
+                            - generic [ref=f31e1012]: RA
+                            - generic [ref=f31e1014]:
+                              - link "Rohan Achebe" [ref=f31e1015] [cursor=pointer]:
+                                - /url: /influencers/inf_0037
+                              - paragraph [ref=f31e1016]:
+                                - generic [ref=f31e1017]: "@rohan.heal"
+                                - text: · Instagram, YouTube · United Arab Emirates · Health & Wellness, Fitness
+                        - cell "1.2M" [ref=f31e1018]
+                        - cell "474.6K" [ref=f31e1019]
+                        - cell "4.1%" [ref=f31e1020]
+                        - cell "67" [ref=f31e1021]:
+                          - 'generic "Health: Fair" [ref=f31e1022]': "67"
+                        - cell "64" [ref=f31e1025]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e1026]': "64"
+                        - cell "84%" [ref=f31e1029]
+                        - cell [ref=f31e1034]:
+                          - generic [ref=f31e1035]:
+                            - generic [ref=f31e1036]: Low risk
+                            - generic [ref=f31e1038]: Recent
+                        - cell [ref=f31e1040]
+                      - row [ref=f31e1041]:
+                        - cell [ref=f31e1042]:
+                          - checkbox "Select Yuki Iyer for comparison" [ref=f31e1043] [cursor=pointer]
+                        - cell "Yuki Iyer @yuki_lifeYouTube, InstagramNigeriaLifestyle, Fitness" [ref=f31e1044]:
+                          - generic [ref=f31e1045]:
+                            - generic [ref=f31e1046]: YI
+                            - generic [ref=f31e1048]:
+                              - link "Yuki Iyer" [ref=f31e1049] [cursor=pointer]:
+                                - /url: /influencers/inf_0080
+                              - paragraph [ref=f31e1050]:
+                                - generic [ref=f31e1051]: "@yuki_life"
+                                - text: · YouTube, Instagram · Nigeria · Lifestyle, Fitness
+                        - cell "428.1K" [ref=f31e1052]
+                        - cell "173.5K" [ref=f31e1053]
+                        - cell "1.4%" [ref=f31e1054]
+                        - cell "68" [ref=f31e1055]:
+                          - 'generic "Health: Fair" [ref=f31e1056]': "68"
+                        - cell "55" [ref=f31e1059]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e1060]': "55"
+                        - cell "83%" [ref=f31e1063]
+                        - cell [ref=f31e1068]:
+                          - generic [ref=f31e1069]:
+                            - generic [ref=f31e1070]: Low risk
+                            - generic [ref=f31e1072]: Active
+                        - cell [ref=f31e1074]
+                      - row [ref=f31e1075]:
+                        - cell [ref=f31e1076]:
+                          - checkbox "Select Ishita Whitfield for comparison" [ref=f31e1077] [cursor=pointer]
+                        - cell "Ishita Whitfield @ishita_busiYouTube, InstagramUnited KingdomBusiness, Fashion" [ref=f31e1078]:
+                          - generic [ref=f31e1079]:
+                            - generic [ref=f31e1080]: IW
+                            - generic [ref=f31e1082]:
+                              - link "Ishita Whitfield" [ref=f31e1083] [cursor=pointer]:
+                                - /url: /influencers/inf_0042
+                              - paragraph [ref=f31e1084]:
+                                - generic [ref=f31e1085]: "@ishita_busi"
+                                - text: · YouTube, Instagram · United Kingdom · Business, Fashion
+                        - cell "214.6K" [ref=f31e1086]
+                        - cell "21.5K" [ref=f31e1087]
+                        - cell "5.0%" [ref=f31e1088]
+                        - cell "68" [ref=f31e1089]:
+                          - 'generic "Health: Fair" [ref=f31e1090]': "68"
+                        - cell "66" [ref=f31e1093]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e1094]': "66"
+                        - cell "80%" [ref=f31e1097]
+                        - cell [ref=f31e1102]:
+                          - generic [ref=f31e1103]:
+                            - generic [ref=f31e1104]: Low risk
+                            - generic [ref=f31e1106]: Recent
+                        - cell [ref=f31e1108]
+                      - row [ref=f31e1109]:
+                        - cell [ref=f31e1110]:
+                          - checkbox "Select Meera Rao for comparison" [ref=f31e1111] [cursor=pointer]
+                        - cell "Meera Rao @meerafoodInstagram, YouTubeSpainFood & Beverage, Gaming" [ref=f31e1112]:
+                          - generic [ref=f31e1113]:
+                            - generic [ref=f31e1114]: MR
+                            - generic [ref=f31e1116]:
+                              - link "Meera Rao" [ref=f31e1117] [cursor=pointer]:
+                                - /url: /influencers/inf_0045
+                              - paragraph [ref=f31e1118]:
+                                - generic [ref=f31e1119]: "@meerafood"
+                                - text: · Instagram, YouTube · Spain · Food & Beverage, Gaming
+                        - cell "187.6K" [ref=f31e1120]
+                        - cell "94.5K" [ref=f31e1121]
+                        - cell "6.0%" [ref=f31e1122]
+                        - cell "74" [ref=f31e1123]:
+                          - 'generic "Health: Strong performance" [ref=f31e1124]': "74"
+                        - cell "71" [ref=f31e1127]:
+                          - 'generic "Campaign fit: Strong performance" [ref=f31e1128]': "71"
+                        - cell "64%" [ref=f31e1131]
+                        - cell [ref=f31e1136]:
+                          - generic [ref=f31e1137]:
+                            - generic [ref=f31e1138]: Low risk
+                            - generic [ref=f31e1140]: Recent
+                        - cell [ref=f31e1142]
+                      - row [ref=f31e1143]:
+                        - cell [ref=f31e1144]:
+                          - checkbox "Select Mateo Sharma for comparison" [ref=f31e1145] [cursor=pointer]
+                        - cell "Mateo Sharma @mateo_healYouTube, InstagramUnited KingdomHealth & Wellness, Finance" [ref=f31e1146]:
+                          - generic [ref=f31e1147]:
+                            - generic [ref=f31e1148]: MS
+                            - generic [ref=f31e1150]:
+                              - link "Mateo Sharma" [ref=f31e1151] [cursor=pointer]:
+                                - /url: /influencers/inf_0032
+                              - paragraph [ref=f31e1152]:
+                                - generic [ref=f31e1153]: "@mateo_heal"
+                                - text: · YouTube, Instagram · United Kingdom · Health & Wellness, Finance
+                        - cell "266.8K" [ref=f31e1154]
+                        - cell "61.9K" [ref=f31e1155]
+                        - cell "2.3%" [ref=f31e1156]
+                        - cell "68" [ref=f31e1157]:
+                          - 'generic "Health: Fair" [ref=f31e1158]': "68"
+                        - cell "70" [ref=f31e1161]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e1162]': "70"
+                        - cell "79%" [ref=f31e1165]
+                        - cell [ref=f31e1170]:
+                          - generic [ref=f31e1171]:
+                            - generic [ref=f31e1172]: Low risk
+                            - generic [ref=f31e1174]: Recent
+                        - cell [ref=f31e1176]
+                      - row [ref=f31e1177]:
+                        - cell [ref=f31e1178]:
+                          - checkbox "Select Rhea Iyer for comparison" [ref=f31e1179] [cursor=pointer]
+                        - cell "SocialOrbit Verified Rhea Iyer @rhea_busiYouTubeJapanBusiness, Fitness" [ref=f31e1180]:
+                          - generic [ref=f31e1181]:
+                            - generic [ref=f31e1182]:
+                              - generic [ref=f31e1183]: RI
+                              - generic "SocialOrbit Verified" [ref=f31e1184]:
+                                - img "SocialOrbit Verified" [ref=f31e1185]
+                            - generic [ref=f31e1188]:
+                              - link "Rhea Iyer" [ref=f31e1189] [cursor=pointer]:
+                                - /url: /influencers/inf_0025
+                              - paragraph [ref=f31e1190]:
+                                - generic [ref=f31e1191]: "@rhea_busi"
+                                - text: · YouTube · Japan · Business, Fitness
+                        - cell "1.2M" [ref=f31e1192]
+                        - cell "509.7K" [ref=f31e1193]
+                        - cell "0.6%" [ref=f31e1194]
+                        - cell "63" [ref=f31e1195]:
+                          - 'generic "Health: Fair" [ref=f31e1196]': "63"
+                        - cell "57" [ref=f31e1199]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e1200]': "57"
+                        - cell "90%" [ref=f31e1203]
+                        - cell [ref=f31e1208]:
+                          - generic [ref=f31e1209]:
+                            - generic [ref=f31e1210]: Medium risk
+                            - generic [ref=f31e1212]: Active
+                        - cell [ref=f31e1214]
+                      - row [ref=f31e1215]:
+                        - cell [ref=f31e1216]:
+                          - checkbox "Select Mateo Fitzgerald for comparison" [ref=f31e1217] [cursor=pointer]
+                        - cell "Mateo Fitzgerald @mateofitnYouTube, InstagramGermanyFitness, Automotive" [ref=f31e1218]:
+                          - generic [ref=f31e1219]:
+                            - generic [ref=f31e1220]: MF
+                            - generic [ref=f31e1222]:
+                              - link "Mateo Fitzgerald" [ref=f31e1223] [cursor=pointer]:
+                                - /url: /influencers/inf_0068
+                              - paragraph [ref=f31e1224]:
+                                - generic [ref=f31e1225]: "@mateofitn"
+                                - text: · YouTube, Instagram · Germany · Fitness, Automotive
+                        - cell "810.7K" [ref=f31e1226]
+                        - cell "227.4K" [ref=f31e1227]
+                        - cell "4.2%" [ref=f31e1228]
+                        - cell "66" [ref=f31e1229]:
+                          - 'generic "Health: Fair" [ref=f31e1230]': "66"
+                        - cell "63" [ref=f31e1233]:
+                          - 'generic "Campaign fit: Fair" [ref=f31e1234]': "63"
+                        - cell "82%" [ref=f31e1237]
+                        - cell [ref=f31e1242]:
+                          - generic [ref=f31e1243]:
+                            - generic [ref=f31e1244]: Low risk
+                            - generic [ref=f31e1246]: Active
+                        - cell [ref=f31e1248]
+                - navigation "Pagination" [ref=f31e1249]:
+                  - paragraph [ref=f31e1250]: 1–25 of 59
+                  - generic [ref=f31e1251]:
+                    - button "Previous" [disabled] [ref=f31e1252]
+                    - generic [ref=f31e1253]: Page 1 of 3
+                    - button "Next" [ref=f31e1254]
+  - button "Open Next.js Dev Tools" [ref=f31e290] [cursor=pointer]
+  - alert [ref=f31e1255]: Influencer database

@@ -15,3 +15,4 @@
 [  316142ms] [LOG] [Fast Refresh] done in 113ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
 [  575022ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
 [  575033ms] [LOG] [Fast Refresh] done in 114ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[ 1403326ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
