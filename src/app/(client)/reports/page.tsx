@@ -11,34 +11,51 @@ import { EmptyState, Notice } from "@/components/ui/states";
 export const metadata: Metadata = { title: "Reports" };
 export const dynamic = "force-dynamic";
 
-const REPORT_TYPES = [
+interface ReportType {
+  id: string;
+  title: string;
+  detail: string;
+  /** Where you start this report today. */
+  start: { href: string; label: string };
+  /** True once export works from that starting point. */
+  available: boolean;
+  unavailableNote?: string;
+}
+
+const REPORT_TYPES: ReportType[] = [
   {
     id: "influencer",
     title: "Influencer report",
     detail:
       "Account, audience and content performance for one creator, with score components, evidence and provenance.",
-    needs: "a creator",
+    start: { href: "/discovery", label: "Pick a creator" },
+    available: true,
   },
   {
     id: "comparison",
     title: "Comparison report",
     detail:
       "Two to five creators on normalised metrics, with incomparable measures flagged rather than silently averaged.",
-    needs: "a shortlist or selection",
+    start: { href: "/shortlists", label: "Open a shortlist" },
+    available: true,
   },
   {
     id: "campaign",
     title: "Campaign performance report",
     detail:
       "Attributed posts, per-creator campaign scores, reach, engagement and cost efficiency for one campaign.",
-    needs: "a campaign",
+    start: { href: "/campaigns", label: "Open a campaign" },
+    available: true,
   },
   {
     id: "audience",
     title: "Audience report",
     detail:
-      "Demographics and audience quality. Available only for creators who have authorised first-party access.",
-    needs: "a verified creator",
+      "Demographics and audience quality for creators who have authorised first-party access.",
+    start: { href: "/discovery?verification=verified", label: "Find verified creators" },
+    available: false,
+    unavailableNote:
+      "Audience exports are held back until first-party connections are live — there is nothing authorised to export yet.",
   },
 ];
 
@@ -55,9 +72,15 @@ export default async function ReportsPage() {
       />
       <PageBody className="space-y-4">
         <Notice tone="info" title="Every export carries its provenance">
-          A SocialOrbit report states, for each figure, whether it was verified, observed,
-          derived, estimated or AI-inferred — and when it was collected. A number that leaves
-          the platform without that context is a number someone will eventually misquote.
+          A SocialOrbit export states, for each figure, whether it was verified, observed,
+          derived, estimated or AI-inferred. A number that leaves the platform without that
+          context is a number someone will eventually misquote.
+        </Notice>
+
+        <Notice tone="caution" title="Exports run from the record, not from here">
+          Open a creator, a shortlist or a campaign and export it from there. Scheduled
+          generation, PDF rendering and a report archive are not built yet, so this page does
+          not pretend to offer them.
         </Notice>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -71,18 +94,24 @@ export default async function ReportsPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="text-[13px] leading-5 text-ink-muted">{report.detail}</p>
-                <p className="text-[12px] text-ink-subtle">Requires {report.needs}.</p>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="primary">
-                    Generate
-                  </Button>
-                  <Button size="sm" variant="ghost">
-                    PDF
-                  </Button>
-                  <Button size="sm" variant="ghost">
-                    CSV
-                  </Button>
-                </div>
+                {report.available ? (
+                  <>
+                    <LinkButton href={report.start.href} size="sm" variant="primary">
+                      {report.start.label}
+                    </LinkButton>
+                    <p className="text-[12px] text-ink-subtle">
+                      Export to CSV from the record itself. Scheduled PDF delivery is not
+                      available yet.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <Button size="sm" variant="secondary" disabled>
+                      Not available yet
+                    </Button>
+                    <p className="text-[12px] text-ink-subtle">{report.unavailableNote}</p>
+                  </>
+                )}
               </CardContent>
             </Card>
           ))}

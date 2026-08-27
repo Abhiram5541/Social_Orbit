@@ -11,6 +11,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Checkbox, Field, Input } from "@/components/ui/field";
 import { EmptyState, Notice } from "@/components/ui/states";
 import { Table, TableWrap, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
+import { RelativeTime } from "@/components/ui/relative-time";
 
 /* ---------------------------------------------------------------------------
  * API key management — DPR §17.2.
@@ -174,7 +175,7 @@ export function ApiKeyPanel({
                       <span className="block">by {key.createdByName}</span>
                     </Td>
                     <Td className="whitespace-nowrap text-[12px] text-ink-muted">
-                      {key.lastUsedAt ? formatRelativeTime(key.lastUsedAt) : "never"}
+                      {key.lastUsedAt ? <RelativeTime at={key.lastUsedAt} /> : "never"}
                     </Td>
                     <Td>
                       <Badge tone={key.revokedAt ? "critical" : "positive"} dot>

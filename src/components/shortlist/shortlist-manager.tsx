@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import { Field, Input, Textarea } from "@/components/ui/field";
 import { EmptyState, Notice } from "@/components/ui/states";
+import { RelativeTime } from "@/components/ui/relative-time";
 
 /* ---------------------------------------------------------------------------
  * Shortlists — DPR UC-09.
@@ -128,7 +129,7 @@ export function ShortlistManager({
                   )}
                   <p className="mt-3 text-[12px] text-ink-muted">
                     {pluralise(shortlist.itemCount, "creator")} · created by{" "}
-                    {shortlist.createdByName} · updated {formatRelativeTime(shortlist.updatedAt)}
+                    {shortlist.createdByName} · updated <RelativeTime at={shortlist.updatedAt} />
                   </p>
                 </Link>
               </Card>

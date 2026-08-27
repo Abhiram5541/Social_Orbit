@@ -1,0 +1,35 @@
+- generic [active] [ref=f26e1]:
+  - generic [ref=f26e2]:
+    - link "Skip to content" [ref=f26e3] [cursor=pointer]:
+      - /url: "#main"
+    - generic [ref=f26e4]:
+      - banner [ref=f26e5]:
+        - button "Open navigation" [ref=f26e6]
+        - button "Search creators, campaigns, shortlists…" [ref=f26e8]
+        - generic [ref=f26e13]:
+          - link "Notifications" [ref=f26e14] [cursor=pointer]:
+            - /url: /notifications
+          - button [ref=f26e18]:
+            - generic [ref=f26e19]: MW
+      - main [ref=f26e23]:
+        - generic [ref=f26e24]:
+          - generic [ref=f26e27]:
+            - heading "Discovery" [level=1] [ref=f26e28]
+            - paragraph [ref=f26e29]: Search the SocialOrbit database by market, category, audience quality and campaign fit. Filters combine with AND.
+          - generic [ref=f26e31]:
+            - search [ref=f26e33]:
+              - searchbox "Search influencers" [ref=f26e35]
+              - button "Search" [ref=f26e36]
+              - button "Filters" [ref=f26e37]
+              - combobox "Sort results" [ref=f26e41]:
+                - option "Best match" [selected]
+                - option "Health score"
+                - option "Followers — high to low"
+                - option "Followers — low to high"
+                - option "Engagement rate"
+                - option "Median views"
+                - option "Growth"
+                - option "Campaign fit"
+                - option "Recently active"
+            - status "Loading results" [ref=f26e44]
+  - button "Open Next.js Dev Tools" [ref=f26e130] [cursor=pointer]

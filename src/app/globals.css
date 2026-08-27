@@ -37,9 +37,13 @@
   --color-line: #dfe1e7;
   --color-line-strong: #c5c8d2;
 
+  /* A three-step text ramp. Every step clears WCAG AA (4.5:1) against all
+     three light backgrounds — surface, canvas and sunken — measured, not
+     eyeballed: 15.8, 6.8 and 4.8 worst case. The previous subtle step sat at
+     2.9 and failed on every route it appeared. */
   --color-ink: #16161a; /* near-black, print-like rather than navy */
-  --color-ink-muted: #5b5e6b;
-  --color-ink-subtle: #8b8e9a;
+  --color-ink-muted: #4f5260;
+  --color-ink-subtle: #666975;
   --color-ink-inverse: #f2f3f6;
 
   /* --- Instrument: the one dark surface --------------------------------- */

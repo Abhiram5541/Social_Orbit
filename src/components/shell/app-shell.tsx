@@ -15,6 +15,34 @@ import { Topbar } from "./topbar";
 import { CommandPalette } from "./command-palette";
 
 const COLLAPSE_KEY = "socialorbit.nav.collapsed";
+const COLLAPSE_EVENT = "socialorbit:nav-collapse";
+
+/**
+ * The sidebar preference lives in localStorage, which the server cannot read.
+ * `useSyncExternalStore` takes a separate server snapshot, so the first render
+ * matches on both sides and the stored value applies immediately afterwards —
+ * without the extra render pass a mount effect would cost.
+ */
+function useCollapsedPreference(): boolean {
+  return React.useSyncExternalStore(
+    (onChange) => {
+      window.addEventListener(COLLAPSE_EVENT, onChange);
+      window.addEventListener("storage", onChange);
+      return () => {
+        window.removeEventListener(COLLAPSE_EVENT, onChange);
+        window.removeEventListener("storage", onChange);
+      };
+    },
+    () => {
+      try {
+        return window.localStorage.getItem(COLLAPSE_KEY) === "1";
+      } catch {
+        return false;
+      }
+    },
+    () => false,
+  );
+}
 
 export function AppShell({
   user,
@@ -28,36 +56,29 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = React.useState(false);
+  const collapsed = useCollapsedPreference();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [paletteOpen, setPaletteOpen] = React.useState(false);
 
-  // Read the stored preference after mount so the server and first client
-  // render agree; storage can throw in restricted contexts, so it is guarded.
-  React.useEffect(() => {
-    try {
-      setCollapsed(window.localStorage.getItem(COLLAPSE_KEY) === "1");
-    } catch {
-      /* storage unavailable — the default stands */
-    }
-  }, []);
-
   const toggleCollapsed = React.useCallback(() => {
-    setCollapsed((previous) => {
-      const next = !previous;
-      try {
-        window.localStorage.setItem(COLLAPSE_KEY, next ? "1" : "0");
-      } catch {
-        /* preference simply is not remembered */
-      }
-      return next;
-    });
+    try {
+      const next = window.localStorage.getItem(COLLAPSE_KEY) === "1" ? "0" : "1";
+      window.localStorage.setItem(COLLAPSE_KEY, next);
+    } catch {
+      /* storage unavailable — the preference simply is not remembered */
+    }
+    // Notify this tab; the storage event only fires in *other* tabs.
+    window.dispatchEvent(new Event(COLLAPSE_EVENT));
   }, []);
 
   // Close the drawer whenever the route changes, including on back/forward.
-  React.useEffect(() => {
+  // Reset during render rather than in an effect: an effect would paint the
+  // new route with the drawer still open, then close it on a second pass.
+  const [drawerRoute, setDrawerRoute] = React.useState(pathname);
+  if (drawerRoute !== pathname) {
+    setDrawerRoute(pathname);
     setDrawerOpen(false);
-  }, [pathname]);
+  }
 
   React.useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {

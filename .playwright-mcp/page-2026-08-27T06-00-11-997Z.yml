@@ -1,0 +1,259 @@
+- generic [active] [ref=f25e1]:
+  - generic [ref=f25e2]:
+    - link "Skip to content" [ref=f25e3] [cursor=pointer]:
+      - /url: "#main"
+    - generic [ref=f25e4]:
+      - banner [ref=f25e5]:
+        - button "Open navigation" [ref=f25e6]
+        - button "Search creators, campaigns, shortlists…" [ref=f25e8]
+        - generic [ref=f25e13]:
+          - link "Notifications" [ref=f25e14] [cursor=pointer]:
+            - /url: /notifications
+          - button [ref=f25e18]:
+            - generic [ref=f25e19]: MW
+      - main [ref=f25e23]:
+        - generic [ref=f25e24]:
+          - navigation "Breadcrumb" [ref=f25e25]:
+            - list [ref=f25e26]:
+              - listitem [ref=f25e27]:
+                - link "Campaigns" [ref=f25e28] [cursor=pointer]:
+                  - /url: /campaigns
+              - listitem [ref=f25e29]:
+                - generic [ref=f25e30]: /
+                - generic [ref=f25e31]: Orbit Series launch
+          - generic [ref=f25e32]:
+            - generic [ref=f25e33]:
+              - heading "Orbit Series launch" [level=1] [ref=f25e34]
+              - paragraph [ref=f25e35]: Introduce the Orbit Series to a technology-first audience across YouTube long-form and Instagram Reels.
+            - generic [ref=f25e36]:
+              - generic [ref=f25e37]: Live
+              - generic [ref=f25e41]:
+                - generic [ref=f25e42]: OrbitSeries2026
+                - generic [ref=f25e46]: 1 Aug 2026 – 30 Sept 2026
+                - generic [ref=f25e47]: YouTube, Instagram
+        - generic [ref=f25e48]:
+          - status [ref=f25e49]:
+            - generic [ref=f25e52]:
+              - paragraph [ref=f25e53]: How these figures are attributed
+              - generic [ref=f25e54]:
+                - text: Only posts carrying
+                - generic [ref=f25e55]: "#OrbitSeries2026"
+                - text: are counted. A creator's campaign performance is scored separately from their SocialOrbit Health — the first answers “how did they do for us?”, the second “who are they?”. The two are never merged.
+          - generic [ref=f25e56]:
+            - generic [ref=f25e57]:
+              - generic [ref=f25e58]: Attributed posts
+              - generic [ref=f25e60]: "5"
+              - generic [ref=f25e61]: from 2 of 4 creators
+            - generic [ref=f25e63]:
+              - generic [ref=f25e64]: Reach
+              - generic [ref=f25e66]: 75.3K
+            - generic [ref=f25e67]:
+              - generic [ref=f25e68]: Engagements
+              - generic [ref=f25e70]: 1.9K
+            - generic [ref=f25e71]:
+              - generic [ref=f25e72]: Committed spend
+              - generic [ref=f25e74]: ₹20.8L
+              - generic [ref=f25e75]: of ₹45L budget
+            - generic [ref=f25e77]:
+              - generic [ref=f25e78]: Cost per engagement
+              - generic [ref=f25e80]: ₹1,072
+              - generic [ref=f25e81]: agreed rates ÷ attributed engagements
+          - generic [ref=f25e83]:
+            - generic [ref=f25e84]:
+              - heading "Creator performance" [level=2] [ref=f25e85]
+              - generic [ref=f25e86]: Campaign score is deterministic and versioned — campaign-1.0.0
+            - region "Campaign participants" [ref=f25e87]:
+              - table [ref=f25e88]:
+                - rowgroup [ref=f25e89]:
+                  - row [ref=f25e90]:
+                    - columnheader "Creator" [ref=f25e91]
+                    - columnheader "Status" [ref=f25e92]
+                    - columnheader "Talent rate" [ref=f25e93]
+                    - columnheader "Our rate" [ref=f25e94]
+                    - columnheader "Agreed" [ref=f25e95]
+                    - columnheader "Posts" [ref=f25e96]
+                    - columnheader "Reach" [ref=f25e97]
+                    - columnheader "Engagement" [ref=f25e98]
+                    - columnheader "Cost / eng." [ref=f25e99]
+                    - columnheader "Campaign score" [ref=f25e100]
+                    - columnheader "Health" [ref=f25e101]
+                - rowgroup [ref=f25e102]:
+                  - row [ref=f25e103]:
+                    - cell "Aria Lindqvist @ariatrav · 42K followers" [ref=f25e104]:
+                      - generic [ref=f25e105]:
+                        - generic [ref=f25e106]: AL
+                        - generic [ref=f25e108]:
+                          - link "Aria Lindqvist" [ref=f25e109] [cursor=pointer]:
+                            - /url: /influencers/inf_0001
+                          - paragraph [ref=f25e110]:
+                            - generic [ref=f25e111]: "@ariatrav"
+                            - text: · 42K followers
+                    - cell "delivering" [ref=f25e112]
+                    - cell "₹15L" [ref=f25e114]
+                    - cell "₹10L gap ₹5L" [ref=f25e115]:
+                      - text: ₹10L
+                      - generic [ref=f25e116]: gap ₹5L
+                    - cell "₹12L" [ref=f25e117]
+                    - cell "2" [ref=f25e118]
+                    - cell "34.9K" [ref=f25e119]
+                    - cell "2.3%" [ref=f25e120]
+                    - cell "₹1,646" [ref=f25e121]
+                    - cell "57" [ref=f25e122]:
+                      - 'generic "Campaign score: Fair" [ref=f25e123]': "57"
+                    - cell "69" [ref=f25e126]:
+                      - 'generic "Health: Fair" [ref=f25e127]': "69"
+                  - row [ref=f25e130]:
+                    - cell "Talia Okafor @talia_life · 43.4K followers" [ref=f25e131]:
+                      - generic [ref=f25e132]:
+                        - generic [ref=f25e133]: TO
+                        - generic [ref=f25e135]:
+                          - link "Talia Okafor" [ref=f25e136] [cursor=pointer]:
+                            - /url: /influencers/inf_0004
+                          - paragraph [ref=f25e137]:
+                            - generic [ref=f25e138]: "@talia_life"
+                            - text: · 43.4K followers
+                    - cell "delivered" [ref=f25e139]
+                    - cell "₹6.2L" [ref=f25e141]
+                    - cell "₹5L gap ₹1.2L" [ref=f25e142]:
+                      - text: ₹5L
+                      - generic [ref=f25e143]: gap ₹1.2L
+                    - cell "₹5.6L" [ref=f25e144]
+                    - cell "3" [ref=f25e145]
+                    - cell "40.4K" [ref=f25e146]
+                    - cell "3.2%" [ref=f25e147]
+                    - cell "₹462" [ref=f25e148]
+                    - cell "71" [ref=f25e149]:
+                      - 'generic "Campaign score: Strong performance" [ref=f25e150]': "71"
+                    - cell "51" [ref=f25e153]:
+                      - 'generic "Health: Fair" [ref=f25e154]': "51"
+                  - row [ref=f25e157]:
+                    - cell "Jonas Petrov @jonas_fina · 1.4M followers" [ref=f25e158]:
+                      - generic [ref=f25e159]:
+                        - generic [ref=f25e160]: JP
+                        - generic [ref=f25e162]:
+                          - link "Jonas Petrov" [ref=f25e163] [cursor=pointer]:
+                            - /url: /influencers/inf_0009
+                          - paragraph [ref=f25e164]:
+                            - generic [ref=f25e165]: "@jonas_fina"
+                            - text: · 1.4M followers
+                    - cell "confirmed" [ref=f25e166]
+                    - cell "₹3.4L" [ref=f25e168]
+                    - cell "₹3L gap ₹40K" [ref=f25e169]:
+                      - text: ₹3L
+                      - generic [ref=f25e170]: gap ₹40K
+                    - cell "₹3.2L" [ref=f25e171]
+                    - cell "0" [ref=f25e172]
+                    - cell "—" [ref=f25e173]
+                    - cell "—" [ref=f25e174]
+                    - cell "—" [ref=f25e175]
+                    - cell "—" [ref=f25e176]
+                    - cell "50" [ref=f25e177]:
+                      - 'generic "Health: Needs review" [ref=f25e178]': "50"
+                  - row [ref=f25e181]:
+                    - cell "Rahul Okafor @rahul.busi · 4.9M followers" [ref=f25e182]:
+                      - generic [ref=f25e183]:
+                        - generic [ref=f25e184]: RO
+                        - generic [ref=f25e186]:
+                          - link "Rahul Okafor" [ref=f25e187] [cursor=pointer]:
+                            - /url: /influencers/inf_0017
+                          - paragraph [ref=f25e188]:
+                            - generic [ref=f25e189]: "@rahul.busi"
+                            - text: · 4.9M followers
+                    - cell "negotiating" [ref=f25e190]
+                    - cell "₹8.8L" [ref=f25e192]
+                    - cell "₹6L gap ₹2.8L" [ref=f25e193]:
+                      - text: ₹6L
+                      - generic [ref=f25e194]: gap ₹2.8L
+                    - cell "—" [ref=f25e195]
+                    - cell "0" [ref=f25e196]
+                    - cell "—" [ref=f25e197]
+                    - cell "—" [ref=f25e198]
+                    - cell "—" [ref=f25e199]
+                    - cell "—" [ref=f25e200]
+                    - cell "67" [ref=f25e201]:
+                      - 'generic "Health: Fair" [ref=f25e202]': "67"
+            - generic [ref=f25e205]: Rates are values your team recorded. SocialOrbit does not hold creators' asking rates and never infers them.
+          - generic [ref=f25e206]:
+            - generic [ref=f25e207]:
+              - heading "Campaign score by creator" [level=2] [ref=f25e209]
+              - img "Campaign performance score for each delivering creator" [ref=f25e211]
+            - generic [ref=f25e213]:
+              - heading "Reach by creator" [level=2] [ref=f25e215]
+              - img "Attributed reach for each delivering creator" [ref=f25e217]
+          - generic [ref=f25e219]:
+            - generic [ref=f25e220]:
+              - heading "Attributed content" [level=2] [ref=f25e221]
+              - generic [ref=f25e222]: "Posts matched to #OrbitSeries2026"
+            - region "Attributed posts" [ref=f25e223]:
+              - table [ref=f25e224]:
+                - rowgroup [ref=f25e225]:
+                  - row [ref=f25e226]:
+                    - columnheader "Creator" [ref=f25e227]
+                    - columnheader "Caption" [ref=f25e228]
+                    - columnheader "Platform" [ref=f25e229]
+                    - columnheader "Published" [ref=f25e230]
+                    - columnheader "Views" [ref=f25e231]
+                    - columnheader "Engagements" [ref=f25e232]
+                    - columnheader "Matched" [ref=f25e233]
+                - rowgroup [ref=f25e234]:
+                  - row [ref=f25e235]:
+                    - cell [ref=f25e236]:
+                      - link "Aria Lindqvist" [ref=f25e237] [cursor=pointer]:
+                        - /url: /influencers/inf_0001
+                    - cell [ref=f25e238]:
+                      - 'link "Working with Northwind on the launch. #OrbitSeries2026" [ref=f25e239] [cursor=pointer]':
+                        - /url: https://example.invalid/ariatrav/0
+                    - cell "YouTube" [ref=f25e245]
+                    - cell "6 days ago" [ref=f25e246]
+                    - cell "16.1K" [ref=f25e247]
+                    - cell "365" [ref=f25e248]
+                    - cell "21 hours ago" [ref=f25e249]
+                  - row [ref=f25e250]:
+                    - cell [ref=f25e251]:
+                      - link "Talia Okafor" [ref=f25e252] [cursor=pointer]:
+                        - /url: /influencers/inf_0004
+                    - cell [ref=f25e253]:
+                      - 'link "Working with Northwind on the launch. #OrbitSeries2026" [ref=f25e254] [cursor=pointer]':
+                        - /url: https://example.invalid/talia_life/0
+                    - cell "YouTube" [ref=f25e260]
+                    - cell "6 days ago" [ref=f25e261]
+                    - cell "12.5K" [ref=f25e262]
+                    - cell "404" [ref=f25e263]
+                    - cell "21 hours ago" [ref=f25e264]
+                  - row [ref=f25e265]:
+                    - cell [ref=f25e266]:
+                      - link "Aria Lindqvist" [ref=f25e267] [cursor=pointer]:
+                        - /url: /influencers/inf_0001
+                    - cell [ref=f25e268]:
+                      - 'link "Working with Northwind on the launch. #OrbitSeries2026" [ref=f25e269] [cursor=pointer]':
+                        - /url: https://example.invalid/ariatrav/1
+                    - cell "YouTube" [ref=f25e275]
+                    - cell "2 weeks ago" [ref=f25e276]
+                    - cell "16.1K" [ref=f25e277]
+                    - cell "365" [ref=f25e278]
+                    - cell "6 days ago" [ref=f25e279]
+                  - row [ref=f25e280]:
+                    - cell [ref=f25e281]:
+                      - link "Talia Okafor" [ref=f25e282] [cursor=pointer]:
+                        - /url: /influencers/inf_0004
+                    - cell [ref=f25e283]:
+                      - 'link "Working with Northwind on the launch. #OrbitSeries2026" [ref=f25e284] [cursor=pointer]':
+                        - /url: https://example.invalid/talia_life/1
+                    - cell "YouTube" [ref=f25e290]
+                    - cell "2 weeks ago" [ref=f25e291]
+                    - cell "12.5K" [ref=f25e292]
+                    - cell "404" [ref=f25e293]
+                    - cell "6 days ago" [ref=f25e294]
+                  - row [ref=f25e295]:
+                    - cell [ref=f25e296]:
+                      - link "Talia Okafor" [ref=f25e297] [cursor=pointer]:
+                        - /url: /influencers/inf_0004
+                    - cell [ref=f25e298]:
+                      - 'link "Working with Northwind on the launch. #OrbitSeries2026" [ref=f25e299] [cursor=pointer]':
+                        - /url: https://example.invalid/talia_life/2
+                    - cell "YouTube" [ref=f25e305]
+                    - cell "2 weeks ago" [ref=f25e306]
+                    - cell "12.5K" [ref=f25e307]
+                    - cell "404" [ref=f25e308]
+                    - cell "2 weeks ago" [ref=f25e309]
+  - button "Open Next.js Dev Tools" [ref=f25e315] [cursor=pointer]

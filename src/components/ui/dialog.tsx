@@ -5,7 +5,14 @@ import { X } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 /* ---------------------------------------------------------------------------
- * Built on the native <dialog> element. The platform already gives us the
+ * Built on the native <dialog> element.
+ *
+ * Note for future edits: do NOT guard the return with `typeof document`. A
+ * <dialog> renders as ordinary markup on the server; only `showModal()` needs
+ * the browser, and that already lives in an effect. Branching on `document`
+ * makes the server emit nothing and the client emit an element, which is a
+ * hydration mismatch that throws away and re-renders the whole page subtree —
+ * every screen carrying a dialog paid for it. The platform already gives us the
  * top layer, focus trapping, Escape-to-close, inert background and correct
  * `aria-modal` semantics — a headless dialog library would reimplement all of
  * that in userland and get some of it wrong.
@@ -47,8 +54,6 @@ export function Dialog({
     if (open && !node.open) node.showModal();
     else if (!open && node.open) node.close();
   }, [open]);
-
-  if (typeof document === "undefined") return null;
 
   return (
     <dialog

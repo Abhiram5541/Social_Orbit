@@ -19,6 +19,7 @@ import {
   type Provenance,
 } from "@/lib/contracts/common";
 import { Tooltip } from "@/components/ui/overlay";
+import { RelativeTime } from "@/components/ui/relative-time";
 
 /* ---------------------------------------------------------------------------
  * Provenance display — CLAUDE.md §8.
@@ -113,7 +114,7 @@ export function ProvenanceMark({
         <Icon className="size-3" aria-hidden />
         {showLabel && <span>{kind.label}</span>}
         <span className="sr-only">
-          {kind.label}, collected {formatRelativeTime(provenance.collectedAt)}
+          {kind.label}, collected <RelativeTime at={provenance.collectedAt} />
         </span>
       </span>
     </Tooltip>
@@ -276,7 +277,7 @@ export function Freshness({
         className,
       )}
     >
-      {prefix} {formatRelativeTime(at)}
+      <RelativeTime at={at} prefix={prefix} />
       {stale && <span className="sr-only">(stale)</span>}
     </span>
   );

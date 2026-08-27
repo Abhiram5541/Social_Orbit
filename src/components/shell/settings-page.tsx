@@ -1,7 +1,7 @@
 import * as React from "react";
 import { PLAN_CONFIG, ROLE_LABEL, ROLE_PERMISSIONS, type SessionUser } from "@/lib/contracts/auth";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, LinkButton } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Notice } from "@/components/ui/states";
 import { DataRow } from "@/components/intelligence/stat";
@@ -43,8 +43,12 @@ export function SettingsPanels({ user }: { user: SessionUser }) {
               session immediately.
             </p>
             <div className="flex flex-wrap gap-2">
-              <Button>Change password</Button>
-              <Button variant="ghost">Sign out other sessions</Button>
+              {/* The reset flow is built and works, so the control uses it
+                  rather than being a second, unimplemented path. */}
+              <LinkButton href="/forgot-password">Change password</LinkButton>
+              <Button variant="ghost" disabled title="Not available yet">
+                Sign out other sessions
+              </Button>
             </div>
             <Notice tone="info" title="Two-factor authentication">
               Not yet available. When it ships it will be enforceable at the organisation level

@@ -63,7 +63,7 @@ export default async function HelpPage() {
           </CardHeader>
           <CardContent className="text-[13px] text-ink-muted">
             Developer documentation lives in the{" "}
-            <Link href="/api-portal" className="rounded text-brand-ink hover:underline">
+            <Link href="/api-portal" className="rounded font-medium text-brand-ink underline underline-offset-2">
               API portal
             </Link>
             . For anything else, contact your account manager.

@@ -15,6 +15,7 @@ import { Field, Textarea } from "@/components/ui/field";
 import { EmptyState, Notice } from "@/components/ui/states";
 import { Table, TableWrap, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
 import { ScorePill } from "@/components/intelligence/score";
+import { RelativeTime } from "@/components/ui/relative-time";
 
 export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailData }) {
   const router = useRouter();
@@ -176,7 +177,7 @@ export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailD
                     </button>
                   </Td>
                   <Td className="whitespace-nowrap text-[12px] text-ink-muted">
-                    {formatRelativeTime(item.addedAt)}
+                    <RelativeTime at={item.addedAt} />
                     <span className="block text-ink-subtle">by {item.addedByName}</span>
                   </Td>
                   <Td className="text-right">

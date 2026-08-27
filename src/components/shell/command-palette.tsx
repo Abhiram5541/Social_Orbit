@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { CornerDownLeft, Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { formatCompact } from "@/lib/format";
@@ -51,9 +52,6 @@ export function CommandPalette({
   const ref = React.useRef<HTMLDialogElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [query, setQuery] = React.useState("");
-  const [results, setResults] = React.useState<InfluencerSummary[]>([]);
-  const [loading, setLoading] = React.useState(false);
-  const [failed, setFailed] = React.useState(false);
   const [cursor, setCursor] = React.useState(0);
 
   React.useEffect(() => {
@@ -62,9 +60,7 @@ export function CommandPalette({
     if (open && !node.open) {
       node.showModal();
       setQuery("");
-      setResults([]);
       setCursor(0);
-      setFailed(false);
       inputRef.current?.focus();
     } else if (!open && node.open) {
       node.close();
@@ -79,41 +75,35 @@ export function CommandPalette({
     [can, query],
   );
 
-  React.useEffect(() => {
-    const trimmed = query.trim();
-    if (trimmed.length < 2) {
-      setResults([]);
-      setLoading(false);
-      return;
-    }
+  /*
+   * `useDeferredValue` is the debounce: React keeps the last committed value
+   * while a newer one is still rendering, so the query lags the keystrokes
+   * without a timer to clear. React Query then owns the request itself —
+   * cancelling the superseded one and caching what came back.
+   */
+  const deferred = React.useDeferredValue(query.trim());
+  const term = deferred.length >= 2 ? deferred : "";
 
-    const controller = new AbortController();
-    setLoading(true);
-    const timer = window.setTimeout(async () => {
-      try {
-        const response = await fetch(
-          `/api/internal/influencers/quick-search?q=${encodeURIComponent(trimmed)}`,
-          { signal: controller.signal },
-        );
-        if (!response.ok) throw new Error(String(response.status));
-        const data = (await response.json()) as { items: InfluencerSummary[] };
-        setResults(data.items);
-        setFailed(false);
-      } catch (error) {
-        if ((error as Error).name !== "AbortError") {
-          setResults([]);
-          setFailed(true);
-        }
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    }, 180);
+  const {
+    data: results = [],
+    isFetching,
+    isError,
+  } = useQuery({
+    queryKey: ["quick-search", term],
+    enabled: term.length >= 2,
+    queryFn: async ({ signal }) => {
+      const response = await fetch(
+        `/api/internal/influencers/quick-search?q=${encodeURIComponent(term)}`,
+        { signal },
+      );
+      if (!response.ok) throw new Error(String(response.status));
+      const body = (await response.json()) as { items: InfluencerSummary[] };
+      return body.items;
+    },
+  });
 
-    return () => {
-      controller.abort();
-      window.clearTimeout(timer);
-    };
-  }, [query]);
+  const loading = isFetching;
+  const failed = isError;
 
   const items: { key: string; href: string }[] = React.useMemo(
     () => [
@@ -123,9 +113,12 @@ export function CommandPalette({
     [results, commands],
   );
 
-  React.useEffect(() => {
+  // The highlighted row resets whenever the result list changes shape.
+  const [cursorFor, setCursorFor] = React.useState(items.length);
+  if (cursorFor !== items.length) {
+    setCursorFor(items.length);
     setCursor(0);
-  }, [items.length]);
+  }
 
   function go(href: string) {
     onClose();

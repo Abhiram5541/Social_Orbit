@@ -1,0 +1,923 @@
+- generic [ref=f26e1]:
+  - generic [ref=f26e2]:
+    - link "Skip to content" [ref=f26e3] [cursor=pointer]:
+      - /url: "#main"
+    - generic [ref=f26e4]:
+      - banner [ref=f26e5]:
+        - button "Open navigation" [ref=f26e6]
+        - button "Search creators, campaigns, shortlists…" [ref=f26e8]
+        - generic [ref=f26e13]:
+          - link "Notifications" [ref=f26e14] [cursor=pointer]:
+            - /url: /notifications
+          - button [ref=f26e18]:
+            - generic [ref=f26e19]: MW
+      - main [ref=f26e23]:
+        - generic [ref=f26e24]:
+          - generic [ref=f26e27]:
+            - heading "Discovery" [level=1] [ref=f26e28]
+            - paragraph [ref=f26e29]: Search the SocialOrbit database by market, category, audience quality and campaign fit. Filters combine with AND.
+          - generic [ref=f26e30]:
+            - dialog [ref=f26e134]:
+              - generic [ref=f26e135]:
+                - generic [ref=f26e136]:
+                  - heading "Filters" [level=2] [ref=f26e137]
+                  - button "Close panel" [active] [ref=f26e138]
+                - generic [ref=f26e143]:
+                  - generic [ref=f26e144]:
+                    - generic [ref=f26e145]: Filters
+                    - button "Reset" [ref=f26e146]
+                  - generic [ref=f26e150]:
+                    - group [ref=f26e151]:
+                      - generic "Platform" [ref=f26e152] [cursor=pointer]
+                      - generic [ref=f26e155]:
+                        - generic [ref=f26e156]:
+                          - checkbox "YouTube" [ref=f26e157] [cursor=pointer]
+                          - generic [ref=f26e158] [cursor=pointer]: YouTube
+                          - generic [ref=f26e159]: "59"
+                        - generic [ref=f26e160]:
+                          - checkbox "Instagram" [ref=f26e161] [cursor=pointer]
+                          - generic [ref=f26e162] [cursor=pointer]: Instagram
+                          - generic [ref=f26e163]: "62"
+                        - paragraph [ref=f26e164]: TikTok is not yet connected — no creators are indexed for it.
+                    - group [ref=f26e165]:
+                      - generic "Verification" [ref=f26e166] [cursor=pointer]
+                      - generic [ref=f26e169]:
+                        - generic [ref=f26e170]:
+                          - checkbox "SocialOrbit Verified" [ref=f26e171] [cursor=pointer]
+                          - generic [ref=f26e172] [cursor=pointer]: SocialOrbit Verified
+                          - generic [ref=f26e173]: "25"
+                        - generic [ref=f26e174]:
+                          - checkbox "Connection pending" [ref=f26e175] [cursor=pointer]
+                          - generic [ref=f26e176] [cursor=pointer]: Connection pending
+                          - generic [ref=f26e177]: "8"
+                        - generic [ref=f26e178]:
+                          - checkbox "Unverified" [ref=f26e179] [cursor=pointer]
+                          - generic [ref=f26e180] [cursor=pointer]: Unverified
+                          - generic [ref=f26e181]: "46"
+                    - group [ref=f26e182]:
+                      - generic "Audience size" [ref=f26e183] [cursor=pointer]
+                      - generic [ref=f26e186]:
+                        - generic [ref=f26e187]:
+                          - checkbox "Nano · 1K–10K" [ref=f26e188] [cursor=pointer]
+                          - generic [ref=f26e189] [cursor=pointer]: Nano · 1K–10K
+                        - generic [ref=f26e190]:
+                          - checkbox "Micro · 10K–100K" [ref=f26e191] [cursor=pointer]
+                          - generic [ref=f26e192] [cursor=pointer]: Micro · 10K–100K
+                        - generic [ref=f26e193]:
+                          - checkbox "Mid · 100K–500K" [ref=f26e194] [cursor=pointer]
+                          - generic [ref=f26e195] [cursor=pointer]: Mid · 100K–500K
+                        - generic [ref=f26e196]:
+                          - checkbox "Macro · 500K–1M" [ref=f26e197] [cursor=pointer]
+                          - generic [ref=f26e198] [cursor=pointer]: Macro · 500K–1M
+                        - generic [ref=f26e199]:
+                          - checkbox "Mega · 1M+" [ref=f26e200] [cursor=pointer]
+                          - generic [ref=f26e201] [cursor=pointer]: Mega · 1M+
+                        - generic [ref=f26e202]:
+                          - generic [ref=f26e203]:
+                            - generic [ref=f26e204]: Min followers
+                            - spinbutton "Min followers" [ref=f26e207]
+                          - generic [ref=f26e208]:
+                            - generic [ref=f26e209]: Max followers
+                            - spinbutton "Max followers" [ref=f26e212]
+                    - group [ref=f26e213]:
+                      - generic "Category" [ref=f26e214] [cursor=pointer]
+                    - group [ref=f26e217]:
+                      - generic "Location" [ref=f26e218] [cursor=pointer]
+                    - group [ref=f26e221]:
+                      - generic "Performance" [ref=f26e222] [cursor=pointer]
+                    - group [ref=f26e225]:
+                      - generic "Quality" [ref=f26e226] [cursor=pointer]
+                    - group [ref=f26e229]:
+                      - generic "Risk" [ref=f26e230] [cursor=pointer]
+                    - group [ref=f26e233]:
+                      - generic "Activity" [ref=f26e234] [cursor=pointer]
+                - generic [ref=f26e237]:
+                  - button "Reset" [ref=f26e238]
+                  - button "Show results" [ref=f26e239]
+            - generic [ref=f26e31]:
+              - search [ref=f26e33]:
+                - searchbox "Search influencers" [ref=f26e35]
+                - button "Search" [ref=f26e36]
+                - button "Filters" [ref=f26e37]
+                - combobox "Sort results" [ref=f26e41]:
+                  - option "Best match" [selected]
+                  - option "Health score"
+                  - option "Followers — high to low"
+                  - option "Followers — low to high"
+                  - option "Engagement rate"
+                  - option "Median views"
+                  - option "Growth"
+                  - option "Campaign fit"
+                  - option "Recently active"
+              - generic [ref=f26e43]:
+                - paragraph [ref=f26e241]: 79 creators
+                - list [ref=f26e242]:
+                  - listitem [ref=f26e243]:
+                    - generic [ref=f26e244]:
+                      - checkbox "Select Luca Fitzgerald for comparison" [ref=f26e245] [cursor=pointer]
+                      - generic [ref=f26e246]:
+                        - generic [ref=f26e247]:
+                          - generic [ref=f26e248]:
+                            - generic [ref=f26e249]: LF
+                            - generic "SocialOrbit Verified" [ref=f26e250]:
+                              - img "SocialOrbit Verified" [ref=f26e251]
+                          - generic [ref=f26e254]:
+                            - link "Luca Fitzgerald" [ref=f26e255] [cursor=pointer]:
+                              - /url: /influencers/inf_0063
+                            - paragraph [ref=f26e256]:
+                              - generic [ref=f26e257]: "@luca_fash"
+                              - text: · Instagram · Nigeria · Fashion, Business
+                        - generic [ref=f26e258]:
+                          - generic [ref=f26e259]:
+                            - term [ref=f26e260]: Followers
+                            - definition [ref=f26e261]: 302.5K
+                          - generic [ref=f26e262]:
+                            - term [ref=f26e263]: Median views
+                            - definition [ref=f26e264]: 142.5K
+                          - generic [ref=f26e265]:
+                            - term [ref=f26e266]: Engagement
+                            - definition [ref=f26e267]: 3.7%
+                          - generic [ref=f26e268]:
+                            - term [ref=f26e269]: Health
+                            - definition [ref=f26e270]:
+                              - 'generic "Health: Strong performance" [ref=f26e271]': "78"
+                        - generic [ref=f26e274]:
+                          - generic [ref=f26e275]: Low risk
+                          - generic [ref=f26e277]: Active
+                          - button "Shortlist" [ref=f26e279]
+                  - listitem [ref=f26e281]:
+                    - generic [ref=f26e282]:
+                      - checkbox "Select Yuki Sharma for comparison" [ref=f26e283] [cursor=pointer]
+                      - generic [ref=f26e284]:
+                        - generic [ref=f26e285]:
+                          - generic [ref=f26e286]:
+                            - generic [ref=f26e287]: YS
+                            - generic "SocialOrbit Verified" [ref=f26e288]:
+                              - img "SocialOrbit Verified" [ref=f26e289]
+                          - generic [ref=f26e292]:
+                            - link "Yuki Sharma" [ref=f26e293] [cursor=pointer]:
+                              - /url: /influencers/inf_0024
+                            - paragraph [ref=f26e294]:
+                              - generic [ref=f26e295]: "@yuki.pare"
+                              - text: · Instagram · Nigeria · Parenting, Gaming
+                        - generic [ref=f26e296]:
+                          - generic [ref=f26e297]:
+                            - term [ref=f26e298]: Followers
+                            - definition [ref=f26e299]: 92.5K
+                          - generic [ref=f26e300]:
+                            - term [ref=f26e301]: Median views
+                            - definition [ref=f26e302]: 23.6K
+                          - generic [ref=f26e303]:
+                            - term [ref=f26e304]: Engagement
+                            - definition [ref=f26e305]: 4.4%
+                          - generic [ref=f26e306]:
+                            - term [ref=f26e307]: Health
+                            - definition [ref=f26e308]:
+                              - 'generic "Health: Strong performance" [ref=f26e309]': "78"
+                        - generic [ref=f26e312]:
+                          - generic [ref=f26e313]: Low risk
+                          - generic [ref=f26e315]: Dormant
+                          - button "Shortlist" [ref=f26e317]
+                  - listitem [ref=f26e319]:
+                    - generic [ref=f26e320]:
+                      - checkbox "Select Amara Bello for comparison" [ref=f26e321] [cursor=pointer]
+                      - generic [ref=f26e322]:
+                        - generic [ref=f26e323]:
+                          - generic [ref=f26e324]:
+                            - generic [ref=f26e325]: AB
+                            - generic "SocialOrbit Verified" [ref=f26e326]:
+                              - img "SocialOrbit Verified" [ref=f26e327]
+                          - generic [ref=f26e330]:
+                            - link "Amara Bello" [ref=f26e331] [cursor=pointer]:
+                              - /url: /influencers/inf_0003
+                            - paragraph [ref=f26e332]:
+                              - generic [ref=f26e333]: "@amara_tech"
+                              - text: · YouTube, Instagram · Nigeria · Technology, Fashion
+                        - generic [ref=f26e334]:
+                          - generic [ref=f26e335]:
+                            - term [ref=f26e336]: Followers
+                            - definition [ref=f26e337]: 317.7K
+                          - generic [ref=f26e338]:
+                            - term [ref=f26e339]: Median views
+                            - definition [ref=f26e340]: 27.2K
+                          - generic [ref=f26e341]:
+                            - term [ref=f26e342]: Engagement
+                            - definition [ref=f26e343]: 4.3%
+                          - generic [ref=f26e344]:
+                            - term [ref=f26e345]: Health
+                            - definition [ref=f26e346]:
+                              - 'generic "Health: Strong performance" [ref=f26e347]': "73"
+                        - generic [ref=f26e350]:
+                          - generic [ref=f26e351]: Low risk
+                          - generic [ref=f26e353]: Dormant
+                          - button "Shortlist" [ref=f26e355]
+                  - listitem [ref=f26e357]:
+                    - generic [ref=f26e358]:
+                      - checkbox "Select Talia Lindqvist for comparison" [ref=f26e359] [cursor=pointer]
+                      - generic [ref=f26e360]:
+                        - generic [ref=f26e361]:
+                          - generic [ref=f26e362]:
+                            - generic [ref=f26e363]: TL
+                            - generic "SocialOrbit Verified" [ref=f26e364]:
+                              - img "SocialOrbit Verified" [ref=f26e365]
+                          - generic [ref=f26e368]:
+                            - link "Talia Lindqvist" [ref=f26e369] [cursor=pointer]:
+                              - /url: /influencers/inf_0041
+                            - paragraph [ref=f26e370]:
+                              - generic [ref=f26e371]: "@talia_tech"
+                              - text: · YouTube, Instagram · United Kingdom · Technology, Travel
+                        - generic [ref=f26e372]:
+                          - generic [ref=f26e373]:
+                            - term [ref=f26e374]: Followers
+                            - definition [ref=f26e375]: 98.5K
+                          - generic [ref=f26e376]:
+                            - term [ref=f26e377]: Median views
+                            - definition [ref=f26e378]: 31.4K
+                          - generic [ref=f26e379]:
+                            - term [ref=f26e380]: Engagement
+                            - definition [ref=f26e381]: 5.3%
+                          - generic [ref=f26e382]:
+                            - term [ref=f26e383]: Health
+                            - definition [ref=f26e384]:
+                              - 'generic "Health: Strong performance" [ref=f26e385]': "72"
+                        - generic [ref=f26e388]:
+                          - generic [ref=f26e389]: Low risk
+                          - generic [ref=f26e391]: Recent
+                          - button "Shortlist" [ref=f26e393]
+                  - listitem [ref=f26e395]:
+                    - generic [ref=f26e396]:
+                      - checkbox "Select Rhea Lindqvist for comparison" [ref=f26e397] [cursor=pointer]
+                      - generic [ref=f26e398]:
+                        - generic [ref=f26e399]:
+                          - generic [ref=f26e400]:
+                            - generic [ref=f26e401]: RL
+                            - generic "SocialOrbit Verified" [ref=f26e402]:
+                              - img "SocialOrbit Verified" [ref=f26e403]
+                          - generic [ref=f26e406]:
+                            - link "Rhea Lindqvist" [ref=f26e407] [cursor=pointer]:
+                              - /url: /influencers/inf_0015
+                            - paragraph [ref=f26e408]:
+                              - generic [ref=f26e409]: "@rheaauto"
+                              - text: · YouTube · United Kingdom · Automotive, Parenting
+                        - generic [ref=f26e410]:
+                          - generic [ref=f26e411]:
+                            - term [ref=f26e412]: Followers
+                            - definition [ref=f26e413]: 20.6K
+                          - generic [ref=f26e414]:
+                            - term [ref=f26e415]: Median views
+                            - definition [ref=f26e416]: 3.7K
+                          - generic [ref=f26e417]:
+                            - term [ref=f26e418]: Engagement
+                            - definition [ref=f26e419]: 3.0%
+                          - generic [ref=f26e420]:
+                            - term [ref=f26e421]: Health
+                            - definition [ref=f26e422]:
+                              - 'generic "Health: Strong performance" [ref=f26e423]': "73"
+                        - generic [ref=f26e426]:
+                          - generic [ref=f26e427]: Low risk
+                          - generic [ref=f26e429]: Active
+                          - button "Shortlist" [ref=f26e431]
+                  - listitem [ref=f26e433]:
+                    - generic [ref=f26e434]:
+                      - checkbox "Select Clara Petrov for comparison" [ref=f26e435] [cursor=pointer]
+                      - generic [ref=f26e436]:
+                        - generic [ref=f26e437]:
+                          - generic [ref=f26e438]:
+                            - generic [ref=f26e439]: CP
+                            - generic "SocialOrbit Verified" [ref=f26e440]:
+                              - img "SocialOrbit Verified" [ref=f26e441]
+                          - generic [ref=f26e444]:
+                            - link "Clara Petrov" [ref=f26e445] [cursor=pointer]:
+                              - /url: /influencers/inf_0051
+                            - paragraph [ref=f26e446]:
+                              - generic [ref=f26e447]: "@clara.beau"
+                              - text: · YouTube, Instagram · United Arab Emirates · Beauty, Business
+                        - generic [ref=f26e448]:
+                          - generic [ref=f26e449]:
+                            - term [ref=f26e450]: Followers
+                            - definition [ref=f26e451]: 328.9K
+                          - generic [ref=f26e452]:
+                            - term [ref=f26e453]: Median views
+                            - definition [ref=f26e454]: 46.3K
+                          - generic [ref=f26e455]:
+                            - term [ref=f26e456]: Engagement
+                            - definition [ref=f26e457]: 3.0%
+                          - generic [ref=f26e458]:
+                            - term [ref=f26e459]: Health
+                            - definition [ref=f26e460]:
+                              - 'generic "Health: Strong performance" [ref=f26e461]': "71"
+                        - generic [ref=f26e464]:
+                          - generic [ref=f26e465]: Low risk
+                          - generic [ref=f26e467]: Recent
+                          - button "Shortlist" [ref=f26e469]
+                  - listitem [ref=f26e471]:
+                    - generic [ref=f26e472]:
+                      - checkbox "Select Kabir Silva for comparison" [ref=f26e473] [cursor=pointer]
+                      - generic [ref=f26e474]:
+                        - generic [ref=f26e475]:
+                          - generic [ref=f26e476]:
+                            - generic [ref=f26e477]: KS
+                            - generic "SocialOrbit Verified" [ref=f26e478]:
+                              - img "SocialOrbit Verified" [ref=f26e479]
+                          - generic [ref=f26e482]:
+                            - link "Kabir Silva" [ref=f26e483] [cursor=pointer]:
+                              - /url: /influencers/inf_0076
+                            - paragraph [ref=f26e484]:
+                              - generic [ref=f26e485]: "@kabir_fash"
+                              - text: · Instagram · Nigeria · Fashion, Automotive
+                        - generic [ref=f26e486]:
+                          - generic [ref=f26e487]:
+                            - term [ref=f26e488]: Followers
+                            - definition [ref=f26e489]: 37.6K
+                          - generic [ref=f26e490]:
+                            - term [ref=f26e491]: Median views
+                            - definition [ref=f26e492]: 3.8K
+                          - generic [ref=f26e493]:
+                            - term [ref=f26e494]: Engagement
+                            - definition [ref=f26e495]: 2.6%
+                          - generic [ref=f26e496]:
+                            - term [ref=f26e497]: Health
+                            - definition [ref=f26e498]:
+                              - 'generic "Health: Strong performance" [ref=f26e499]': "73"
+                        - generic [ref=f26e502]:
+                          - generic [ref=f26e503]: Low risk
+                          - generic [ref=f26e505]: Dormant
+                          - button "Shortlist" [ref=f26e507]
+                  - listitem [ref=f26e509]:
+                    - generic [ref=f26e510]:
+                      - checkbox "Select Farah Rao for comparison" [ref=f26e511] [cursor=pointer]
+                      - generic [ref=f26e512]:
+                        - generic [ref=f26e513]:
+                          - generic [ref=f26e514]: FR
+                          - generic [ref=f26e516]:
+                            - link "Farah Rao" [ref=f26e517] [cursor=pointer]:
+                              - /url: /influencers/inf_0029
+                            - paragraph [ref=f26e518]:
+                              - generic [ref=f26e519]: "@farah_busi"
+                              - text: · YouTube, Instagram · United Kingdom · Business, Education
+                        - generic [ref=f26e520]:
+                          - generic [ref=f26e521]:
+                            - term [ref=f26e522]: Followers
+                            - definition [ref=f26e523]: 35.2K
+                          - generic [ref=f26e524]:
+                            - term [ref=f26e525]: Median views
+                            - definition [ref=f26e526]: 11.2K
+                          - generic [ref=f26e527]:
+                            - term [ref=f26e528]: Engagement
+                            - definition [ref=f26e529]: 3.5%
+                          - generic [ref=f26e530]:
+                            - term [ref=f26e531]: Health
+                            - definition [ref=f26e532]:
+                              - 'generic "Health: Strong performance" [ref=f26e533]': "75"
+                        - generic [ref=f26e536]:
+                          - generic [ref=f26e537]: Low risk
+                          - generic [ref=f26e539]: Recent
+                          - button "Shortlist" [ref=f26e541]
+                  - listitem [ref=f26e543]:
+                    - generic [ref=f26e544]:
+                      - checkbox "Select Marcus Okafor for comparison" [ref=f26e545] [cursor=pointer]
+                      - generic [ref=f26e546]:
+                        - generic [ref=f26e547]:
+                          - generic [ref=f26e548]:
+                            - generic [ref=f26e549]: MO
+                            - generic "SocialOrbit Verified" [ref=f26e550]:
+                              - img "SocialOrbit Verified" [ref=f26e551]
+                          - generic [ref=f26e554]:
+                            - link "Marcus Okafor" [ref=f26e555] [cursor=pointer]:
+                              - /url: /influencers/inf_0050
+                            - paragraph [ref=f26e556]:
+                              - generic [ref=f26e557]: "@marcusfina"
+                              - text: · Instagram, YouTube · India · Finance, Travel
+                        - generic [ref=f26e558]:
+                          - generic [ref=f26e559]:
+                            - term [ref=f26e560]: Followers
+                            - definition [ref=f26e561]: 70.3K
+                          - generic [ref=f26e562]:
+                            - term [ref=f26e563]: Median views
+                            - definition [ref=f26e564]: 28.7K
+                          - generic [ref=f26e565]:
+                            - term [ref=f26e566]: Engagement
+                            - definition [ref=f26e567]: 3.1%
+                          - generic [ref=f26e568]:
+                            - term [ref=f26e569]: Health
+                            - definition [ref=f26e570]:
+                              - 'generic "Health: Strong performance" [ref=f26e571]': "71"
+                        - generic [ref=f26e574]:
+                          - generic [ref=f26e575]: Low risk
+                          - generic [ref=f26e577]: Recent
+                          - button "Shortlist" [ref=f26e579]
+                  - listitem [ref=f26e581]:
+                    - generic [ref=f26e582]:
+                      - checkbox "Select Sana Lindqvist for comparison" [ref=f26e583] [cursor=pointer]
+                      - generic [ref=f26e584]:
+                        - generic [ref=f26e585]:
+                          - generic [ref=f26e586]:
+                            - generic [ref=f26e587]: SL
+                            - generic "SocialOrbit Verified" [ref=f26e588]:
+                              - img "SocialOrbit Verified" [ref=f26e589]
+                          - generic [ref=f26e592]:
+                            - link "Sana Lindqvist" [ref=f26e593] [cursor=pointer]:
+                              - /url: /influencers/inf_0005
+                            - paragraph [ref=f26e594]:
+                              - generic [ref=f26e595]: "@sana_food"
+                              - text: · YouTube, Instagram · Singapore · Food & Beverage, Technology
+                        - generic [ref=f26e596]:
+                          - generic [ref=f26e597]:
+                            - term [ref=f26e598]: Followers
+                            - definition [ref=f26e599]: 290.1K
+                          - generic [ref=f26e600]:
+                            - term [ref=f26e601]: Median views
+                            - definition [ref=f26e602]: 111.9K
+                          - generic [ref=f26e603]:
+                            - term [ref=f26e604]: Engagement
+                            - definition [ref=f26e605]: 4.9%
+                          - generic [ref=f26e606]:
+                            - term [ref=f26e607]: Health
+                            - definition [ref=f26e608]:
+                              - 'generic "Health: Fair" [ref=f26e609]': "69"
+                        - generic [ref=f26e612]:
+                          - generic [ref=f26e613]: Medium risk
+                          - generic [ref=f26e615]: Dormant
+                          - button "Shortlist" [ref=f26e617]
+                  - listitem [ref=f26e619]:
+                    - generic [ref=f26e620]:
+                      - checkbox "Select Dev Kowalski for comparison" [ref=f26e621] [cursor=pointer]
+                      - generic [ref=f26e622]:
+                        - generic [ref=f26e623]:
+                          - generic [ref=f26e624]:
+                            - generic [ref=f26e625]: DK
+                            - generic "SocialOrbit Verified" [ref=f26e626]:
+                              - img "SocialOrbit Verified" [ref=f26e627]
+                          - generic [ref=f26e630]:
+                            - link "Dev Kowalski" [ref=f26e631] [cursor=pointer]:
+                              - /url: /influencers/inf_0069
+                            - paragraph [ref=f26e632]:
+                              - generic [ref=f26e633]: "@dev_heal"
+                              - text: · Instagram, YouTube · Nigeria · Health & Wellness, Food & Beverage
+                        - generic [ref=f26e634]:
+                          - generic [ref=f26e635]:
+                            - term [ref=f26e636]: Followers
+                            - definition [ref=f26e637]: 478.9K
+                          - generic [ref=f26e638]:
+                            - term [ref=f26e639]: Median views
+                            - definition [ref=f26e640]: 143.4K
+                          - generic [ref=f26e641]:
+                            - term [ref=f26e642]: Engagement
+                            - definition [ref=f26e643]: 2.1%
+                          - generic [ref=f26e644]:
+                            - term [ref=f26e645]: Health
+                            - definition [ref=f26e646]:
+                              - 'generic "Health: Strong performance" [ref=f26e647]': "70"
+                        - generic [ref=f26e650]:
+                          - generic [ref=f26e651]: Low risk
+                          - generic [ref=f26e653]: Dormant
+                          - button "Shortlist" [ref=f26e655]
+                  - listitem [ref=f26e657]:
+                    - generic [ref=f26e658]:
+                      - checkbox "Select Mateo Sharma for comparison" [ref=f26e659] [cursor=pointer]
+                      - generic [ref=f26e660]:
+                        - generic [ref=f26e661]:
+                          - generic [ref=f26e662]: MS
+                          - generic [ref=f26e664]:
+                            - link "Mateo Sharma" [ref=f26e665] [cursor=pointer]:
+                              - /url: /influencers/inf_0066
+                            - paragraph [ref=f26e666]:
+                              - generic [ref=f26e667]: "@mateo_heal"
+                              - text: · YouTube · United States · Health & Wellness, Parenting
+                        - generic [ref=f26e668]:
+                          - generic [ref=f26e669]:
+                            - term [ref=f26e670]: Followers
+                            - definition [ref=f26e671]: 15.2K
+                          - generic [ref=f26e672]:
+                            - term [ref=f26e673]: Median views
+                            - definition [ref=f26e674]: 3.6K
+                          - generic [ref=f26e675]:
+                            - term [ref=f26e676]: Engagement
+                            - definition [ref=f26e677]: 2.5%
+                          - generic [ref=f26e678]:
+                            - term [ref=f26e679]: Health
+                            - definition [ref=f26e680]:
+                              - 'generic "Health: Strong performance" [ref=f26e681]': "76"
+                        - generic [ref=f26e684]:
+                          - generic [ref=f26e685]: Low risk
+                          - generic [ref=f26e687]: Active
+                          - button "Shortlist" [ref=f26e689]
+                  - listitem [ref=f26e691]:
+                    - generic [ref=f26e692]:
+                      - checkbox "Select Mateo Nakamura for comparison" [ref=f26e693] [cursor=pointer]
+                      - generic [ref=f26e694]:
+                        - generic [ref=f26e695]:
+                          - generic [ref=f26e696]:
+                            - generic [ref=f26e697]: MN
+                            - generic "SocialOrbit Verified" [ref=f26e698]:
+                              - img "SocialOrbit Verified" [ref=f26e699]
+                          - generic [ref=f26e702]:
+                            - link "Mateo Nakamura" [ref=f26e703] [cursor=pointer]:
+                              - /url: /influencers/inf_0079
+                            - paragraph [ref=f26e704]:
+                              - generic [ref=f26e705]: "@mateo_educ"
+                              - text: · YouTube, Instagram · Japan · Education, Parenting
+                        - generic [ref=f26e706]:
+                          - generic [ref=f26e707]:
+                            - term [ref=f26e708]: Followers
+                            - definition [ref=f26e709]: 1.3M
+                          - generic [ref=f26e710]:
+                            - term [ref=f26e711]: Median views
+                            - definition [ref=f26e712]: 236.6K
+                          - generic [ref=f26e713]:
+                            - term [ref=f26e714]: Engagement
+                            - definition [ref=f26e715]: 4.2%
+                          - generic [ref=f26e716]:
+                            - term [ref=f26e717]: Health
+                            - definition [ref=f26e718]:
+                              - 'generic "Health: Fair" [ref=f26e719]': "67"
+                        - generic [ref=f26e722]:
+                          - generic [ref=f26e723]: Low risk
+                          - generic [ref=f26e725]: Recent
+                          - button "Shortlist" [ref=f26e727]
+                  - listitem [ref=f26e729]:
+                    - generic [ref=f26e730]:
+                      - checkbox "Select Zoya Basu for comparison" [ref=f26e731] [cursor=pointer]
+                      - generic [ref=f26e732]:
+                        - generic [ref=f26e733]:
+                          - generic [ref=f26e734]:
+                            - generic [ref=f26e735]: ZB
+                            - generic "SocialOrbit Verified" [ref=f26e736]:
+                              - img "SocialOrbit Verified" [ref=f26e737]
+                          - generic [ref=f26e740]:
+                            - link "Zoya Basu" [ref=f26e741] [cursor=pointer]:
+                              - /url: /influencers/inf_0053
+                            - paragraph [ref=f26e742]:
+                              - generic [ref=f26e743]: "@zoya.fitn"
+                              - text: · Instagram · United States · Fitness, Business
+                        - generic [ref=f26e744]:
+                          - generic [ref=f26e745]:
+                            - term [ref=f26e746]: Followers
+                            - definition [ref=f26e747]: 20.7K
+                          - generic [ref=f26e748]:
+                            - term [ref=f26e749]: Median views
+                            - definition [ref=f26e750]: 3.5K
+                          - generic [ref=f26e751]:
+                            - term [ref=f26e752]: Engagement
+                            - definition [ref=f26e753]: 4.5%
+                          - generic [ref=f26e754]:
+                            - term [ref=f26e755]: Health
+                            - definition [ref=f26e756]:
+                              - 'generic "Health: Fair" [ref=f26e757]': "70"
+                        - generic [ref=f26e760]:
+                          - generic [ref=f26e761]: Low risk
+                          - generic [ref=f26e763]: Dormant
+                          - button "Shortlist" [ref=f26e765]
+                  - listitem [ref=f26e767]:
+                    - generic [ref=f26e768]:
+                      - checkbox "Select Meera Sharma for comparison" [ref=f26e769] [cursor=pointer]
+                      - generic [ref=f26e770]:
+                        - generic [ref=f26e771]:
+                          - generic [ref=f26e772]: MS
+                          - generic [ref=f26e774]:
+                            - link "Meera Sharma" [ref=f26e775] [cursor=pointer]:
+                              - /url: /influencers/inf_0010
+                            - paragraph [ref=f26e776]:
+                              - generic [ref=f26e777]: "@meera.fina"
+                              - text: · Instagram, YouTube · India · Finance, Business
+                        - generic [ref=f26e778]:
+                          - generic [ref=f26e779]:
+                            - term [ref=f26e780]: Followers
+                            - definition [ref=f26e781]: 17.8K
+                          - generic [ref=f26e782]:
+                            - term [ref=f26e783]: Median views
+                            - definition [ref=f26e784]: 3.5K
+                          - generic [ref=f26e785]:
+                            - term [ref=f26e786]: Engagement
+                            - definition [ref=f26e787]: 6.8%
+                          - generic [ref=f26e788]:
+                            - term [ref=f26e789]: Health
+                            - definition [ref=f26e790]:
+                              - 'generic "Health: Strong performance" [ref=f26e791]': "78"
+                        - generic [ref=f26e794]:
+                          - generic [ref=f26e795]: Low risk
+                          - generic [ref=f26e797]: Recent
+                          - button "Shortlist" [ref=f26e799]
+                  - listitem [ref=f26e801]:
+                    - generic [ref=f26e802]:
+                      - checkbox "Select Rahul Okafor for comparison" [ref=f26e803] [cursor=pointer]
+                      - generic [ref=f26e804]:
+                        - generic [ref=f26e805]:
+                          - generic [ref=f26e806]:
+                            - generic [ref=f26e807]: RO
+                            - generic "SocialOrbit Verified" [ref=f26e808]:
+                              - img "SocialOrbit Verified" [ref=f26e809]
+                          - generic [ref=f26e812]:
+                            - link "Rahul Okafor" [ref=f26e813] [cursor=pointer]:
+                              - /url: /influencers/inf_0017
+                            - paragraph [ref=f26e814]:
+                              - generic [ref=f26e815]: "@rahul.busi"
+                              - text: · YouTube · Singapore · Business, Beauty
+                        - generic [ref=f26e816]:
+                          - generic [ref=f26e817]:
+                            - term [ref=f26e818]: Followers
+                            - definition [ref=f26e819]: 4.9M
+                          - generic [ref=f26e820]:
+                            - term [ref=f26e821]: Median views
+                            - definition [ref=f26e822]: 1.3M
+                          - generic [ref=f26e823]:
+                            - term [ref=f26e824]: Engagement
+                            - definition [ref=f26e825]: 0.9%
+                          - generic [ref=f26e826]:
+                            - term [ref=f26e827]: Health
+                            - definition [ref=f26e828]:
+                              - 'generic "Health: Fair" [ref=f26e829]': "67"
+                        - generic [ref=f26e832]:
+                          - generic [ref=f26e833]: Low risk
+                          - generic [ref=f26e835]: Dormant
+                          - button "Shortlist" [ref=f26e837]
+                  - listitem [ref=f26e839]:
+                    - generic [ref=f26e840]:
+                      - checkbox "Select Owen Petrov for comparison" [ref=f26e841] [cursor=pointer]
+                      - generic [ref=f26e842]:
+                        - generic [ref=f26e843]:
+                          - generic [ref=f26e844]:
+                            - generic [ref=f26e845]: OP
+                            - generic "SocialOrbit Verified" [ref=f26e846]:
+                              - img "SocialOrbit Verified" [ref=f26e847]
+                          - generic [ref=f26e850]:
+                            - link "Owen Petrov" [ref=f26e851] [cursor=pointer]:
+                              - /url: /influencers/inf_0034
+                            - paragraph [ref=f26e852]:
+                              - generic [ref=f26e853]: "@owen.fitn"
+                              - text: · Instagram · United Kingdom · Fitness, Business
+                        - generic [ref=f26e854]:
+                          - generic [ref=f26e855]:
+                            - term [ref=f26e856]: Followers
+                            - definition [ref=f26e857]: 173.8K
+                          - generic [ref=f26e858]:
+                            - term [ref=f26e859]: Median views
+                            - definition [ref=f26e860]: 23.9K
+                          - generic [ref=f26e861]:
+                            - term [ref=f26e862]: Engagement
+                            - definition [ref=f26e863]: 1.9%
+                          - generic [ref=f26e864]:
+                            - term [ref=f26e865]: Health
+                            - definition [ref=f26e866]:
+                              - 'generic "Health: Fair" [ref=f26e867]': "67"
+                        - generic [ref=f26e870]:
+                          - generic [ref=f26e871]: Low risk
+                          - generic [ref=f26e873]: Recent
+                          - button "Shortlist" [ref=f26e875]
+                  - listitem [ref=f26e877]:
+                    - generic [ref=f26e878]:
+                      - checkbox "Select Aria Whitfield for comparison" [ref=f26e879] [cursor=pointer]
+                      - generic [ref=f26e880]:
+                        - generic [ref=f26e881]:
+                          - generic [ref=f26e882]: AW
+                          - generic [ref=f26e884]:
+                            - link "Aria Whitfield" [ref=f26e885] [cursor=pointer]:
+                              - /url: /influencers/inf_0044
+                            - paragraph [ref=f26e886]:
+                              - generic [ref=f26e887]: "@aria.food"
+                              - text: · Instagram · Japan · Food & Beverage, Gaming
+                        - generic [ref=f26e888]:
+                          - generic [ref=f26e889]:
+                            - term [ref=f26e890]: Followers
+                            - definition [ref=f26e891]: 1.4M
+                          - generic [ref=f26e892]:
+                            - term [ref=f26e893]: Median views
+                            - definition [ref=f26e894]: 331.9K
+                          - generic [ref=f26e895]:
+                            - term [ref=f26e896]: Engagement
+                            - definition [ref=f26e897]: 3.9%
+                          - generic [ref=f26e898]:
+                            - term [ref=f26e899]: Health
+                            - definition [ref=f26e900]:
+                              - 'generic "Health: Strong performance" [ref=f26e901]': "73"
+                        - generic [ref=f26e904]:
+                          - generic [ref=f26e905]: Low risk
+                          - generic [ref=f26e907]: Active
+                          - button "Shortlist" [ref=f26e909]
+                  - listitem [ref=f26e911]:
+                    - generic [ref=f26e912]:
+                      - checkbox "Select Neha Lund for comparison" [ref=f26e913] [cursor=pointer]
+                      - generic [ref=f26e914]:
+                        - generic [ref=f26e915]:
+                          - generic [ref=f26e916]:
+                            - generic [ref=f26e917]: NL
+                            - generic "SocialOrbit Verified" [ref=f26e918]:
+                              - img "SocialOrbit Verified" [ref=f26e919]
+                          - generic [ref=f26e922]:
+                            - link "Neha Lund" [ref=f26e923] [cursor=pointer]:
+                              - /url: /influencers/inf_0014
+                            - paragraph [ref=f26e924]:
+                              - generic [ref=f26e925]: "@neha.food"
+                              - text: · YouTube · United States · Food & Beverage, Parenting
+                        - generic [ref=f26e926]:
+                          - generic [ref=f26e927]:
+                            - term [ref=f26e928]: Followers
+                            - definition [ref=f26e929]: 1.4M
+                          - generic [ref=f26e930]:
+                            - term [ref=f26e931]: Median views
+                            - definition [ref=f26e932]: 328.8K
+                          - generic [ref=f26e933]:
+                            - term [ref=f26e934]: Engagement
+                            - definition [ref=f26e935]: 1.9%
+                          - generic [ref=f26e936]:
+                            - term [ref=f26e937]: Health
+                            - definition [ref=f26e938]:
+                              - 'generic "Health: Fair" [ref=f26e939]': "63"
+                        - generic [ref=f26e942]:
+                          - generic [ref=f26e943]: Low risk
+                          - generic [ref=f26e945]: Active
+                          - button "Shortlist" [ref=f26e947]
+                  - listitem [ref=f26e949]:
+                    - generic [ref=f26e950]:
+                      - checkbox "Select Mateo Sharma for comparison" [ref=f26e951] [cursor=pointer]
+                      - generic [ref=f26e952]:
+                        - generic [ref=f26e953]:
+                          - generic [ref=f26e954]: MS
+                          - generic [ref=f26e956]:
+                            - link "Mateo Sharma" [ref=f26e957] [cursor=pointer]:
+                              - /url: /influencers/inf_0007
+                            - paragraph [ref=f26e958]:
+                              - generic [ref=f26e959]: "@mateo.busi"
+                              - text: · YouTube, Instagram · Singapore · Business, Lifestyle
+                        - generic [ref=f26e960]:
+                          - generic [ref=f26e961]:
+                            - term [ref=f26e962]: Followers
+                            - definition [ref=f26e963]: 645.7K
+                          - generic [ref=f26e964]:
+                            - term [ref=f26e965]: Median views
+                            - definition [ref=f26e966]: 98K
+                          - generic [ref=f26e967]:
+                            - term [ref=f26e968]: Engagement
+                            - definition [ref=f26e969]: 1.8%
+                          - generic [ref=f26e970]:
+                            - term [ref=f26e971]: Health
+                            - definition [ref=f26e972]:
+                              - 'generic "Health: Strong performance" [ref=f26e973]': "72"
+                        - generic [ref=f26e976]:
+                          - generic [ref=f26e977]: Low risk
+                          - generic [ref=f26e979]: Recent
+                          - button "Shortlist" [ref=f26e981]
+                  - listitem [ref=f26e983]:
+                    - generic [ref=f26e984]:
+                      - checkbox "Select Diego Kapoor for comparison" [ref=f26e985] [cursor=pointer]
+                      - generic [ref=f26e986]:
+                        - generic [ref=f26e987]:
+                          - generic [ref=f26e988]:
+                            - generic [ref=f26e989]: DK
+                            - generic "SocialOrbit Verified" [ref=f26e990]:
+                              - img "SocialOrbit Verified" [ref=f26e991]
+                          - generic [ref=f26e994]:
+                            - link "Diego Kapoor" [ref=f26e995] [cursor=pointer]:
+                              - /url: /influencers/inf_0021
+                            - paragraph [ref=f26e996]:
+                              - generic [ref=f26e997]: "@diegogami"
+                              - text: · Instagram · Spain · Gaming, Travel
+                        - generic [ref=f26e998]:
+                          - generic [ref=f26e999]:
+                            - term [ref=f26e1000]: Followers
+                            - definition [ref=f26e1001]: 891.5K
+                          - generic [ref=f26e1002]:
+                            - term [ref=f26e1003]: Median views
+                            - definition [ref=f26e1004]: 272.4K
+                          - generic [ref=f26e1005]:
+                            - term [ref=f26e1006]: Engagement
+                            - definition [ref=f26e1007]: 4.5%
+                          - generic [ref=f26e1008]:
+                            - term [ref=f26e1009]: Health
+                            - definition [ref=f26e1010]:
+                              - 'generic "Health: Fair" [ref=f26e1011]': "67"
+                        - generic [ref=f26e1014]:
+                          - generic [ref=f26e1015]: Low risk
+                          - generic [ref=f26e1017]: Recent
+                          - button "Shortlist" [ref=f26e1019]
+                  - listitem [ref=f26e1021]:
+                    - generic [ref=f26e1022]:
+                      - checkbox "Select Elena Vargas for comparison" [ref=f26e1023] [cursor=pointer]
+                      - generic [ref=f26e1024]:
+                        - generic [ref=f26e1025]:
+                          - generic [ref=f26e1026]: EV
+                          - generic [ref=f26e1028]:
+                            - link "Elena Vargas" [ref=f26e1029] [cursor=pointer]:
+                              - /url: /influencers/inf_0026
+                            - paragraph [ref=f26e1030]:
+                              - generic [ref=f26e1031]: "@elena_gami"
+                              - text: · Instagram, YouTube · India · Gaming, Food & Beverage
+                        - generic [ref=f26e1032]:
+                          - generic [ref=f26e1033]:
+                            - term [ref=f26e1034]: Followers
+                            - definition [ref=f26e1035]: 351.2K
+                          - generic [ref=f26e1036]:
+                            - term [ref=f26e1037]: Median views
+                            - definition [ref=f26e1038]: 121.5K
+                          - generic [ref=f26e1039]:
+                            - term [ref=f26e1040]: Engagement
+                            - definition [ref=f26e1041]: 1.7%
+                          - generic [ref=f26e1042]:
+                            - term [ref=f26e1043]: Health
+                            - definition [ref=f26e1044]:
+                              - 'generic "Health: Strong performance" [ref=f26e1045]': "71"
+                        - generic [ref=f26e1048]:
+                          - generic [ref=f26e1049]: Low risk
+                          - generic [ref=f26e1051]: Active
+                          - button "Shortlist" [ref=f26e1053]
+                  - listitem [ref=f26e1055]:
+                    - generic [ref=f26e1056]:
+                      - checkbox "Select Anders Silva for comparison" [ref=f26e1057] [cursor=pointer]
+                      - generic [ref=f26e1058]:
+                        - generic [ref=f26e1059]:
+                          - generic [ref=f26e1060]: AS
+                          - generic [ref=f26e1062]:
+                            - link "Anders Silva" [ref=f26e1063] [cursor=pointer]:
+                              - /url: /influencers/inf_0031
+                            - paragraph [ref=f26e1064]:
+                              - generic [ref=f26e1065]: "@andersgami"
+                              - text: · YouTube, Instagram · Germany · Gaming, Health & Wellness
+                        - generic [ref=f26e1066]:
+                          - generic [ref=f26e1067]:
+                            - term [ref=f26e1068]: Followers
+                            - definition [ref=f26e1069]: 3.8M
+                          - generic [ref=f26e1070]:
+                            - term [ref=f26e1071]: Median views
+                            - definition [ref=f26e1072]: 1.2M
+                          - generic [ref=f26e1073]:
+                            - term [ref=f26e1074]: Engagement
+                            - definition [ref=f26e1075]: 3.3%
+                          - generic [ref=f26e1076]:
+                            - term [ref=f26e1077]: Health
+                            - definition [ref=f26e1078]:
+                              - 'generic "Health: Fair" [ref=f26e1079]': "68"
+                        - generic [ref=f26e1082]:
+                          - generic [ref=f26e1083]: Medium risk
+                          - generic [ref=f26e1085]: Active
+                          - button "Shortlist" [ref=f26e1087]
+                  - listitem [ref=f26e1089]:
+                    - generic [ref=f26e1090]:
+                      - checkbox "Select Elena Vargas for comparison" [ref=f26e1091] [cursor=pointer]
+                      - generic [ref=f26e1092]:
+                        - generic [ref=f26e1093]:
+                          - generic [ref=f26e1094]: EV
+                          - generic [ref=f26e1096]:
+                            - link "Elena Vargas" [ref=f26e1097] [cursor=pointer]:
+                              - /url: /influencers/inf_0013
+                            - paragraph [ref=f26e1098]:
+                              - generic [ref=f26e1099]: "@elena_beau"
+                              - text: · YouTube, Instagram · Brazil · Beauty, Automotive
+                        - generic [ref=f26e1100]:
+                          - generic [ref=f26e1101]:
+                            - term [ref=f26e1102]: Followers
+                            - definition [ref=f26e1103]: 142.4K
+                          - generic [ref=f26e1104]:
+                            - term [ref=f26e1105]: Median views
+                            - definition [ref=f26e1106]: 28K
+                          - generic [ref=f26e1107]:
+                            - term [ref=f26e1108]: Engagement
+                            - definition [ref=f26e1109]: 1.1%
+                          - generic [ref=f26e1110]:
+                            - term [ref=f26e1111]: Health
+                            - definition [ref=f26e1112]:
+                              - 'generic "Health: Fair" [ref=f26e1113]': "66"
+                        - generic [ref=f26e1116]:
+                          - generic [ref=f26e1117]: Low risk
+                          - generic [ref=f26e1119]: Dormant
+                          - button "Shortlist" [ref=f26e1121]
+                  - listitem [ref=f26e1123]:
+                    - generic [ref=f26e1124]:
+                      - checkbox "Select Owen Iyer for comparison" [ref=f26e1125] [cursor=pointer]
+                      - generic [ref=f26e1126]:
+                        - generic [ref=f26e1127]:
+                          - generic [ref=f26e1128]:
+                            - generic [ref=f26e1129]: OI
+                            - generic "SocialOrbit Verified" [ref=f26e1130]:
+                              - img "SocialOrbit Verified" [ref=f26e1131]
+                          - generic [ref=f26e1134]:
+                            - link "Owen Iyer" [ref=f26e1135] [cursor=pointer]:
+                              - /url: /influencers/inf_0027
+                            - paragraph [ref=f26e1136]:
+                              - generic [ref=f26e1137]: "@owenfina"
+                              - text: · Instagram, YouTube · United Kingdom · Finance, Gaming
+                        - generic [ref=f26e1138]:
+                          - generic [ref=f26e1139]:
+                            - term [ref=f26e1140]: Followers
+                            - definition [ref=f26e1141]: 1.2M
+                          - generic [ref=f26e1142]:
+                            - term [ref=f26e1143]: Median views
+                            - definition [ref=f26e1144]: 388.2K
+                          - generic [ref=f26e1145]:
+                            - term [ref=f26e1146]: Engagement
+                            - definition [ref=f26e1147]: 1.3%
+                          - generic [ref=f26e1148]:
+                            - term [ref=f26e1149]: Health
+                            - definition [ref=f26e1150]:
+                              - 'generic "Health: Fair" [ref=f26e1151]': "63"
+                        - generic [ref=f26e1154]:
+                          - generic [ref=f26e1155]: Medium risk
+                          - generic [ref=f26e1157]: Active
+                          - button "Shortlist" [ref=f26e1159]
+                - navigation "Pagination" [ref=f26e1161]:
+                  - paragraph [ref=f26e1162]: 1–25 of 79
+                  - generic [ref=f26e1163]:
+                    - button "Previous" [disabled] [ref=f26e1164]
+                    - generic [ref=f26e1165]: Page 1 of 4
+                    - button "Next" [ref=f26e1166]
+  - button "Open Next.js Dev Tools" [ref=f26e130] [cursor=pointer]
+  - alert [ref=f26e1167]

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { SlidersHorizontal, SearchX, Sparkles, TriangleAlert } from "lucide-react";
 import {
   CATEGORY_LABEL,
@@ -30,6 +31,7 @@ import { SearchInput, Select } from "@/components/ui/field";
 import { Sheet } from "@/components/ui/dialog";
 import { EmptyState, ErrorState, Notice, TableSkeleton } from "@/components/ui/states";
 import { Pagination } from "@/components/ui/table";
+import { RelativeTime } from "@/components/ui/relative-time";
 import { FilterPanel, type Draft } from "./filter-panel";
 import { ResultTable, SelectionBar } from "./result-table";
 
@@ -48,11 +50,11 @@ interface SearchResponse {
   charged: boolean;
 }
 
-interface QuotaError {
-  code: string;
-  message: string;
+/** A failed search carries the API error code so the quota case is separable. */
+type QuotaAwareError = Error & {
+  code?: string;
   quota?: { limit: number; used: number; resetsAt: string };
-}
+};
 
 export function DiscoveryView({ initialQuota }: { initialQuota: SearchQuota }) {
   const router = useRouter();
@@ -60,10 +62,6 @@ export function DiscoveryView({ initialQuota }: { initialQuota: SearchQuota }) {
 
   const query = React.useMemo(() => parseQuery(params), [params]);
   const [draft, setDraft] = React.useState<Draft>(query);
-  const [data, setData] = React.useState<SearchResponse | null>(null);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-  const [blocked, setBlocked] = React.useState<QuotaError | null>(null);
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   const [filtersOpen, setFiltersOpen] = React.useState(false);
   const [text, setText] = React.useState(query.q ?? "");
@@ -72,45 +70,62 @@ export function DiscoveryView({ initialQuota }: { initialQuota: SearchQuota }) {
   // server tell paging and re-sorting apart from a genuinely new search.
   const chargedSignature = React.useRef<string | null>(null);
 
-  React.useEffect(() => {
+  /*
+   * The URL is the source of truth; the draft and the search box are local
+   * echoes of it. When the URL changes — a chip removed, the back button, a
+   * shared link — they are reset *during render* rather than in an effect.
+   * Syncing this in an effect renders once with stale values and then again
+   * with fresh ones, which is both a wasted pass and a visible flicker on the
+   * filter controls.
+   */
+  const [syncedFrom, setSyncedFrom] = React.useState(params.toString());
+  const currentParams = params.toString();
+  if (syncedFrom !== currentParams) {
+    setSyncedFrom(currentParams);
     setDraft(query);
     setText(query.q ?? "");
-  }, [query]);
+  }
 
-  React.useEffect(() => {
-    const controller = new AbortController();
-    setLoading(true);
-    setError(null);
+  /*
+   * React Query owns the request. It cancels a superseded search, dedupes
+   * identical ones, and keeps the previous page on screen while the next
+   * loads. The quota signature is a ref, so recording a charged search does
+   * not itself trigger a render.
+   */
+  const {
+    data,
+    error: queryError,
+    isFetching,
+  } = useQuery<SearchResponse, QuotaAwareError>({
+    queryKey: ["influencer-search", toSearchParams(query).toString()],
+    placeholderData: (previous) => previous,
+    queryFn: async ({ signal }) => {
+      const search = toSearchParams(query);
+      if (chargedSignature.current) search.set("_sig", chargedSignature.current);
 
-    const search = toSearchParams(query);
-    if (chargedSignature.current) search.set("_sig", chargedSignature.current);
+      const response = await fetch(`/api/internal/influencers?${search}`, { signal });
+      const body = await response.json();
 
-    fetch(`/api/internal/influencers?${search}`, { signal: controller.signal })
-      .then(async (response) => {
-        const body = await response.json();
-        if (!response.ok) {
-          if (body?.error?.code === "quota_exceeded") {
-            setBlocked(body.error as QuotaError);
-            setData(null);
-            return;
-          }
-          throw new Error(body?.error?.message ?? `Request failed (${response.status})`);
-        }
-        setBlocked(null);
-        setData(body as SearchResponse);
-        if ((body as SearchResponse).charged) {
-          chargedSignature.current = signatureOf(query);
-        }
-      })
-      .catch((cause: Error) => {
-        if (cause.name !== "AbortError") setError(cause.message);
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
+      if (!response.ok) {
+        const failure: QuotaAwareError = Object.assign(
+          new Error(body?.error?.message ?? `Request failed (${response.status})`),
+          { code: body?.error?.code as string | undefined, quota: body?.error?.quota },
+        );
+        throw failure;
+      }
 
-    return () => controller.abort();
-  }, [query]);
+      const result = body as SearchResponse;
+      // A ref, not state: recording the charge must not cause a re-render.
+      if (result.charged) chargedSignature.current = signatureOf(query);
+      return result;
+    },
+  });
+
+  // The quota block is a specific failure with its own screen, so it is
+  // separated from a general error rather than shown as one.
+  const blocked = queryError?.code === "quota_exceeded" ? queryError : null;
+  const error = queryError && !blocked ? queryError.message : null;
+  const loading = isFetching && !data;
 
   const apply = React.useCallback(
     (next: Draft, { resetPage = true }: { resetPage?: boolean } = {}) => {
@@ -274,7 +289,7 @@ export function DiscoveryView({ initialQuota }: { initialQuota: SearchQuota }) {
               }
               className="mb-4"
             >
-              Allowance resets {formatRelativeTime(quota.resetsAt)}. Paging and re-sorting the
+              Allowance resets <RelativeTime at={quota.resetsAt} />. Paging and re-sorting the
               results you already have does not use another search.
             </Notice>
           )}

@@ -1,15 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import {
-  Download,
-  ExternalLink,
-  Globe,
-  Languages,
-  Megaphone,
-  Plus,
-  Scale,
-  Tag,
-} from "lucide-react";
+import { ExternalLink, Globe, Languages, Tag } from "lucide-react";
 import {
   CATEGORY_LABEL,
   PLATFORM_LABEL,
@@ -19,9 +10,9 @@ import type { InfluencerProfile } from "@/lib/contracts/influencer";
 import { formatCompact } from "@/lib/format";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
-import { Button, LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Freshness } from "@/components/intelligence/provenance";
+import { ProfileActions } from "./profile-actions";
 
 const VERIFICATION: Record<VerificationStatus, { label: string; tone: BadgeTone; note: string }> = {
   verified: {
@@ -123,23 +114,7 @@ export function ProfileHeader({ profile }: { profile: InfluencerProfile }) {
         </div>
 
         <div className="flex min-w-0 max-w-full flex-col items-start gap-2 sm:items-end">
-          <div className="flex max-w-full flex-wrap items-center gap-2 sm:justify-end">
-            <Button variant="primary" className="gap-1.5">
-              <Plus className="size-4" aria-hidden />
-              Add to shortlist
-            </Button>
-            <LinkButton href={`/compare?ids=${profile.id}`} className="gap-1.5">
-              <Scale className="size-4" aria-hidden />
-              Compare
-            </LinkButton>
-            <LinkButton href={`/campaigns/new?influencer=${profile.id}`} className="gap-1.5">
-              <Megaphone className="size-4" aria-hidden />
-              Campaign
-            </LinkButton>
-            <Button variant="ghost" size="icon" aria-label="Export this profile">
-              <Download className="size-4" aria-hidden />
-            </Button>
-          </div>
+          <ProfileActions profile={profile} />
           <Freshness at={profile.lastRefreshedAt} prefix="Data refreshed" />
         </div>
       </div>
@@ -153,7 +128,7 @@ export function ProfileHeader({ profile }: { profile: InfluencerProfile }) {
       {profile.verification !== "verified" && (
         <p className="border-t border-line bg-sunken/50 px-4 py-2 text-[12px] text-ink-muted">
           {verification.note}{" "}
-          <Link href="/help/verification" className="rounded text-brand-ink hover:underline">
+          <Link href="/help/verification" className="rounded font-medium text-brand-ink underline underline-offset-2">
             How verification works
           </Link>
         </p>

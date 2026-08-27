@@ -7,7 +7,7 @@ import { quotaFor } from "@/server/repositories/usage-repository";
 import { usageSnapshot } from "@/server/services/search-service";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatRow, StatTile } from "@/components/intelligence/stat";
 
@@ -146,7 +146,16 @@ export default async function UsagePage() {
                 Plan changes are handled by your account manager while self-serve billing is
                 being built.
               </p>
-              <Button variant="primary">Talk to us about upgrading</Button>
+              <LinkButton
+                href={`mailto:accounts@socialorbit.io?subject=${encodeURIComponent(
+                  `Plan change — ${user.orgName}`,
+                )}&body=${encodeURIComponent(
+                  `Organisation: ${user.orgName}\nCurrent plan: ${plan.label}\n\nWhat we need:\n`,
+                )}`}
+                variant="primary"
+              >
+                Email your account manager
+              </LinkButton>
             </div>
           </CardContent>
         </Card>

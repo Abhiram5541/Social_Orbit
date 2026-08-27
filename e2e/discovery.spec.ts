@@ -23,6 +23,8 @@ test.describe("discovery", () => {
   });
 
   test("a filter narrows the result set and its chip removes it again", async ({ page }) => {
+    // Results arrive from a fetch, so count only once they are on screen.
+    await expect(resultLinks(page).first()).toBeVisible();
     const unfiltered = await resultLinks(page).count();
 
     // The URL is the state: a filtered view is reachable, shareable and
@@ -30,6 +32,7 @@ test.describe("discovery", () => {
     await page.goto("/discovery?platform=youtube");
     const remove = page.getByRole("button", { name: /Remove filter Platform/ });
     await expect(remove).toBeVisible();
+    await expect(resultLinks(page).first()).toBeVisible();
     expect(await resultLinks(page).count()).toBeLessThanOrEqual(unfiltered);
 
     await remove.click();
@@ -38,23 +41,27 @@ test.describe("discovery", () => {
   });
 
   test("the filter surface writes into the URL", async ({ page }) => {
-    const filtersButton = page.getByRole("button", { name: /^Filters/ });
-    const showResults = page.getByRole("button", { name: "Show results" });
-    const usesSheet = await filtersButton.isVisible();
+    // Which surface is on screen follows from the viewport, not from probing
+    // visibility: `isVisible()` is a one-shot check that can run before
+    // hydration and silently send the test down the wrong branch.
+    const width = page.viewportSize()?.width ?? 1440;
+    const usesSheet = width < 1280;
 
+    const showResults = page.getByRole("button", { name: "Show results" });
     if (usesSheet) {
       // Below xl the controls only exist while the sheet is open.
-      await filtersButton.click();
+      await page.getByRole("button", { name: /^Filters/ }).click();
       await expect(showResults).toBeVisible();
     }
 
-    // Scope to the surface that is actually on screen: both the rail and the
-    // sheet render the same control names, and one of them is display:none.
+    // Name the control rather than taking "the first visible checkbox": both
+    // filter surfaces render the same names and one of them is display:none,
+    // so the assertion has to say which filter it means.
     const surface = usesSheet ? page.getByRole("dialog", { name: "Filters" }) : page;
-    await surface.locator('input[type="checkbox"]:visible').first().check();
+    await surface.getByLabel("YouTube").check();
     if (usesSheet) await showResults.click();
 
-    await expect(page).toHaveURL(/platform=|category=|verification=/);
+    await expect(page).toHaveURL(/platform=youtube/);
   });
 
   test("keyword search puts the term in the URL so results are shareable", async ({ page }) => {
@@ -72,9 +79,19 @@ test.describe("discovery", () => {
     const cells = page
       .getByRole("region", { name: "Influencer search results" })
       .locator("tbody tr td:nth-child(3)");
-    const values = (await cells.allInnerTexts()).map(parseCompact);
-    const sorted = [...values].sort((a, b) => b - a);
-    expect(values).toEqual(sorted);
+
+    // The previous page stays on screen while the re-sorted one loads, so poll
+    // until the rendered order settles rather than reading it once.
+    await expect
+      .poll(
+        async () => {
+          const values = (await cells.allInnerTexts()).map(parseCompact);
+          const sorted = [...values].sort((a, b) => b - a);
+          return JSON.stringify(values) === JSON.stringify(sorted);
+        },
+        { timeout: 10_000 },
+      )
+      .toBe(true);
   });
 
   test("an impossible filter combination shows an empty state, not a blank panel", async ({ page }) => {

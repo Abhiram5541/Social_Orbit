@@ -151,7 +151,7 @@ export function ScoreBar({
       <div className="flex min-w-0 items-baseline gap-1.5">
         <span className={cn("truncate text-[12px]", labelColour)}>{label}</span>
         {weight !== undefined && (
-          <span className={cn("shrink-0 font-num text-[10px] tabular-nums", labelColour, "opacity-70")}>
+          <span className={cn("shrink-0 font-num text-[10px] tabular-nums", labelColour)}>
             {Math.round(weight * 100)}%
           </span>
         )}

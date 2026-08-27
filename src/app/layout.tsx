@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
+import { QueryProvider } from "@/components/query-provider";
 
 /**
  * One family, the full weight range.
@@ -45,7 +46,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${montserrat.variable} h-full`}>
-      <body className="min-h-full antialiased">{children}</body>
+      <body className="min-h-full antialiased">
+        <QueryProvider>{children}</QueryProvider>
+      </body>
     </html>
   );
 }

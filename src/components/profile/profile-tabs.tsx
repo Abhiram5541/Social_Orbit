@@ -23,6 +23,7 @@ import { DataRow, StatRow, StatTile } from "@/components/intelligence/stat";
 import { ProvenanceMark } from "@/components/intelligence/provenance";
 import { ScoreBar } from "@/components/intelligence/score";
 import { CategoryBars, TrendChart } from "@/components/charts/trend-chart";
+import { RelativeTime } from "@/components/ui/relative-time";
 
 /* ---------------------------------------------------------------------------
  * Profile detail — DPR §9, §20.
@@ -236,7 +237,11 @@ export function ProfileTabs({ profile }: { profile: InfluencerProfile }) {
           <StatTile
             label="Snapshots held"
             value={formatNumber(profile.followerHistory.points.length)}
-            footnote={`since ${formatRelativeTime(profile.followerHistory.firstObservedAt)}`}
+            footnote={
+              <>
+                since <RelativeTime at={profile.followerHistory.firstObservedAt} />
+              </>
+            }
           />
           <StatTile
             label="Growth pattern"
@@ -275,7 +280,7 @@ export function ProfileTabs({ profile }: { profile: InfluencerProfile }) {
             <Notice tone="info" icon={Sparkles} title="First-party data">
               These figures come from the creator&apos;s connected professional account, not
               from estimation. Collected{" "}
-              {formatRelativeTime(profile.audience.provenance?.collectedAt ?? null)}.
+              <RelativeTime at={profile.audience.provenance?.collectedAt ?? null} />.
             </Notice>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <ShareCard title="Top countries" rows={profile.audience.countries.map((c) => ({ label: c.name, share: c.share }))} />
@@ -571,7 +576,7 @@ function ContentTable({ items }: { items: InfluencerProfile["topContent"] }) {
                 )}
               </Td>
               <Td className="whitespace-nowrap text-ink-muted">
-                {formatRelativeTime(item.publishedAt)}
+                <RelativeTime at={item.publishedAt} />
               </Td>
               <Td numeric>{formatCompact(item.views)}</Td>
               <Td numeric>{formatCompact(item.likes)}</Td>
@@ -666,14 +671,14 @@ function ListBlock({
 /** Rendered under the profile: the composition of what the reader just read. */
 export function ProvenanceFooter({ profile }: { profile: InfluencerProfile }) {
   return (
-    <div className="grid gap-2 border-t border-line pt-3 text-[12px] text-ink-muted sm:grid-cols-2">
+    <dl className="grid gap-2 border-t border-line pt-3 text-[12px] text-ink-muted sm:grid-cols-2">
       <DataRow label="Score version" value={profile.health.scoreVersion} />
       <DataRow label="Formula version" value={profile.health.formulaVersion} />
       <DataRow
         label="Confidence"
         value={`${Math.round(profile.confidenceDetail.score)}% (${profile.confidenceDetail.band})`}
       />
-      <DataRow label="Last refresh" value={formatRelativeTime(profile.lastRefreshedAt)} />
-    </div>
+      <DataRow label="Last refresh" value={<RelativeTime at={profile.lastRefreshedAt} />} />
+    </dl>
   );
 }

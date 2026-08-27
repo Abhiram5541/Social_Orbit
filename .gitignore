@@ -50,3 +50,7 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /.playwright/
+
+# Audit reports
+/test-results/ui-audit.json
+/test-results/control-audit.json

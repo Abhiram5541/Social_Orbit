@@ -124,11 +124,11 @@ export function RegisterForm() {
           label={
             <>
               I agree to the{" "}
-              <Link href="/terms" className="rounded text-brand-ink hover:underline">
+              <Link href="/terms" className="rounded font-medium text-brand-ink underline underline-offset-2">
                 terms of service
               </Link>{" "}
               and{" "}
-              <Link href="/privacy" className="rounded text-brand-ink hover:underline">
+              <Link href="/privacy" className="rounded font-medium text-brand-ink underline underline-offset-2">
                 privacy policy
               </Link>
               .

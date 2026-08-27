@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/table";
 import { ConfidenceMeter } from "@/components/intelligence/provenance";
 import { RiskBadge, ScorePill } from "@/components/intelligence/score";
+import { RelativeTime } from "@/components/ui/relative-time";
 
 /* ---------------------------------------------------------------------------
  * Search results — DPR §11.4.
@@ -322,5 +323,5 @@ export function SelectionBar({
 
 /** Relative-time cell, exported for reuse by the shortlist and campaign tables. */
 export function LastActive({ at }: { at: string | null }) {
-  return <span className="text-[12px] text-ink-muted">{formatRelativeTime(at)}</span>;
+  return <RelativeTime at={at} className="text-[12px] text-ink-muted" />;
 }

@@ -277,6 +277,14 @@ function Group({
   );
 }
 
+/**
+ * The whole row is the control, not just the box.
+ *
+ * A 14px checkbox in a 28px row is roughly a third of the 44px touch target
+ * guidance — fine with a mouse, awkward with a thumb. Wrapping the row in the
+ * <label> makes the entire strip tappable and gives it a real minimum height,
+ * which also makes the hit area obvious on hover with a pointer.
+ */
 function CheckRow({
   label,
   count,
@@ -288,25 +296,21 @@ function CheckRow({
   checked: boolean;
   onChange: () => void;
 }) {
-  const id = React.useId();
   return (
-    <div className="flex items-center gap-2 py-1">
+    <label className="-mx-1.5 flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md px-1.5 py-1.5 transition-colors hover:bg-sunken">
       <input
-        id={id}
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="size-3.5 shrink-0 cursor-pointer rounded accent-brand"
+        className="size-4 shrink-0 cursor-pointer rounded-sm accent-brand"
       />
-      <label htmlFor={id} className="min-w-0 flex-1 cursor-pointer truncate text-[13px] text-ink">
-        {label}
-      </label>
+      <span className="min-w-0 flex-1 truncate text-[13px] text-ink">{label}</span>
       {count !== undefined && (
         <span className="shrink-0 font-num text-[11px] tabular-nums text-ink-subtle">
           {formatCompact(count)}
         </span>
       )}
-    </div>
+    </label>
   );
 }
 
