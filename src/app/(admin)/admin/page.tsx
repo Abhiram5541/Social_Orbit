@@ -103,15 +103,19 @@ export default async function AdminOverviewPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               {providers.map((provider) => (
-                <div key={provider.id} className="rounded-lg border border-line p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[14px] font-medium text-ink">{provider.label}</span>
+                <div key={provider.id} className="min-w-0 rounded-lg border border-line p-3">
+                  {/* Same rule as the connector cards: the badge wraps instead
+                      of pushing past the card edge. */}
+                  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
+                    <span className="min-w-0 truncate text-[14px] font-semibold text-ink">
+                      {provider.label}
+                    </span>
                     <Badge tone={provider.configured ? "positive" : "caution"} dot>
                       {provider.configured ? "Configured" : "Not configured"}
                     </Badge>
                   </div>
                   <p className="mt-1 text-[12px] leading-5 text-ink-muted">{provider.role}</p>
-                  <p className="mt-1.5 font-num text-[11px] text-ink-subtle">
+                  <p className="mt-1.5 break-all font-num text-[11px] text-ink-subtle">
                     {provider.configured
                       ? (provider.model ?? "default model")
                       : `needs ${provider.requires.join(", ")}`}

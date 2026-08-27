@@ -1,0 +1,321 @@
+- generic [active] [ref=f29e1]:
+  - generic [ref=f29e2]:
+    - link "Skip to content" [ref=f29e3] [cursor=pointer]:
+      - /url: "#main"
+    - complementary [ref=f29e4]:
+      - link "SocialOrbit home" [ref=f29e6] [cursor=pointer]:
+        - /url: /admin
+        - generic [ref=f29e13]:
+          - generic [ref=f29e14]: SocialOrbit
+          - generic [ref=f29e15]: Influencer Intelligence
+      - navigation "Primary" [ref=f29e17]:
+        - generic [ref=f29e18]:
+          - link "Overview" [ref=f29e19] [cursor=pointer]:
+            - /url: /admin
+          - link "Influencers" [ref=f29e26] [cursor=pointer]:
+            - /url: /admin/influencers
+        - generic [ref=f29e33]:
+          - generic [ref=f29e34]: Intelligence
+          - link "Analytics" [ref=f29e35] [cursor=pointer]:
+            - /url: /admin/analytics
+          - link "Benchmarks" [ref=f29e39] [cursor=pointer]:
+            - /url: /admin/benchmarks
+          - link "Anomaly queue" [ref=f29e44] [cursor=pointer]:
+            - /url: /admin/anomalies
+          - link "AI enrichment" [ref=f29e48] [cursor=pointer]:
+            - /url: /admin/ai
+        - generic [ref=f29e53]:
+          - generic [ref=f29e54]: Administration
+          - link "Settings" [ref=f29e55] [cursor=pointer]:
+            - /url: /admin/settings
+      - button "Collapse navigation" [ref=f29e61]:
+        - generic [ref=f29e65]: Collapse
+    - generic [ref=f29e66]:
+      - banner [ref=f29e67]:
+        - button "Search creators, campaigns, shortlists… /" [ref=f29e68]:
+          - generic [ref=f29e72]: Search creators, campaigns, shortlists…
+          - generic [ref=f29e73]: /
+        - generic [ref=f29e74]:
+          - link "Notifications" [ref=f29e75] [cursor=pointer]:
+            - /url: /notifications
+          - link "Help and documentation" [ref=f29e79] [cursor=pointer]:
+            - /url: /help
+          - button "Hana Sato Analytics Manager" [ref=f29e83]:
+            - generic [ref=f29e84]: HS
+            - generic [ref=f29e86]:
+              - generic [ref=f29e87]: Hana Sato
+              - generic [ref=f29e88]: Analytics Manager
+      - main [ref=f29e91]:
+        - generic [ref=f29e94]:
+          - heading "Good morning, Hana." [level=1] [ref=f29e95]
+          - paragraph [ref=f29e96]: Database coverage, connector health and the queues that need a human.
+        - generic [ref=f29e97]:
+          - status [ref=f29e98]:
+            - generic [ref=f29e102]:
+              - paragraph [ref=f29e103]: Some connectors cannot run
+              - generic [ref=f29e104]: YouTube is missing YOUTUBE_API_KEY, YOUTUBE_OAUTH_CLIENT_ID, YOUTUBE_OAUTH_CLIENT_SECRET; Instagram is missing META_APP_ID, META_APP_SECRET. Ingestion for those platforms is paused; existing profiles are served from the last successful sync and marked stale.
+          - generic [ref=f29e105]:
+            - generic [ref=f29e106]:
+              - generic [ref=f29e107]: Influencers
+              - generic [ref=f29e109]: "84"
+              - generic [ref=f29e110]: 79 published
+            - generic [ref=f29e112]:
+              - generic [ref=f29e113]: Verified
+              - generic [ref=f29e115]: "28"
+              - generic [ref=f29e116]: 8 pending
+            - generic [ref=f29e118]:
+              - generic [ref=f29e119]: Social accounts
+              - generic [ref=f29e121]: "129"
+            - generic [ref=f29e122]:
+              - generic [ref=f29e123]: Content indexed
+              - generic [ref=f29e125]: 4.5K
+            - generic [ref=f29e126]:
+              - generic [ref=f29e127]: Snapshots held
+              - generic [ref=f29e129]: 3.9K
+              - generic [ref=f29e130]: historical, never overwritten
+            - generic [ref=f29e132]:
+              - generic [ref=f29e133]: Stale profiles
+              - generic [ref=f29e135]: "34"
+              - generic [ref=f29e136]: over 48h since refresh
+          - generic [ref=f29e138]:
+            - generic [ref=f29e139]:
+              - generic [ref=f29e140]:
+                - heading "Connector health" [level=2] [ref=f29e141]
+                - link "Configure" [ref=f29e142] [cursor=pointer]:
+                  - /url: /admin/connectors
+              - list [ref=f29e144]:
+                - listitem [ref=f29e145]:
+                  - generic [ref=f29e146]:
+                    - generic [ref=f29e147]: YouTube
+                    - generic [ref=f29e148]: Credentials missing
+                  - paragraph [ref=f29e150]: Channel resolution, channel statistics, video listings and analytics for OAuth-connected channels.
+                  - generic [ref=f29e151]:
+                    - generic [ref=f29e152]:
+                      - term [ref=f29e153]: Accounts tracked
+                      - definition [ref=f29e154]: "63"
+                    - generic [ref=f29e155]:
+                      - term [ref=f29e156]: Last sync
+                      - definition [ref=f29e157]: yesterday
+                  - generic [ref=f29e158]:
+                    - paragraph [ref=f29e159]: Missing
+                    - list [ref=f29e160]:
+                      - listitem [ref=f29e161]: YOUTUBE_API_KEY
+                      - listitem [ref=f29e162]: YOUTUBE_OAUTH_CLIENT_ID
+                      - listitem [ref=f29e163]: YOUTUBE_OAUTH_CLIENT_SECRET
+                - listitem [ref=f29e164]:
+                  - generic [ref=f29e165]:
+                    - generic [ref=f29e166]: Instagram
+                    - generic [ref=f29e167]: Credentials missing
+                  - paragraph [ref=f29e169]: Professional-account insights through the Instagram Graph API. Consumer accounts are not accessible and are never estimated.
+                  - generic [ref=f29e170]:
+                    - generic [ref=f29e171]:
+                      - term [ref=f29e172]: Accounts tracked
+                      - definition [ref=f29e173]: "66"
+                    - generic [ref=f29e174]:
+                      - term [ref=f29e175]: Last sync
+                      - definition [ref=f29e176]: 23 hours ago
+                  - generic [ref=f29e177]:
+                    - paragraph [ref=f29e178]: Missing
+                    - list [ref=f29e179]:
+                      - listitem [ref=f29e180]: META_APP_ID
+                      - listitem [ref=f29e181]: META_APP_SECRET
+                - listitem [ref=f29e182]:
+                  - generic [ref=f29e183]:
+                    - generic [ref=f29e184]: TikTok
+                    - generic [ref=f29e185]: Not configured
+                  - paragraph [ref=f29e187]: Roadmap connector (DPR §29). No creators are indexed for this platform.
+                  - generic [ref=f29e188]:
+                    - generic [ref=f29e189]:
+                      - term [ref=f29e190]: Accounts tracked
+                      - definition [ref=f29e191]: "0"
+                    - generic [ref=f29e192]:
+                      - term [ref=f29e193]: Last sync
+                      - definition [ref=f29e194]: —
+                  - generic [ref=f29e195]:
+                    - paragraph [ref=f29e196]: Missing
+                    - list [ref=f29e197]:
+                      - listitem [ref=f29e198]: TIKTOK_CLIENT_KEY
+                      - listitem [ref=f29e199]: TIKTOK_CLIENT_SECRET
+            - generic [ref=f29e200]:
+              - generic [ref=f29e201]:
+                - heading "AI providers" [level=2] [ref=f29e202]
+                - generic [ref=f29e203]: Enrichment layer
+              - generic [ref=f29e207]:
+                - generic [ref=f29e208]:
+                  - generic [ref=f29e209]:
+                    - generic [ref=f29e210]: OpenAI
+                    - generic [ref=f29e211]: Not configured
+                  - paragraph [ref=f29e213]: Primary extraction, classification, brand safety and score explanation.
+                  - paragraph [ref=f29e214]: needs OPENAI_API_KEY
+                - generic [ref=f29e215]:
+                  - generic [ref=f29e216]:
+                    - generic [ref=f29e217]: Google Gemini
+                    - generic [ref=f29e218]: Not configured
+                  - paragraph [ref=f29e220]: Secondary validation and search-grounded research on high-value or conflicting facts.
+                  - paragraph [ref=f29e221]: needs GEMINI_API_KEY
+                - paragraph [ref=f29e222]: Providers classify and explain. They never produce follower counts, engagement, demographics or any figure the platform has not observed.
+          - generic [ref=f29e223]:
+            - generic [ref=f29e224]:
+              - generic [ref=f29e225]:
+                - heading "Awaiting verification" [level=2] [ref=f29e230]
+                - generic [ref=f29e231]: "8"
+              - list [ref=f29e232]:
+                - listitem [ref=f29e233]:
+                  - link "Tanvi Sharma Awaiting identity match · 2 days ago" [ref=f29e234] [cursor=pointer]:
+                    - /url: /influencers/inf_0011
+                    - generic [ref=f29e236]:
+                      - generic [ref=f29e237]: Tanvi Sharma
+                      - generic [ref=f29e238]: Awaiting identity match · 2 days ago
+                - listitem [ref=f29e239]:
+                  - link "Ishita Okafor Awaiting identity match · 2 days ago" [ref=f29e240] [cursor=pointer]:
+                    - /url: /influencers/inf_0030
+                    - generic [ref=f29e242]:
+                      - generic [ref=f29e243]: Ishita Okafor
+                      - generic [ref=f29e244]: Awaiting identity match · 2 days ago
+                - listitem [ref=f29e245]:
+                  - link "Sana Iyer Awaiting identity match · yesterday" [ref=f29e246] [cursor=pointer]:
+                    - /url: /influencers/inf_0036
+                    - generic [ref=f29e248]:
+                      - generic [ref=f29e249]: Sana Iyer
+                      - generic [ref=f29e250]: Awaiting identity match · yesterday
+                - listitem [ref=f29e251]:
+                  - link "Felix Fitzgerald Awaiting identity match · 2 days ago" [ref=f29e252] [cursor=pointer]:
+                    - /url: /influencers/inf_0040
+                    - generic [ref=f29e254]:
+                      - generic [ref=f29e255]: Felix Fitzgerald
+                      - generic [ref=f29e256]: Awaiting identity match · 2 days ago
+              - link "View all 8" [ref=f29e258] [cursor=pointer]:
+                - /url: /admin/verification
+            - generic [ref=f29e259]:
+              - generic [ref=f29e260]:
+                - heading "OAuth reauthorisation" [level=2] [ref=f29e264]
+                - generic [ref=f29e265]: "5"
+              - list [ref=f29e266]:
+                - listitem [ref=f29e267]:
+                  - link "Rahul Okafor OAuth reauthorisation required · 2 days ago" [ref=f29e268] [cursor=pointer]:
+                    - /url: /influencers/inf_0017
+                    - generic [ref=f29e270]:
+                      - generic [ref=f29e271]: Rahul Okafor
+                      - generic [ref=f29e272]: OAuth reauthorisation required · 2 days ago
+                - listitem [ref=f29e273]:
+                  - link "Rhea Iyer OAuth reauthorisation required · 2 days ago" [ref=f29e274] [cursor=pointer]:
+                    - /url: /influencers/inf_0025
+                    - generic [ref=f29e276]:
+                      - generic [ref=f29e277]: Rhea Iyer
+                      - generic [ref=f29e278]: OAuth reauthorisation required · 2 days ago
+                - listitem [ref=f29e279]:
+                  - link "Felix Fitzgerald OAuth reauthorisation required · 2 days ago" [ref=f29e280] [cursor=pointer]:
+                    - /url: /influencers/inf_0040
+                    - generic [ref=f29e282]:
+                      - generic [ref=f29e283]: Felix Fitzgerald
+                      - generic [ref=f29e284]: OAuth reauthorisation required · 2 days ago
+                - listitem [ref=f29e285]:
+                  - link "Kabir Haruna OAuth reauthorisation required · 2 days ago" [ref=f29e286] [cursor=pointer]:
+                    - /url: /influencers/inf_0049
+                    - generic [ref=f29e288]:
+                      - generic [ref=f29e289]: Kabir Haruna
+                      - generic [ref=f29e290]: OAuth reauthorisation required · 2 days ago
+              - link "View all 5" [ref=f29e292] [cursor=pointer]:
+                - /url: /admin/ingestion
+            - generic [ref=f29e293]:
+              - generic [ref=f29e294]:
+                - heading "Source conflicts" [level=2] [ref=f29e300]
+                - generic [ref=f29e301]: "15"
+              - list [ref=f29e302]:
+                - listitem [ref=f29e303]:
+                  - link "Farah Silva Source conflict · 23 hours ago" [ref=f29e304] [cursor=pointer]:
+                    - /url: /influencers/inf_0082
+                    - generic [ref=f29e306]:
+                      - generic [ref=f29e307]: Farah Silva
+                      - generic [ref=f29e308]: Source conflict · 23 hours ago
+                - listitem [ref=f29e309]:
+                  - link "Aria Lindqvist Source conflict · yesterday" [ref=f29e310] [cursor=pointer]:
+                    - /url: /influencers/inf_0001
+                    - generic [ref=f29e312]:
+                      - generic [ref=f29e313]: Aria Lindqvist
+                      - generic [ref=f29e314]: Source conflict · yesterday
+                - listitem [ref=f29e315]:
+                  - link "Anders Rao Source conflict · 2 days ago" [ref=f29e316] [cursor=pointer]:
+                    - /url: /influencers/inf_0075
+                    - generic [ref=f29e318]:
+                      - generic [ref=f29e319]: Anders Rao
+                      - generic [ref=f29e320]: Source conflict · 2 days ago
+                - listitem [ref=f29e321]:
+                  - link "Tanvi Moreau Source conflict · 2 days ago" [ref=f29e322] [cursor=pointer]:
+                    - /url: /influencers/inf_0047
+                    - generic [ref=f29e324]:
+                      - generic [ref=f29e325]: Tanvi Moreau
+                      - generic [ref=f29e326]: Source conflict · 2 days ago
+              - link "View all 15" [ref=f29e328] [cursor=pointer]:
+                - /url: /admin/ai
+            - generic [ref=f29e329]:
+              - generic [ref=f29e330]:
+                - heading "Preliminary confidence" [level=2] [ref=f29e334]
+                - generic [ref=f29e335]: "1"
+              - list [ref=f29e336]:
+                - listitem [ref=f29e337]:
+                  - link "Ishita Okafor Preliminary confidence · 2 days ago" [ref=f29e338] [cursor=pointer]:
+                    - /url: /influencers/inf_0030
+                    - generic [ref=f29e340]:
+                      - generic [ref=f29e341]: Ishita Okafor
+                      - generic [ref=f29e342]: Preliminary confidence · 2 days ago
+              - link "Open queue" [ref=f29e344] [cursor=pointer]:
+                - /url: /admin/analytics
+          - generic [ref=f29e345]:
+            - generic [ref=f29e346]:
+              - heading "Coverage by category" [level=2] [ref=f29e348]
+              - generic [ref=f29e350]:
+                - generic [ref=f29e352]:
+                  - generic [ref=f29e353]: technology
+                  - generic [ref=f29e354]: 10 · 11.9%
+                - generic [ref=f29e358]:
+                  - generic [ref=f29e359]: food
+                  - generic [ref=f29e360]: 9 · 10.7%
+                - generic [ref=f29e364]:
+                  - generic [ref=f29e365]: finance
+                  - generic [ref=f29e366]: 9 · 10.7%
+                - generic [ref=f29e370]:
+                  - generic [ref=f29e371]: business
+                  - generic [ref=f29e372]: 8 · 9.5%
+                - generic [ref=f29e376]:
+                  - generic [ref=f29e377]: health
+                  - generic [ref=f29e378]: 8 · 9.5%
+                - generic [ref=f29e382]:
+                  - generic [ref=f29e383]: education
+                  - generic [ref=f29e384]: 6 · 7.1%
+                - generic [ref=f29e388]:
+                  - generic [ref=f29e389]: fitness
+                  - generic [ref=f29e390]: 6 · 7.1%
+                - generic [ref=f29e394]:
+                  - generic [ref=f29e395]: fashion
+                  - generic [ref=f29e396]: 6 · 7.1%
+                - generic [ref=f29e399]: of 84 indexed creators
+            - generic [ref=f29e400]:
+              - heading "Coverage by market" [level=2] [ref=f29e402]
+              - generic [ref=f29e404]:
+                - generic [ref=f29e406]:
+                  - generic [ref=f29e407]: Nigeria
+                  - generic [ref=f29e408]: 12 · 14.3%
+                - generic [ref=f29e412]:
+                  - generic [ref=f29e413]: United Kingdom
+                  - generic [ref=f29e414]: 11 · 13.1%
+                - generic [ref=f29e418]:
+                  - generic [ref=f29e419]: Brazil
+                  - generic [ref=f29e420]: 9 · 10.7%
+                - generic [ref=f29e424]:
+                  - generic [ref=f29e425]: Singapore
+                  - generic [ref=f29e426]: 9 · 10.7%
+                - generic [ref=f29e430]:
+                  - generic [ref=f29e431]: Germany
+                  - generic [ref=f29e432]: 9 · 10.7%
+                - generic [ref=f29e436]:
+                  - generic [ref=f29e437]: Spain
+                  - generic [ref=f29e438]: 8 · 9.5%
+                - generic [ref=f29e442]:
+                  - generic [ref=f29e443]: Japan
+                  - generic [ref=f29e444]: 7 · 8.3%
+                - generic [ref=f29e448]:
+                  - generic [ref=f29e449]: India
+                  - generic [ref=f29e450]: 7 · 8.3%
+                - generic [ref=f29e453]: of 84 indexed creators
+  - button "Open Next.js Dev Tools" [ref=f29e459] [cursor=pointer]

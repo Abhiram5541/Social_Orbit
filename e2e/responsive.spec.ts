@@ -96,8 +96,14 @@ test.describe("keyboard and focus", () => {
 
     await page.keyboard.press("/");
     await page.getByLabel("Search creators or jump to a page").fill("aria");
-    await expect(page.getByRole("option").first()).toBeVisible({ timeout: 10_000 });
+
+    // Wait for a creator row specifically — matched by its @handle — rather
+    // than the first option to appear. The results arrive asynchronously, so
+    // pressing Enter too early acts on whichever row happened to be first.
+    const creator = page.getByRole("option").filter({ hasText: "@" }).first();
+    await expect(creator).toBeVisible({ timeout: 10_000 });
+
     await page.keyboard.press("Enter");
-    await page.waitForURL(/\/(influencers|discovery|shortlists|campaigns)/);
+    await page.waitForURL(/\/influencers\/inf_/);
   });
 });

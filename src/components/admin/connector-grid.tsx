@@ -20,9 +20,17 @@ export function ConnectorGrid({ connectors }: { connectors: ConnectorStatus[] })
   return (
     <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {connectors.map((connector) => (
-        <li key={connector.platform} className="rounded-lg border border-line p-3">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[14px] font-medium text-ink">
+        // `min-w-0`: as a grid child the card defaults to `min-width: auto`,
+        // so a non-wrapping badge pushes it past its track and spills into the
+        // neighbouring column.
+        <li key={connector.platform} className="min-w-0 rounded-lg border border-line p-3">
+          {/* Name and status stack, always. Letting them share a line only
+              works when the label is short — "Not configured" fits where
+              "Credentials missing" does not — which left sibling cards
+              starting at different heights. Stacking keeps the set aligned and
+              never truncates a status, which is the point of this card. */}
+          <div className="flex flex-col items-start gap-1.5">
+            <span className="w-full truncate text-[14px] font-semibold text-ink">
               {PLATFORM_LABEL[connector.platform]}
             </span>
             <Badge tone={STATE[connector.state].tone} dot>
@@ -46,9 +54,21 @@ export function ConnectorGrid({ connectors }: { connectors: ConnectorStatus[] })
           </dl>
 
           {connector.missing.length > 0 && (
-            <p className="mt-2 rounded border border-caution-line bg-caution-soft px-2 py-1 font-num text-[11px] text-caution">
-              missing: {connector.missing.join(", ")}
-            </p>
+            <div className="mt-2 rounded border border-caution-line bg-caution-soft px-2 py-1.5">
+              <p className="label-caps text-[10px] text-caution">Missing</p>
+              <ul className="mt-1 space-y-0.5">
+                {connector.missing.map((key) => (
+                  // `break-all`: these are single unbroken tokens with no space
+                  // or hyphen to wrap on, so without it they run past the box.
+                  <li
+                    key={key}
+                    className="break-all font-num text-[11px] leading-4 text-caution"
+                  >
+                    {key}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </li>
       ))}

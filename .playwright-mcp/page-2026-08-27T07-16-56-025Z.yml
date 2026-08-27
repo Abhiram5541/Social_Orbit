@@ -1,0 +1,563 @@
+- generic [active] [ref=f27e1]:
+  - generic [ref=f27e2]:
+    - link "Skip to content" [ref=f27e3] [cursor=pointer]:
+      - /url: "#main"
+    - complementary [ref=f27e4]:
+      - link "SocialOrbit home" [ref=f27e6] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=f27e13]:
+          - generic [ref=f27e14]: SocialOrbit
+          - generic [ref=f27e15]: Influencer Intelligence
+      - navigation "Primary" [ref=f27e17]:
+        - generic [ref=f27e18]:
+          - link "Overview" [ref=f27e19] [cursor=pointer]:
+            - /url: /dashboard
+          - link "Discovery" [ref=f27e26] [cursor=pointer]:
+            - /url: /discovery
+          - link "Influencers" [ref=f27e31] [cursor=pointer]:
+            - /url: /influencers
+        - generic [ref=f27e38]:
+          - generic [ref=f27e39]: Workspace
+          - link "Shortlists" [ref=f27e40] [cursor=pointer]:
+            - /url: /shortlists
+          - link "Compare" [ref=f27e45] [cursor=pointer]:
+            - /url: /compare
+          - link "Campaigns" [ref=f27e51] [cursor=pointer]:
+            - /url: /campaigns
+          - link "Reports" [ref=f27e56] [cursor=pointer]:
+            - /url: /reports
+        - generic [ref=f27e61]:
+          - generic [ref=f27e62]: Account
+          - link "API" [ref=f27e63] [cursor=pointer]:
+            - /url: /api-portal
+          - link "Usage & billing" [ref=f27e69] [cursor=pointer]:
+            - /url: /usage
+          - link "Settings" [ref=f27e73] [cursor=pointer]:
+            - /url: /settings
+      - button "Collapse navigation" [ref=f27e79]:
+        - generic [ref=f27e83]: Collapse
+    - generic [ref=f27e84]:
+      - banner [ref=f27e85]:
+        - button "Search creators, campaigns, shortlists… /" [ref=f27e86]:
+          - generic [ref=f27e90]: Search creators, campaigns, shortlists…
+          - generic [ref=f27e91]: /
+        - generic [ref=f27e92]:
+          - link "276 of 500 searches remaining this month" [ref=f27e93] [cursor=pointer]:
+            - /url: /usage
+            - generic [ref=f27e94]: Searches
+            - generic [ref=f27e95]: 276/500
+          - link "Notifications" [ref=f27e96] [cursor=pointer]:
+            - /url: /notifications
+          - link "Help and documentation" [ref=f27e100] [cursor=pointer]:
+            - /url: /help
+          - button "Marcus Whitfield Client Owner" [ref=f27e104]:
+            - generic [ref=f27e105]: MW
+            - generic [ref=f27e107]:
+              - generic [ref=f27e108]: Marcus Whitfield
+              - generic [ref=f27e109]: Client Owner
+      - main [ref=f27e112]:
+        - generic [ref=f27e114]:
+          - generic [ref=f27e115]:
+            - heading "Good morning, Marcus." [level=1] [ref=f27e116]
+            - paragraph [ref=f27e117]: What is happening across Northwind Brands.
+          - link "Discover creators" [ref=f27e120] [cursor=pointer]:
+            - /url: /discovery
+        - generic [ref=f27e124]:
+          - generic [ref=f27e125]:
+            - generic [ref=f27e126]:
+              - generic [ref=f27e127]: Tracked creators
+              - generic [ref=f27e129]: "7"
+              - generic [ref=f27e130]: across 61 shortlists
+            - generic [ref=f27e132]:
+              - generic [ref=f27e133]: Live campaigns
+              - generic [ref=f27e135]: "1"
+              - generic [ref=f27e136]: 72 total
+            - generic [ref=f27e138]:
+              - generic [ref=f27e139]: Attributed posts
+              - generic [ref=f27e141]: "11"
+              - generic [ref=f27e142]: matched to campaign hashtags
+            - generic [ref=f27e144]:
+              - generic [ref=f27e145]: Searches this month
+              - generic [ref=f27e147]: 224 / 500
+              - generic [ref=f27e148]: resets monthly
+          - generic [ref=f27e150]:
+            - generic [ref=f27e151]:
+              - generic [ref=f27e152]:
+                - heading "Campaigns" [level=2] [ref=f27e153]
+                - link "View all" [ref=f27e154] [cursor=pointer]:
+                  - /url: /campaigns
+              - list [ref=f27e155]:
+                - listitem [ref=f27e156]:
+                  - 'link "Orbit Series launch Live #OrbitSeries2026 · 1 Aug 2026 – 30 Sept 2026 Creators 3/4 Reach 75.3K" [ref=f27e157] [cursor=pointer]':
+                    - /url: /campaigns/cmp_orbit_launch
+                    - generic [ref=f27e158]:
+                      - paragraph [ref=f27e159]:
+                        - text: Orbit Series launch
+                        - generic [ref=f27e160]: Live
+                      - paragraph [ref=f27e162]:
+                        - generic [ref=f27e163]: "#OrbitSeries2026"
+                        - text: · 1 Aug 2026 – 30 Sept 2026
+                    - generic [ref=f27e164]:
+                      - generic [ref=f27e165]:
+                        - term [ref=f27e166]: Creators
+                        - definition [ref=f27e167]: 3/4
+                      - generic [ref=f27e168]:
+                        - term [ref=f27e169]: Reach
+                        - definition [ref=f27e170]: 75.3K
+                - listitem [ref=f27e171]:
+                  - 'link "Summer beauty edit Completed #NorthwindGlowEdit · 5 May 2026 – 30 Jun 2026 Creators 2/2 Reach 133.2K" [ref=f27e172] [cursor=pointer]':
+                    - /url: /campaigns/cmp_summer_beauty
+                    - generic [ref=f27e173]:
+                      - paragraph [ref=f27e174]:
+                        - text: Summer beauty edit
+                        - generic [ref=f27e175]: Completed
+                      - paragraph [ref=f27e176]:
+                        - generic [ref=f27e177]: "#NorthwindGlowEdit"
+                        - text: · 5 May 2026 – 30 Jun 2026
+                    - generic [ref=f27e178]:
+                      - generic [ref=f27e179]:
+                        - term [ref=f27e180]: Creators
+                        - definition [ref=f27e181]: 2/2
+                      - generic [ref=f27e182]:
+                        - term [ref=f27e183]: Reach
+                        - definition [ref=f27e184]: 133.2K
+                - listitem [ref=f27e185]:
+                  - 'link "E2E campaign Planning #E2ETag1787759149651 · 26 Aug 2026 – 31 Dec 2026 Creators 0/0 Reach —" [ref=f27e186] [cursor=pointer]':
+                    - /url: /campaigns/cmp_mta9n0j13
+                    - generic [ref=f27e187]:
+                      - paragraph [ref=f27e188]:
+                        - text: E2E campaign
+                        - generic [ref=f27e189]: Planning
+                      - paragraph [ref=f27e190]:
+                        - generic [ref=f27e191]: "#E2ETag1787759149651"
+                        - text: · 26 Aug 2026 – 31 Dec 2026
+                    - generic [ref=f27e192]:
+                      - generic [ref=f27e193]:
+                        - term [ref=f27e194]: Creators
+                        - definition [ref=f27e195]: 0/0
+                      - generic [ref=f27e196]:
+                        - term [ref=f27e197]: Reach
+                        - definition [ref=f27e198]: —
+                - listitem [ref=f27e199]:
+                  - 'link "Untracked Planning #Untracked1787759151122 · 1 Sept 2026 – 30 Sept 2026 Creators 0/0 Reach —" [ref=f27e200] [cursor=pointer]':
+                    - /url: /campaigns/cmp_mta9n1gh4
+                    - generic [ref=f27e201]:
+                      - paragraph [ref=f27e202]:
+                        - text: Untracked
+                        - generic [ref=f27e203]: Planning
+                      - paragraph [ref=f27e204]:
+                        - generic [ref=f27e205]: "#Untracked1787759151122"
+                        - text: · 1 Sept 2026 – 30 Sept 2026
+                    - generic [ref=f27e206]:
+                      - generic [ref=f27e207]:
+                        - term [ref=f27e208]: Creators
+                        - definition [ref=f27e209]: 0/0
+                      - generic [ref=f27e210]:
+                        - term [ref=f27e211]: Reach
+                        - definition [ref=f27e212]: —
+            - generic [ref=f27e213]:
+              - generic [ref=f27e214]:
+                - heading "Shortlists" [level=2] [ref=f27e215]
+                - link "View all" [ref=f27e216] [cursor=pointer]:
+                  - /url: /shortlists
+              - list [ref=f27e217]:
+                - listitem [ref=f27e218]:
+                  - link [ref=f27e219] [cursor=pointer]:
+                    - /url: /shortlists/sl_q4_tech
+                    - generic [ref=f27e220]:
+                      - paragraph [ref=f27e221]: Q4 technology launch
+                      - paragraph [ref=f27e222]: 4 creators · updated 3 days ago
+                - listitem [ref=f27e226]:
+                  - link [ref=f27e227] [cursor=pointer]:
+                    - /url: /shortlists/sl_beauty_always_on
+                    - generic [ref=f27e228]:
+                      - paragraph [ref=f27e229]: Beauty — always on
+                      - paragraph [ref=f27e230]: 2 creators · updated 6 days ago
+                - listitem [ref=f27e234]:
+                  - link [ref=f27e235] [cursor=pointer]:
+                    - /url: /shortlists/sl_mta9myih1
+                    - generic [ref=f27e236]:
+                      - paragraph [ref=f27e237]: Empty 1787759147303
+                      - paragraph [ref=f27e238]: 0 creators · updated 16 hours ago
+                - listitem [ref=f27e242]:
+                  - link [ref=f27e243] [cursor=pointer]:
+                    - /url: /shortlists/sl_mta9mzju2
+                    - generic [ref=f27e244]:
+                      - paragraph [ref=f27e245]: E2E list 1787759147751
+                      - paragraph [ref=f27e246]: 1 creator · updated 16 hours ago
+                - listitem [ref=f27e250]:
+                  - link [ref=f27e251] [cursor=pointer]:
+                    - /url: /shortlists/sl_mta9nn7p5
+                    - generic [ref=f27e252]:
+                      - paragraph [ref=f27e253]: E2E list 1787759178931
+                      - paragraph [ref=f27e254]: 1 creator · updated 16 hours ago
+                - listitem [ref=f27e258]:
+                  - link [ref=f27e259] [cursor=pointer]:
+                    - /url: /shortlists/sl_mta9wlx46
+                    - generic [ref=f27e260]:
+                      - paragraph [ref=f27e261]: E2E list 1787759597027
+                      - paragraph [ref=f27e262]: 1 creator · updated 15 hours ago
+                - listitem [ref=f27e266]:
+                  - link [ref=f27e267] [cursor=pointer]:
+                    - /url: /shortlists/sl_mta9wm9w7
+                    - generic [ref=f27e268]:
+                      - paragraph [ref=f27e269]: Empty 1787759598007
+                      - paragraph [ref=f27e270]: 0 creators · updated 15 hours ago
+                - listitem [ref=f27e274]:
+                  - link [ref=f27e275] [cursor=pointer]:
+                    - /url: /shortlists/sl_mta9xsg6a
+                    - generic [ref=f27e276]:
+                      - paragraph [ref=f27e277]: E2E list 1787759652100
+                      - paragraph [ref=f27e278]: 1 creator · updated 15 hours ago
+                - listitem [ref=f27e282]:
+                  - link [ref=f27e283] [cursor=pointer]:
+                    - /url: /shortlists/sl_mta9xsr3b
+                    - generic [ref=f27e284]:
+                      - paragraph [ref=f27e285]: Empty 1787759653064
+                      - paragraph [ref=f27e286]: 0 creators · updated 15 hours ago
+                - listitem [ref=f27e290]:
+                  - link [ref=f27e291] [cursor=pointer]:
+                    - /url: /shortlists/sl_mta9yayre
+                    - generic [ref=f27e292]:
+                      - paragraph [ref=f27e293]: E2E list 1787759676313
+                      - paragraph [ref=f27e294]: 1 creator · updated 15 hours ago
+                - listitem [ref=f27e298]:
+                  - link [ref=f27e299] [cursor=pointer]:
+                    - /url: /shortlists/sl_mta9zmkvf
+                    - generic [ref=f27e300]:
+                      - paragraph [ref=f27e301]: E2E list 1787759737906
+                      - paragraph [ref=f27e302]: 1 creator · updated 15 hours ago
+                - listitem [ref=f27e306]:
+                  - link [ref=f27e307] [cursor=pointer]:
+                    - /url: /shortlists/sl_mta9zmx7g
+                    - generic [ref=f27e308]:
+                      - paragraph [ref=f27e309]: Empty 1787759738791
+                      - paragraph [ref=f27e310]: 0 creators · updated 15 hours ago
+                - listitem [ref=f27e314]:
+                  - link [ref=f27e315] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaa0tffj
+                    - generic [ref=f27e316]:
+                      - paragraph [ref=f27e317]: Empty 1787759793905
+                      - paragraph [ref=f27e318]: 0 creators · updated 15 hours ago
+                - listitem [ref=f27e322]:
+                  - link [ref=f27e323] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaa0tuek
+                    - generic [ref=f27e324]:
+                      - paragraph [ref=f27e325]: E2E list 1787759793992
+                      - paragraph [ref=f27e326]: 1 creator · updated 15 hours ago
+                - listitem [ref=f27e330]:
+                  - link [ref=f27e331] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaa2er5n
+                    - generic [ref=f27e332]:
+                      - paragraph [ref=f27e333]: E2E list 1787759867781
+                      - paragraph [ref=f27e334]: 1 creator · updated 15 hours ago
+                - listitem [ref=f27e338]:
+                  - link [ref=f27e339] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaa2f5wo
+                    - generic [ref=f27e340]:
+                      - paragraph [ref=f27e341]: Empty 1787759868727
+                      - paragraph [ref=f27e342]: 0 creators · updated 15 hours ago
+                - listitem [ref=f27e346]:
+                  - link [ref=f27e347] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaa3ctfr
+                    - generic [ref=f27e348]:
+                      - paragraph [ref=f27e349]: E2E list 1787759911571
+                      - paragraph [ref=f27e350]: 1 creator · updated 15 hours ago
+                - listitem [ref=f27e354]:
+                  - link [ref=f27e355] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaa3e6js
+                    - generic [ref=f27e356]:
+                      - paragraph [ref=f27e357]: Empty 1787759914111
+                      - paragraph [ref=f27e358]: 0 creators · updated 15 hours ago
+                - listitem [ref=f27e362]:
+                  - link [ref=f27e363] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaa56sbv
+                    - generic [ref=f27e364]:
+                      - paragraph [ref=f27e365]: Empty 1787759997837
+                      - paragraph [ref=f27e366]: 0 creators · updated 15 hours ago
+                - listitem [ref=f27e370]:
+                  - link [ref=f27e371] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaa57gyw
+                    - generic [ref=f27e372]:
+                      - paragraph [ref=f27e373]: E2E list 1787759997918
+                      - paragraph [ref=f27e374]: 1 creator · updated 15 hours ago
+                - listitem [ref=f27e378]:
+                  - link [ref=f27e379] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaa6cghz
+                    - generic [ref=f27e380]:
+                      - paragraph [ref=f27e381]: E2E list 1787760051180
+                      - paragraph [ref=f27e382]: 1 creator · updated 15 hours ago
+                - listitem [ref=f27e386]:
+                  - link [ref=f27e387] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaa6dbh10
+                    - generic [ref=f27e388]:
+                      - paragraph [ref=f27e389]: Empty 1787760052963
+                      - paragraph [ref=f27e390]: 0 creators · updated 15 hours ago
+                - listitem [ref=f27e394]:
+                  - link [ref=f27e395] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaa90ru13
+                    - generic [ref=f27e396]:
+                      - paragraph [ref=f27e397]: Empty 1787760176667
+                      - paragraph [ref=f27e398]: 0 creators · updated 15 hours ago
+                - listitem [ref=f27e402]:
+                  - link [ref=f27e403] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaaa63y16
+                    - generic [ref=f27e404]:
+                      - paragraph [ref=f27e405]: Empty 1787760230247
+                      - paragraph [ref=f27e406]: 0 creators · updated 15 hours ago
+                - listitem [ref=f27e410]:
+                  - link [ref=f27e411] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaab10i19
+                    - generic [ref=f27e412]:
+                      - paragraph [ref=f27e413]: E2E list 1787760269907
+                      - paragraph [ref=f27e414]: 1 creator · updated 15 hours ago
+                - listitem [ref=f27e418]:
+                  - link [ref=f27e419] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaacfu01a
+                    - generic [ref=f27e420]:
+                      - paragraph [ref=f27e421]: E2E-desktop-0-1787760335625
+                      - paragraph [ref=f27e422]: 1 creator · updated 15 hours ago
+                - listitem [ref=f27e426]:
+                  - link [ref=f27e427] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaacgpx1b
+                    - generic [ref=f27e428]:
+                      - paragraph [ref=f27e429]: Empty 1787760337210
+                      - paragraph [ref=f27e430]: 0 creators · updated 15 hours ago
+                - listitem [ref=f27e434]:
+                  - link [ref=f27e435] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaadjyg1e
+                    - generic [ref=f27e436]:
+                      - paragraph [ref=f27e437]: Empty 1787760388155
+                      - paragraph [ref=f27e438]: 0 creators · updated 15 hours ago
+                - listitem [ref=f27e442]:
+                  - link [ref=f27e443] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaafjab1h
+                    - generic [ref=f27e444]:
+                      - paragraph [ref=f27e445]: E2E-desktop-2-1787760479580
+                      - paragraph [ref=f27e446]: 1 creator · updated 15 hours ago
+                - listitem [ref=f27e450]:
+                  - link [ref=f27e451] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaafk8a1i
+                    - generic [ref=f27e452]:
+                      - paragraph [ref=f27e453]: Empty 1787760481757
+                      - paragraph [ref=f27e454]: 0 creators · updated 15 hours ago
+                - listitem [ref=f27e458]:
+                  - link [ref=f27e459] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtaagj8q1l
+                    - generic [ref=f27e460]:
+                      - paragraph [ref=f27e461]: Empty 1787760527071
+                      - paragraph [ref=f27e462]: 0 creators · updated 15 hours ago
+                - listitem [ref=f27e466]:
+                  - link [ref=f27e467] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb2z4c31o
+                    - generic [ref=f27e468]:
+                      - paragraph [ref=f27e469]: E2E-desktop-2-1787808422860
+                      - paragraph [ref=f27e470]: 1 creator · updated 2 hours ago
+                - listitem [ref=f27e474]:
+                  - link [ref=f27e475] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb2z5ja1p
+                    - generic [ref=f27e476]:
+                      - paragraph [ref=f27e477]: Empty 1787808425149
+                      - paragraph [ref=f27e478]: 0 creators · updated 2 hours ago
+                - listitem [ref=f27e482]:
+                  - link [ref=f27e483] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb303ll1s
+                    - generic [ref=f27e484]:
+                      - paragraph [ref=f27e485]: Empty 1787808469292
+                      - paragraph [ref=f27e486]: 0 creators · updated 2 hours ago
+                - listitem [ref=f27e490]:
+                  - link [ref=f27e491] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb33rv11v
+                    - generic [ref=f27e492]:
+                      - paragraph [ref=f27e493]: Empty 1787808640692
+                      - paragraph [ref=f27e494]: 0 creators · updated 2 hours ago
+                - listitem [ref=f27e498]:
+                  - link [ref=f27e499] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb33sp81w
+                    - generic [ref=f27e500]:
+                      - paragraph [ref=f27e501]: E2E-desktop-1-1787808640774
+                      - paragraph [ref=f27e502]: 1 creator · updated 2 hours ago
+                - listitem [ref=f27e506]:
+                  - link [ref=f27e507] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb34q021z
+                    - generic [ref=f27e508]:
+                      - paragraph [ref=f27e509]: Empty 1787808684942
+                      - paragraph [ref=f27e510]: 0 creators · updated 2 hours ago
+                - listitem [ref=f27e514]:
+                  - link [ref=f27e515] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb3793w22
+                    - generic [ref=f27e516]:
+                      - paragraph [ref=f27e517]: Empty 1787808803020
+                      - paragraph [ref=f27e518]: 0 creators · updated 2 hours ago
+                - listitem [ref=f27e522]:
+                  - link [ref=f27e523] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb379ek23
+                    - generic [ref=f27e524]:
+                      - paragraph [ref=f27e525]: E2E-desktop-1-1787808802500
+                      - paragraph [ref=f27e526]: 1 creator · updated 2 hours ago
+                - listitem [ref=f27e530]:
+                  - link [ref=f27e531] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb384x726
+                    - generic [ref=f27e532]:
+                      - paragraph [ref=f27e533]: Empty 1787808844258
+                      - paragraph [ref=f27e534]: 0 creators · updated 2 hours ago
+                - listitem [ref=f27e538]:
+                  - link [ref=f27e539] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb4u5831
+                    - generic [ref=f27e540]:
+                      - paragraph [ref=f27e541]: Empty 1787811550634
+                      - paragraph [ref=f27e542]: 0 creators · updated 58 minutes ago
+                - listitem [ref=f27e546]:
+                  - link [ref=f27e547] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb4u5e42
+                    - generic [ref=f27e548]:
+                      - paragraph [ref=f27e549]: E2E-desktop-1-1787811549595
+                      - paragraph [ref=f27e550]: 1 creator · updated 58 minutes ago
+                - listitem [ref=f27e554]:
+                  - link [ref=f27e555] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb4v3495
+                    - generic [ref=f27e556]:
+                      - paragraph [ref=f27e557]: Empty 1787811594625
+                      - paragraph [ref=f27e558]: 0 creators · updated 57 minutes ago
+                - listitem [ref=f27e562]:
+                  - link [ref=f27e563] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb4zvck8
+                    - generic [ref=f27e564]:
+                      - paragraph [ref=f27e565]: E2E-desktop-2-1787811817093
+                      - paragraph [ref=f27e566]: 1 creator · updated 53 minutes ago
+                - listitem [ref=f27e570]:
+                  - link [ref=f27e571] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb4zx2t9
+                    - generic [ref=f27e572]:
+                      - paragraph [ref=f27e573]: Empty 1787811820077
+                      - paragraph [ref=f27e574]: 0 creators · updated 53 minutes ago
+                - listitem [ref=f27e578]:
+                  - link [ref=f27e579] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb53r8xc
+                    - generic [ref=f27e580]:
+                      - paragraph [ref=f27e581]: Empty 1787811999127
+                      - paragraph [ref=f27e582]: 0 creators · updated 50 minutes ago
+                - listitem [ref=f27e586]:
+                  - link [ref=f27e587] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb5a5c4f
+                    - generic [ref=f27e588]:
+                      - paragraph [ref=f27e589]: E2E-desktop-3-1787812297011
+                      - paragraph [ref=f27e590]: 1 creator · updated 45 minutes ago
+                - listitem [ref=f27e594]:
+                  - link [ref=f27e595] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb5a7d5g
+                    - generic [ref=f27e596]:
+                      - paragraph [ref=f27e597]: Empty 1787812299963
+                      - paragraph [ref=f27e598]: 0 creators · updated 45 minutes ago
+                - listitem [ref=f27e602]:
+                  - link [ref=f27e603] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb5dz6aj
+                    - generic [ref=f27e604]:
+                      - paragraph [ref=f27e605]: Empty 1787812475972
+                      - paragraph [ref=f27e606]: 0 creators · updated 42 minutes ago
+                - listitem [ref=f27e610]:
+                  - link [ref=f27e611] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb5in1hm
+                    - generic [ref=f27e612]:
+                      - paragraph [ref=f27e613]: Empty 1787812693514
+                      - paragraph [ref=f27e614]: 0 creators · updated 39 minutes ago
+                - listitem [ref=f27e618]:
+                  - link [ref=f27e619] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb5inbtn
+                    - generic [ref=f27e620]:
+                      - paragraph [ref=f27e621]: E2E-desktop-1-1787812693061
+                      - paragraph [ref=f27e622]: 1 creator · updated 39 minutes ago
+                - listitem [ref=f27e626]:
+                  - link [ref=f27e627] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb5mop1q
+                    - generic [ref=f27e628]:
+                      - paragraph [ref=f27e629]: Empty 1787812882284
+                      - paragraph [ref=f27e630]: 0 creators · updated 36 minutes ago
+                - listitem [ref=f27e634]:
+                  - link [ref=f27e635] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb5rs25t
+                    - generic [ref=f27e636]:
+                      - paragraph [ref=f27e637]: E2E-desktop-2-1787813119546
+                      - paragraph [ref=f27e638]: 1 creator · updated 32 minutes ago
+                - listitem [ref=f27e642]:
+                  - link [ref=f27e643] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb5ru0qu
+                    - generic [ref=f27e644]:
+                      - paragraph [ref=f27e645]: Empty 1787813122473
+                      - paragraph [ref=f27e646]: 0 creators · updated 32 minutes ago
+                - listitem [ref=f27e650]:
+                  - link [ref=f27e651] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb5vsaax
+                    - generic [ref=f27e652]:
+                      - paragraph [ref=f27e653]: Empty 1787813306289
+                      - paragraph [ref=f27e654]: 0 creators · updated 28 minutes ago
+                - listitem [ref=f27e658]:
+                  - link [ref=f27e659] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb67ot110
+                    - generic [ref=f27e660]:
+                      - paragraph [ref=f27e661]: Empty 1787813862201
+                      - paragraph [ref=f27e662]: 0 creators · updated 19 minutes ago
+                - listitem [ref=f27e666]:
+                  - link [ref=f27e667] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb67pho11
+                    - generic [ref=f27e668]:
+                      - paragraph [ref=f27e669]: E2E-desktop-1-1787813862549
+                      - paragraph [ref=f27e670]: 1 creator · updated 19 minutes ago
+                - listitem [ref=f27e674]:
+                  - link [ref=f27e675] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb6bym114
+                    - generic [ref=f27e676]:
+                      - paragraph [ref=f27e677]: Empty 1787814061523
+                      - paragraph [ref=f27e678]: 0 creators · updated 16 minutes ago
+                - listitem [ref=f27e682]:
+                  - link [ref=f27e683] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb6fxwy17
+                    - generic [ref=f27e684]:
+                      - paragraph [ref=f27e685]: E2E-desktop-2-1787814246489
+                      - paragraph [ref=f27e686]: 1 creator · updated 13 minutes ago
+                - listitem [ref=f27e690]:
+                  - link [ref=f27e691] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb6fzp018
+                    - generic [ref=f27e692]:
+                      - paragraph [ref=f27e693]: Empty 1787814249581
+                      - paragraph [ref=f27e694]: 0 creators · updated 13 minutes ago
+                - listitem [ref=f27e698]:
+                  - link [ref=f27e699] [cursor=pointer]:
+                    - /url: /shortlists/sl_mtb6jp861b
+                    - generic [ref=f27e700]:
+                      - paragraph [ref=f27e701]: Empty 1787814422636
+                      - paragraph [ref=f27e702]: 0 creators · updated 10 minutes ago
+          - generic [ref=f27e706]:
+            - generic [ref=f27e707]:
+              - heading "Needs attention" [level=2] [ref=f27e708]
+              - generic [ref=f27e709]: Signals across creators you track
+            - list [ref=f27e710]:
+              - listitem [ref=f27e711]:
+                - link "Talia Okafor Health score below your review threshold Health 51 Engagement 3.2%" [ref=f27e712] [cursor=pointer]:
+                  - /url: /influencers/inf_0004
+                  - generic [ref=f27e713]: TO
+                  - generic [ref=f27e715]:
+                    - paragraph [ref=f27e716]: Talia Okafor
+                    - paragraph [ref=f27e717]: Health score below your review threshold
+                  - generic [ref=f27e718]:
+                    - generic [ref=f27e719]:
+                      - generic [ref=f27e720]: Health
+                      - 'generic "Health: Fair" [ref=f27e721]': "51"
+                    - generic [ref=f27e724]:
+                      - generic [ref=f27e725]: Engagement
+                      - text: 3.2%
+              - listitem [ref=f27e726]:
+                - link "Jonas Petrov Health score below your review threshold Health 50 Engagement 0.6%" [ref=f27e727] [cursor=pointer]:
+                  - /url: /influencers/inf_0009
+                  - generic [ref=f27e728]: JP
+                  - generic [ref=f27e730]:
+                    - paragraph [ref=f27e731]: Jonas Petrov
+                    - paragraph [ref=f27e732]: Health score below your review threshold
+                  - generic [ref=f27e733]:
+                    - generic [ref=f27e734]:
+                      - generic [ref=f27e735]: Health
+                      - 'generic "Health: Needs review" [ref=f27e736]': "50"
+                    - generic [ref=f27e739]:
+                      - generic [ref=f27e740]: Engagement
+                      - text: 0.6%
+  - button "Open Next.js Dev Tools" [ref=f27e746] [cursor=pointer]
