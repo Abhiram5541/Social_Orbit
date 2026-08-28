@@ -91,12 +91,12 @@ export function healthBand(value: number): HealthScore["band"] {
  * with the evidence that produced them, never a headline "% fake" figure.
  */
 export const RiskSignals = z.object({
-  /** 0–100, lower is safer. */
-  botRisk: z.number().min(0).max(100),
-  /** 0–100 inactivity signal from measurable indicators. */
-  inactiveAudience: z.number().min(0).max(100),
-  /** Deviation of recent content from expected performance. */
-  viewAnomaly: z.number().min(0).max(100),
+  /** 0–100, lower is safer. Null where the signal was never measured. */
+  botRisk: z.number().min(0).max(100).nullable(),
+  /** 0–100 inactivity signal from measurable indicators. Null if unmeasured. */
+  inactiveAudience: z.number().min(0).max(100).nullable(),
+  /** Deviation of recent content from expected performance. Null if unmeasured. */
+  viewAnomaly: z.number().min(0).max(100).nullable(),
   level: RiskLevel,
   /** Human-readable measurements that justify the numbers above. */
   evidence: z.array(
@@ -115,9 +115,11 @@ export const CampaignFit = z.object({
   value: z.number().min(0).max(100),
   components: z.object({
     categoryBenchmark: z.number(),
-    engagementQuality: z.number(),
-    audienceFit: z.number(),
-    commercialIntent: z.number(),
+    // Nullable: a component the platform could not measure is excluded from
+    // the weighting rather than scored as zero.
+    engagementQuality: z.number().nullable(),
+    audienceFit: z.number().nullable(),
+    commercialIntent: z.number().nullable(),
     historicalCampaignPerformance: z.number().nullable(),
     costEfficiency: z.number().nullable(),
   }),

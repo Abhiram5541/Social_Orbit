@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { ACCOUNTS, signIn } from "./support";
+import { creatorIds, ACCOUNTS, signIn } from "./test-helpers";
 
 /* ---------------------------------------------------------------------------
  * The search view is mounted twice: at /discovery for clients and at
@@ -47,11 +47,14 @@ for (const surface of SURFACES) {
       }
 
       const scope = usesSheet ? page.getByRole("dialog", { name: "Filters" }) : page;
-      await scope.getByLabel("YouTube").check();
+      // An audience-size band, not a platform: the database is harvested from
+      // YouTube, so every creator matches a YouTube filter and it narrows
+      // nothing. A filter that cannot exclude anything cannot test narrowing.
+      await scope.getByLabel("Mega · 1M+").check();
       if (usesSheet) await showResults.click();
 
       // The critical assertion: it stayed here rather than bouncing.
-      await expect(page).toHaveURL(new RegExp(`${surface.path}\\?.*platform=youtube`));
+      await expect(page).toHaveURL(new RegExp(`${surface.path}\\?.*followerBand=mega`));
 
       await expect
         .poll(async () => totalResults(page), { timeout: 10_000 })
@@ -91,9 +94,10 @@ for (const surface of SURFACES) {
 
 test.describe("compare is reachable by every role that holds the permission", () => {
   for (const role of ["clientOwner", "superAdmin", "analyst"] as const) {
-    test(`${role} can open a comparison`, async ({ page }) => {
+    test(`${role} can open a comparison`, async ({ page, request }) => {
+      const ids = await creatorIds(request, 2);
       await signIn(page, ACCOUNTS[role]);
-      const response = await page.goto("/compare?ids=inf_0001,inf_0004", {
+      const response = await page.goto(`/compare?ids=${ids.join(",")}`, {
         waitUntil: "networkidle",
       });
       expect(response?.status()).toBe(200);
@@ -102,9 +106,10 @@ test.describe("compare is reachable by every role that holds the permission", ()
     });
   }
 
-  test("a creator, who holds no compare permission, is redirected away", async ({ page }) => {
+  test("a creator, who holds no compare permission, is redirected away", async ({ page, request }) => {
+    const ids = await creatorIds(request, 2);
     await signIn(page, ACCOUNTS.creator);
-    await page.goto("/compare?ids=inf_0001,inf_0004");
+    await page.goto(`/compare?ids=${ids.join(",")}`);
     await expect(page).toHaveURL(/\/creator/);
   });
 });

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { AlertTriangle, type LucideIcon } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 import { Button } from "./button";
 
 /* ---------------------------------------------------------------------------

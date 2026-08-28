@@ -10,7 +10,7 @@
  * than one instance — the call sites do not change.
  * ------------------------------------------------------------------------ */
 
-import { shared } from "@/server/data/store";
+import { shared } from "@/server/data/process-store";
 
 interface Window {
   count: number;

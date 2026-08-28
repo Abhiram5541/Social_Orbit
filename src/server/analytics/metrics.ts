@@ -155,7 +155,11 @@ export function daysSinceLastPublication(
     .map((item) => new Date(item.publishedAt).getTime())
     .filter(Number.isFinite);
   if (times.length === 0) return null;
-  return (now.getTime() - Math.max(...times)) / (24 * 60 * 60 * 1000);
+  // Clamped at zero: a connector can return a video published seconds ago
+  // while `now` lags behind it, and "published in the future" is not a
+  // negative number of days since publication — it is none.
+  const days = (now.getTime() - Math.max(...times)) / (24 * 60 * 60 * 1000);
+  return Math.max(0, days);
 }
 
 export type ActivityStatusValue = "active" | "recently_active" | "slowing" | "dormant";

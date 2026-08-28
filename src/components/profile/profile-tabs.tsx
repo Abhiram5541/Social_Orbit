@@ -219,6 +219,14 @@ export function ProfileTabs({ profile }: { profile: InfluencerProfile }) {
             </Card>
           </div>
         )}
+
+        {!profile.ai && (
+          <Notice tone="info" title="No AI enrichment for this creator yet">
+            Classification, brand-safety and comment-quality readings come from the AI layer,
+            which has not run for this profile. The measured figures above are unaffected —
+            AI explains scores here, it never produces them.
+          </Notice>
+        )}
       </TabPanel>
 
       <TabPanel value="growth" active={tab === "growth"} className="space-y-4">

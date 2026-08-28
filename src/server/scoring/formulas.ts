@@ -179,6 +179,13 @@ export interface RiskInputs {
 }
 
 export function riskLevel(inputs: RiskInputs): RiskLevel {
+  // Audience-quality signals are what a risk level is about. With none of them
+  // measured there is nothing to grade, and defaulting the absent ones to
+  // "clean" would manufacture a low-risk verdict out of missing data.
+  const assessable =
+    inputs.botRisk !== null || inputs.inactiveAudience !== null || inputs.brandSafety !== null;
+  if (!assessable) return "unknown";
+
   const bot = inputs.botRisk ?? 0;
   const inactive = inputs.inactiveAudience ?? 0;
   const safety = inputs.brandSafety ?? 100;
@@ -200,7 +207,7 @@ export function riskLevel(inputs: RiskInputs): RiskLevel {
   const fromComposite: RiskLevel =
     composite >= 45 ? "high" : composite >= 22 ? "medium" : "low";
 
-  const RANK: Record<RiskLevel, number> = { low: 0, medium: 1, high: 2 };
+  const RANK: Record<RiskLevel, number> = { unknown: 0, low: 0, medium: 1, high: 2 };
   return RANK[floor] >= RANK[fromComposite] ? floor : fromComposite;
 }
 
@@ -209,10 +216,13 @@ export function computeRiskSignals(
   evidence: RiskSignals["evidence"],
   now: Date = new Date(),
 ): RiskSignals {
+  // Null passes through as null. Rounding an absent signal to 0 published
+  // "bot risk 0/100" — a clean bill of health for something never measured.
   return {
-    botRisk: Math.round(inputs.botRisk ?? 0),
-    inactiveAudience: Math.round(inputs.inactiveAudience ?? 0),
-    viewAnomaly: Math.round(inputs.viewAnomaly ?? 100),
+    botRisk: inputs.botRisk === null ? null : Math.round(inputs.botRisk),
+    inactiveAudience:
+      inputs.inactiveAudience === null ? null : Math.round(inputs.inactiveAudience),
+    viewAnomaly: inputs.viewAnomaly === null ? null : Math.round(inputs.viewAnomaly),
     level: riskLevel(inputs),
     evidence,
     computedAt: now.toISOString(),
@@ -306,9 +316,10 @@ export const FIT_FORMULA_VERSION = "fit-1.0.0";
 
 export interface CampaignFitInputs {
   categoryBenchmark: number;
-  engagementQuality: number;
-  audienceFit: number;
-  commercialIntent: number;
+  /** Null where the component could not be measured. Dropped, not scored zero. */
+  engagementQuality: number | null;
+  audienceFit: number | null;
+  commercialIntent: number | null;
   historicalCampaignPerformance: number | null;
   costEfficiency: number | null;
 }

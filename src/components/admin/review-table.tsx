@@ -1,6 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 import { formatRelativeTime } from "@/lib/format";
 import type { ReviewItem } from "@/server/repositories/ops-repository";
 import { Card } from "@/components/ui/card";

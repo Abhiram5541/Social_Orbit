@@ -6,6 +6,7 @@ import { PageBody, PageHeader } from "@/components/shell/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Notice } from "@/components/ui/states";
 import { ConnectorGrid } from "@/components/admin/connector-grid";
+import { ConnectorProbe } from "@/components/admin/connector-probe";
 
 export const metadata: Metadata = { title: "Connectors" };
 export const dynamic = "force-dynamic";
@@ -28,6 +29,11 @@ export default async function ConnectorsPage() {
         </Notice>
 
         <ConnectorGrid connectors={connectors} />
+
+        {/* Whether the key *works* is a different question from whether it is
+            *set*, and only a real call answers it. The panel is passed the
+            configured flag rather than the key itself. */}
+        <ConnectorProbe disabled={!process.env.YOUTUBE_API_KEY} />
 
         {connectors.map((connector) => (
           <Card key={connector.platform}>

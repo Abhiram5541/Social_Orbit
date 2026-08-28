@@ -1,5 +1,5 @@
 import * as React from "react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 
 /* Depth is a 1px border and a tonal step, not a shadow. Shadows are reserved
    for things that genuinely float above the page. */

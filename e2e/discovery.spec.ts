@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ACCOUNTS, apiSignIn, signIn } from "./support";
+import { ACCOUNTS, apiSignIn, signIn } from "./test-helpers";
 
 test.describe("discovery", () => {
   test.beforeEach(async ({ page }) => {
@@ -15,7 +15,12 @@ test.describe("discovery", () => {
   const resultLinks = (page: import("@playwright/test").Page) =>
     // `:visible` matters: both shapes are in the DOM and one is display:none,
     // so an unscoped query would resolve to the hidden one first.
-    page.locator('a[href^="/influencers/inf_"]:visible');
+    //
+    // Any profile id, not just the seeded `inf_` prefix: creators ingested
+    // from a real connector carry a platform-derived id, and a prefix match
+    // would quietly skip them and assert against a database it no longer
+    // fully describes.
+    page.locator('a[href^="/influencers/"]:visible');
 
   test("lists creators with scores from the pipeline", async ({ page }) => {
     await expect(resultLinks(page).first()).toBeVisible();
@@ -104,7 +109,7 @@ test.describe("discovery", () => {
     const first = resultLinks(page).first();
     const name = (await first.innerText()).trim();
     await first.click();
-    await page.waitForURL(/\/influencers\/inf_/);
+    await page.waitForURL(/\/influencers\/[^/]+$/);
     await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
   });
 });

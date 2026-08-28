@@ -1,5 +1,5 @@
 import * as React from "react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 import { NO_VALUE } from "@/lib/format";
 import { healthBand } from "@/lib/contracts/score";
 import type { RiskLevel } from "@/lib/contracts/common";
@@ -210,12 +210,15 @@ export function ScorePill({
 }
 
 const RISK_TONE: Record<RiskLevel, BadgeTone> = {
+  // Neutral, never green: an unassessed creator has not passed anything.
+  unknown: "neutral",
   low: "positive",
   medium: "caution",
   high: "critical",
 };
 
 const RISK_LABEL: Record<RiskLevel, string> = {
+  unknown: "Risk not assessed",
   low: "Low risk",
   medium: "Medium risk",
   high: "High risk",

@@ -13,6 +13,7 @@ import { Notice } from "@/components/ui/states";
 import { Table, TableWrap, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
 import { StatRow, StatTile } from "@/components/intelligence/stat";
 import { ReviewTable } from "@/components/admin/review-table";
+import { ChannelIngest } from "@/components/admin/channel-ingest";
 
 export const metadata: Metadata = { title: "Ingestion" };
 export const dynamic = "force-dynamic";
@@ -46,6 +47,8 @@ export default async function IngestionPage() {
           score recalculation happen in background workers, so a slow provider never blocks
           a page render — DPR §23.
         </Notice>
+
+        <ChannelIngest disabled={!process.env.YOUTUBE_API_KEY} />
 
         <StatRow>
           <StatTile label="Accounts tracked" value={formatCompact(stats.totalAccounts)} />

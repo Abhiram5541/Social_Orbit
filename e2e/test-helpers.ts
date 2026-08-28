@@ -30,3 +30,29 @@ export async function apiSignIn(request: APIRequestContext, email: string) {
   expect(response.ok()).toBeTruthy();
   return response;
 }
+
+/* ---------------------------------------------------------------------------
+ * Creator ids
+ *
+ * The database is built from real ingested channels, so there are no fixed
+ * fixture ids to hard-code. Tests that need a concrete creator ask for one
+ * here: the ids are read once from the API and reused across the file, which
+ * keeps assertions honest against whatever the database actually holds.
+ * ------------------------------------------------------------------------ */
+
+let cachedIds: string[] | null = null;
+
+export async function creatorIds(request: APIRequestContext, count = 3): Promise<string[]> {
+  if (!cachedIds) {
+    await apiSignIn(request, ACCOUNTS.clientOwner);
+    const response = await request.get("/api/internal/influencers?pageSize=25&sort=followers_desc");
+    expect(response.ok()).toBeTruthy();
+    const body = await response.json();
+    cachedIds = (body.page?.items ?? []).map((item: { id: string }) => item.id);
+  }
+  expect(
+    cachedIds!.length,
+    "the influencer database is empty — run a harvest before the E2E suite",
+  ).toBeGreaterThanOrEqual(count);
+  return cachedIds!.slice(0, count);
+}

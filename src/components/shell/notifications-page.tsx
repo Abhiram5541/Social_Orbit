@@ -9,7 +9,7 @@ import {
   TrendingDown,
   TriangleAlert,
 } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 import { formatRelativeTime } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";

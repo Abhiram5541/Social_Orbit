@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ACCOUNTS, signIn } from "./support";
+import { ACCOUNTS, creatorIds, signIn } from "./test-helpers";
 
 /**
  * The rule the layout must hold at every width: content may scroll sideways
@@ -15,23 +15,27 @@ async function expectNoHorizontalPageScroll(page: import("@playwright/test").Pag
   expect(overflow, "the page itself must not scroll horizontally").toBeLessThanOrEqual(1);
 }
 
-const ROUTES = [
-  "/",
-  "/login",
-  "/dashboard",
-  "/discovery",
-  "/influencers/inf_0001",
-  "/shortlists",
-  "/campaigns",
-  "/campaigns/cmp_orbit_launch",
-  "/compare?ids=inf_0001,inf_0004",
-  "/usage",
-  "/api-portal",
-];
+/** Creator-specific routes are built from live ids — see e2e/support.ts. */
+async function routes(request: import("@playwright/test").APIRequestContext) {
+  const [first, second] = await creatorIds(request, 2);
+  return [
+    "/",
+    "/login",
+    "/dashboard",
+    "/discovery",
+    `/influencers/${first}`,
+    "/shortlists",
+    "/campaigns",
+    "/campaigns/cmp_orbit_launch",
+    `/compare?ids=${first},${second}`,
+    "/usage",
+    "/api-portal",
+  ];
+}
 
 test.describe("responsive layout", () => {
   for (const width of [390, 768, 1024, 1440]) {
-    test(`no page-level horizontal scroll at ${width}px`, async ({ page }, testInfo) => {
+    test(`no page-level horizontal scroll at ${width}px`, async ({ page, request }, testInfo) => {
       // The viewport is set explicitly below, so the project's device profile
       // adds nothing — running this under both projects just doubled a long
       // navigation loop and made it time out under load.
@@ -44,7 +48,7 @@ test.describe("responsive layout", () => {
       await page.setViewportSize({ width, height: 900 });
       await signIn(page, ACCOUNTS.clientOwner);
 
-      for (const route of ROUTES) {
+      for (const route of await routes(request)) {
         await page.goto(route, { waitUntil: "networkidle" });
         await expectNoHorizontalPageScroll(page);
       }
@@ -119,6 +123,7 @@ test.describe("keyboard and focus", () => {
     await expect(creator).toBeVisible({ timeout: 10_000 });
 
     await page.keyboard.press("Enter");
-    await page.waitForURL(/\/influencers\/inf_/);
+    // Any profile id: an ingested creator's id is platform-derived, not `inf_`.
+    await page.waitForURL(/\/influencers\/[^/]+$/);
   });
 });

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 import { NO_VALUE } from "@/lib/format";
 import type { Provenance } from "@/lib/contracts/common";
 import { InfoHint } from "@/components/ui/overlay";

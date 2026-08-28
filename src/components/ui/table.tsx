@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 
 /* ---------------------------------------------------------------------------
  * High-density data table.

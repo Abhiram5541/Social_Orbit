@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 
 /* ---------------------------------------------------------------------------
  * Tabs with the full ARIA keyboard contract: arrows move, Home/End jump, and

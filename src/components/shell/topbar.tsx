@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Bell, ChevronDown, HelpCircle, LogOut, Menu, Search, Settings } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 import { PLAN_CONFIG, ROLE_LABEL, ROLE_WORKSPACE, type SessionUser } from "@/lib/contracts/auth";
 import type { SearchQuota } from "@/lib/contracts/search";
 import { Avatar } from "@/components/ui/avatar";

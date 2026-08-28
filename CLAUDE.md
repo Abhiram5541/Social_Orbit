@@ -100,7 +100,7 @@ so a dark palette can be added by redefining variables only.
 **D7 — Development state is anchored on `globalThis`.** Next builds route handlers and
 server components into separate module graphs, so a plain module-level array is instantiated
 more than once and a write from a handler is invisible to the next page render. All
-in-memory development state goes through `src/server/data/store.ts`. This exists only
+in-memory development state goes through `src/server/data/process-store.ts`. This exists only
 because the development driver keeps state in memory; the Postgres driver deletes it.
 
 **D8 — Client components never import from `src/server`.** Doing so drags the session
@@ -115,6 +115,46 @@ cannot hand a client component a function, so formatting choices are named value
 is noise wearing the costume of a statistic, and it would be the most quotable number on the
 page. Scoring still normalises against a small cohort's median; only the published rank is
 withheld.
+
+**D12 — The influencer database is real, and there is no generator.**
+The seeded creator generator is deleted. `src/server/data/` now holds record shapes and a
+read view over `ingested-store.ts`, which contains what the connectors actually wrote.
+Consequences that follow, and are intended:
+
+- **Persistence.** Refilling the database costs API quota against a daily budget, so it is
+  written to `.data/ingested.json` and survives a restart. Gitignored: it is a database, not
+  source, and it is rebuildable.
+- **Nothing has a fixed id.** Demo shortlists, campaigns and the creator-portal sign-in
+  resolve their creators from whatever the database holds. E2E does the same through
+  `creatorIds` in `e2e/test-helpers.ts`. A hard-coded id would dangle on the next harvest.
+- **A fresh clone starts empty.** Every screen must render its empty state. That is a
+  feature of the design, not a gap — the app is not allowed to depend on fixtures existing.
+- **Whole regions of the UI are now empty for every creator.** No audience demographics, no
+  bot-risk signal, no AI classification, no verified creators, and benchmarks only where a
+  cohort reaches eight. That is what a public API can honestly support, and the product was
+  built to show it rather than fill it.
+
+**D13 — Absent is not zero, and the type system now says so.**
+Ingesting a real channel with only an API key produces a creator with no bot-risk signal, no
+comment-quality figure and no AI classification. Three shapes were coercing those absences
+into confident numbers, so each was widened rather than defaulted: `RiskSignals.botRisk` /
+`inactiveAudience` / `viewAnomaly` are nullable, `CampaignFit` excludes an unmeasurable
+component instead of scoring it 0, and `RiskLevel` gained `unknown` — *not* a fourth
+severity, but "no audience-quality signal was measurable". Rendering that as "low risk"
+would have been a safety claim manufactured out of missing data.
+
+**D15 — Discovery is the only expensive call, so it is the only one budgeted.**
+`search.list` costs 100 quota units against 10,000/day; every other YouTube endpoint costs 1.
+So the harvest uses search only to *find* channel ids, then reads everything about them
+through the cheap endpoints — `channels.list` batches 50 ids into a single unit. A category
+costs roughly 280 units and yields up to 40 creators. Progress is committed per category so
+an interrupted sweep keeps the quota it already spent.
+
+**D14 — YouTube topic categories are observed, not inferred.**
+`topicDetails.topicCategories` is a classification YouTube itself publishes, so it sets a
+creator's category with no AI label. Topics with no mapping are dropped rather than pushed
+into the nearest category: a wrong category puts the creator in a wrong cohort and corrupts
+the benchmark medians of everyone genuinely in it.
 
 **D11 — Risk does not average.** A blended composite let one severe signal be washed out by
 three clean ones — 85/100 bot risk read as "medium". A single disqualifying signal now sets
@@ -157,21 +197,23 @@ src/
     <domain>/            feature components
   lib/
     contracts/           Zod schemas + inferred types — the shared language
-    format.ts, cn.ts     pure helpers
+    format.ts, class-names.ts   pure helpers
   server/
     auth/                sessions, password hashing, RBAC
     repositories/        data access interfaces + current driver
     services/            business logic — the only place it lives
-    scoring/             deterministic formula engine, versioned
+    scoring/             formulas.ts — deterministic, versioned: health, risk, confidence, fit
     analytics/           deterministic metric calculation
     connectors/          youtube/ meta/ instagram/ — one folder per platform
     ai/                  provider abstraction, prompt/schema versions
-    data/                DEVELOPMENT DATASET ONLY — never imported by components
+    data/                driver: record shapes, read view, storage — never imported by components
 ```
 
 Rules:
 
 - Components never import from `src/server/data`. Ever.
+- A file's name says what it *is*. When that stops being true, rename it — the layout guide
+  is `docs/STRUCTURE.md`.
 - Route handlers are thin: validate → call a service → serialise. No business logic.
 - Business logic lives in `src/server/services`. Data access lives in
   `src/server/repositories`. Nothing skips a layer.

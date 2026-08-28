@@ -1,5 +1,5 @@
 import type { Platform } from "@/lib/contracts/common";
-import { devDataset, EPOCH } from "@/server/data/dev-dataset";
+import { readRecords, EPOCH } from "@/server/data/records";
 import { allSummaries, countInfluencers } from "./influencer-repository";
 
 /* ---------------------------------------------------------------------------
@@ -29,7 +29,7 @@ export interface DatabaseStats {
 }
 
 export function databaseStats(now: Date = EPOCH): DatabaseStats {
-  const data = devDataset();
+  const data = readRecords();
   const summaries = allSummaries(now);
 
   const staleAfterMs = 48 * 60 * 60 * 1000;
@@ -111,7 +111,7 @@ const CONNECTOR_NOTES: Record<Platform, string> = {
  * lies about its integrations is worse than no dashboard.
  */
 export function connectorStatuses(now: Date = EPOCH): ConnectorStatus[] {
-  const data = devDataset();
+  const data = readRecords();
 
   return (Object.keys(CONNECTOR_REQUIREMENTS) as Platform[]).map((platform) => {
     const requires = CONNECTOR_REQUIREMENTS[platform];
@@ -190,7 +190,7 @@ export interface ReviewItem {
 
 /** Profiles where two sources disagreed — DPR UC-12. Never silently resolved. */
 export function conflictQueue(now: Date = EPOCH): ReviewItem[] {
-  return devDataset()
+  return readRecords()
     .influencers.filter((raw) => raw.conflictCount > 0)
     .map((raw) => ({
       influencerId: raw.id,
@@ -224,7 +224,7 @@ export function lowConfidenceQueue(now: Date = EPOCH): ReviewItem[] {
 
 /** Creators who have connected an account but not yet passed identity matching. */
 export function verificationQueue(): ReviewItem[] {
-  return devDataset()
+  return readRecords()
     .influencers.filter((raw) => raw.isConnected && !raw.identityMatched)
     .map((raw) => ({
       influencerId: raw.id,
@@ -240,7 +240,7 @@ export function verificationQueue(): ReviewItem[] {
 
 /** Accounts whose stored tokens need re-consent — DPR §21. */
 export function reauthQueue(): ReviewItem[] {
-  const data = devDataset();
+  const data = readRecords();
   return data.accounts
     .filter((account) => account.needsReauth)
     .map((account) => {

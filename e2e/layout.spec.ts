@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { ACCOUNTS, signIn } from "./support";
+import { ACCOUNTS, signIn } from "./test-helpers";
 
 /* ---------------------------------------------------------------------------
  * Layout containment.

@@ -1,4 +1,4 @@
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 
 /**
  * The mark is an orbit: a body, its path, and a satellite on that path —

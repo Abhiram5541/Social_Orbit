@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { CornerDownLeft, Search } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 import { formatCompact } from "@/lib/format";
 import type { Permission } from "@/lib/contracts/auth";
 import type { InfluencerSummary } from "@/lib/contracts/influencer";

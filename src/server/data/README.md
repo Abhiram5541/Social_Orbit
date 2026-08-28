@@ -1,40 +1,71 @@
-# Development dataset
+# Data driver
 
-**Nothing in this directory is production data, and nothing outside `src/server/repositories`
-may import from it.**
+**Nothing outside `src/server/repositories` may import from this directory.**
 
 ## What this is
 
-A deterministic generator for *raw platform-shaped observations* — the kind of records a
-connector would write after calling the YouTube Data API or the Instagram Graph API:
-account rows, weekly snapshots, and content items with view/like/comment counts.
+The storage layer for the development driver, and the record shapes every driver shares.
+
+There is no generator here any more, and no fixtures. The influencer database is built by
+ingesting **real channels** through [`src/server/connectors`](../connectors/); this
+directory holds what those connectors wrote and hands it to the repository layer.
+
+| File | Role |
+| --- | --- |
+| `records.ts` | Raw record shapes, plus the read view the repositories consume |
+| `ingested-store.ts` | The store itself — real connector output, persisted to `.data/ingested.json` |
+| `process-store.ts` | Process-wide anchor for in-memory state (CLAUDE.md D7) |
 
 ## What this is deliberately **not**
 
-It does not contain a single analytic, score, band, risk level, confidence figure or
-percentile. Those are all computed at read time by
-[`src/server/analytics`](../analytics/) and [`src/server/scoring`](../scoring/) — the same
-production code that will run over real connector output.
+It contains no analytic, score, band, risk level, confidence figure or percentile. Those
+are all computed at read time by [`src/server/analytics`](../analytics/) and
+[`src/server/scoring`](../scoring/).
 
-This matters. If the fixtures carried pre-baked scores, the scoring engine would be
-untested against realistic input and the UI would be rendering numbers no formula ever
-produced. Instead, the pipeline is exercised end to end on every request:
+This matters. If the stored rows carried pre-baked scores, the scoring engine would never be
+exercised against real input and the UI would render numbers no formula ever produced.
+Instead the pipeline runs end to end on every request:
 
 ```
 raw observations  →  analytics  →  scoring  →  confidence  →  API  →  UI
-     (fixture)        (real)       (real)       (real)      (real) (real)
+  (connectors)       (real)       (real)       (real)       (real)  (real)
 ```
 
 Swapping in PostgreSQL replaces only the leftmost box.
 
+## Filling the database
+
+`.data/` is gitignored: it is a database, not source, and it is rebuildable from the
+connectors. A fresh clone starts empty, and every screen renders its empty state rather
+than breaking.
+
+To fill it, sign in as a platform operator and either use **Ingestion** in the admin
+workspace, or:
+
+```bash
+curl -X POST localhost:3000/api/internal/connectors/youtube/harvest \
+  -H 'Content-Type: application/json' \
+  -d '{"categories":["technology"],"target":40,"videos":50}'
+```
+
+Run it a category at a time. `search.list` costs 100 quota units against a 10,000/day
+budget while every other endpoint costs 1, so discovery is the only expensive part — a
+category costs roughly 280 units and yields up to 40 creators.
+
+## What a harvested creator does and does not carry
+
+Everything an API key can observe: subscriber count, total views, video count, per-video
+views/likes/comments/duration, the country and topic categories YouTube itself publishes,
+and the language the creator declared.
+
+Nothing it cannot. No audience demographics, no watch time, no bot-risk signal, no comment
+quality, no brand-safety classification — those need OAuth or an AI provider. The `signals`,
+`audience` and `ai` maps in the read view are the slots they will fill. Until then the
+scoring engine renormalises around the missing components and the confidence score falls,
+which is the correct visible outcome rather than a gap papered over.
+
 ## Determinism
 
-Generation is seeded (`mulberry32`) and derives every timestamp from a fixed epoch, so the
-same profile renders identically across processes and across test runs. E2E assertions can
-therefore reference concrete values without becoming flaky.
-
-## Removal
-
-The repository layer selects its driver from `SOCIALORBIT_DATA_DRIVER`. When the Postgres
-driver lands, set it to `postgres`, delete this directory, and no component, route handler
-or service changes.
+Reads take `now` as a parameter and default to `EPOCH`, so a score computed from the same
+stored rows is reproducible rather than dependent on when it ran. The rows themselves change
+only when a connector writes new observations.

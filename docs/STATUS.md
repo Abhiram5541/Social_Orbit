@@ -1,6 +1,6 @@
 # SocialOrbit — implementation status
 
-Last updated: 26 August 2026.
+Last updated: 28 August 2026.
 
 Scope note: the build was directed **frontend-first**, with PostgreSQL and live platform
 credentials deferred to a later phase. Everything below is written against that decision
@@ -14,8 +14,11 @@ not mean a production database is attached yet.
 | Check | Result |
 | --- | --- |
 | TypeScript, `strict`, whole project | clean |
-| Unit tests (Vitest) | 37 passed |
-| E2E (Playwright, desktop + mobile) | 102 passed, 4 skipped |
+| Unit tests (Vitest) | 55 passed |
+| E2E (Playwright, desktop + mobile) | 140 passed, 10 skipped |
+| Accessibility + control audit | 0 findings |
+| Influencer database | 627 real YouTube channels, 30,759 indexed uploads |
+| Live YouTube ingestion | 10 real channels read, scored and rendered end to end |
 | Route sweep, all six seed roles | every route 200 or a deliberate redirect |
 | RBAC probes against the API directly | every expected 401/403 held |
 | Tenant isolation probe | a second tenant sees an empty list, not another org's data |
@@ -85,7 +88,9 @@ covered by the responsive suite.
 | Area | What exists | What is missing |
 | --- | --- | --- |
 | Persistence | Repository interfaces, a process-wide dev store, mutations that behave correctly | PostgreSQL driver, migrations, indexes |
-| Connectors | Adapter boundary, per-platform requirements, honest status reporting, degradation | The HTTP calls themselves; blocked on credentials |
+| Connectors — YouTube | **Live.** Real YouTube Data API v3 calls: channel resolution by id/@handle/URL, channel statistics, recent uploads with per-video statistics, YouTube's own topic categories. Zod-validated responses, quota- and credential-aware failures, an operator probe at `/admin/connectors` | OAuth round trip, so no `oauth_authorized` tier data (watch time, impressions, demographics) |
+| Ingestion — YouTube | **Live.** `/admin/ingestion` ingests real channels into the influencer database. They are searchable, comparable, shortlistable and scored through the same engines as the seeded fixtures, carrying observed statistics only | A scheduler: ingestion is an explicit operator action, since each channel spends shared daily quota. Snapshots accumulate only as often as someone re-ingests, so trend lines need repeat passes |
+| Connectors — Instagram, TikTok | Adapter boundary, per-platform requirements, honest status reporting, degradation | The HTTP calls themselves; blocked on credentials |
 | AI enrichment | Provider abstraction shape, structured output contract, evidence, versioning | Live OpenAI/Gemini calls; blocked on credentials |
 | Reports | Report types, provenance guarantees, generation UI | Async generation, PDF/CSV rendering, storage |
 | Verification | Full status model, creator-facing flow, admin review queue | The OAuth round trip itself |
@@ -120,6 +125,17 @@ Nothing known. Every defect found during the build was fixed and is covered by a
 | Dev state invisible across route-handler/RSC bundles | Process-wide store keyed on `globalThis` |
 | Chart palette failed CVD separation | Re-stepped and re-validated |
 | Client component pulled `next/headers` into the browser bundle | API key shape moved to contracts |
+| Unmeasured bot risk published as `0/100` — a clean bill of health for something never measured | `RiskSignals` figures are nullable; `RiskLevel` gained `unknown`; test asserts an unmeasurable creator is not "low" |
+| Campaign fit scored an unmeasurable component as 0 instead of dropping it | Nullable fit inputs; `computeCampaignFit` already renormalised, so only the coercion had to go |
+| Provenance mix claimed 14% AI-inferred for a creator no model had touched | Mix reads the profile's actual AI presence |
+| A video with likes hidden and comments disabled published a confident 0.0% engagement rate | Absent interactions are excluded; the rate is null when none were observed |
+| Hashtags de-duplicated before lowercasing, so `#Tag` and `#tag` both survived, and a `#` mid-word counted as a tag | Lowercase then de-duplicate, with a preceding-character boundary |
+| `daysSinceLastPublication` went negative when a connector returned a video newer than `now` | Clamped at zero |
+| Every creator avatar rendered broken — Google's CDN refuses hotlinked requests carrying a referrer, reported as `ERR_BLOCKED_BY_ORB` rather than a 403 | `referrerPolicy="no-referrer"` on the one `Avatar` primitive every surface uses; the audit went from 126 findings to 0 |
+| `assemble()` scanned the whole content table per creator. Invisible at 84 creators and 4,400 rows; 19M operations per request at 627 and 30,759 | Rows grouped by owner once per revision — search API 500ms → 120ms |
+| Two E2E tests asserted the seeded `inf_` id prefix on whatever a search returned, so an ingested creator in first place failed them | Both match any profile id; the heading assertion that follows was always the real check |
+| `cohortCache` was computed once per process and never invalidated. Written against a frozen fixture set, it went stale the moment anything was ingested — so benchmarks stayed null and every creator in a band was normalised against an out-of-date median | Keyed on a revision counter the ingested store bumps on write |
+| `devDataset()` merged the ingested overlay on *every* call. Reads call it once per influencer and a cohort pass once per influencer in the database, so it copied every content row tens of thousands of times per request — the search API went from 24ms to ~2s and timed out five discovery E2E tests | Merge memoised on the same revision counter; 22–49ms with 11 ingested creators |
 | Server passed a function prop to a client chart | Format is named data, not a closure |
 
 ---

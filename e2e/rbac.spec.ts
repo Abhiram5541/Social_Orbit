@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ACCOUNTS, apiSignIn } from "./support";
+import { ACCOUNTS, apiSignIn, creatorIds } from "./test-helpers";
 
 /**
  * The security requirement is that permissions hold at the API, not that the
@@ -57,8 +57,9 @@ test.describe("server-side authorization", () => {
   });
 
   test("authorized audience analytics are withheld from client keys", async ({ request }) => {
+    const [first] = await creatorIds(request, 1);
     await apiSignIn(request, ACCOUNTS.clientOwner);
-    const response = await request.get("/api/internal/influencers/inf_0001");
+    const response = await request.get(`/api/internal/influencers/${first}`);
     expect(response.status()).toBe(200);
     const profile = await response.json();
     if (profile.audience.available) {

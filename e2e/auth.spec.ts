@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ACCOUNTS, PASSWORD, signIn } from "./support";
+import { ACCOUNTS, PASSWORD, signIn } from "./test-helpers";
 
 test.describe("authentication", () => {
   test("rejects a wrong password without revealing whether the account exists", async ({ page }) => {

@@ -7,7 +7,7 @@ import {
   normaliseEngagementRate,
   riskLevel,
   type HealthInputs,
-} from "./health";
+} from "./formulas";
 
 const AT = new Date("2026-08-26T00:00:00.000Z");
 

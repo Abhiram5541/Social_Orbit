@@ -14,7 +14,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 import { formatAxisDate, formatCompact, formatNumber, formatPercent } from "@/lib/format";
 
 /**

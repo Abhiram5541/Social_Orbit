@@ -1,7 +1,7 @@
 import * as React from "react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 import { formatRelativeTime } from "@/lib/format";
 import type { ReviewItem } from "@/server/repositories/ops-repository";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";

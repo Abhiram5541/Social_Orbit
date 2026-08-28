@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 import { isActive, type NavSection } from "@/lib/navigation";
 import { Eyebrow } from "@/components/ui/card";
 import { Tooltip } from "@/components/ui/overlay";

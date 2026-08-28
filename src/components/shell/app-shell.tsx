@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 import type { Permission, SessionUser } from "@/lib/contracts/auth";
 import { ROLE_PERMISSIONS, ROLE_WORKSPACE } from "@/lib/contracts/auth";
 import type { SearchQuota } from "@/lib/contracts/search";

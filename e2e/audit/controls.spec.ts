@@ -1,6 +1,7 @@
 import { test, type Page } from "@playwright/test";
 import { writeFileSync, mkdirSync } from "node:fs";
-import { ACCOUNTS, signIn } from "../support";
+import { ACCOUNTS, creatorIds, signIn } from "../test-helpers";
+import { withCreatorIds } from "./route-inventory";
 
 /* ---------------------------------------------------------------------------
  * Control audit.
@@ -31,10 +32,10 @@ const SKIP = /sign out|log out|delete|revoke|rotate|remove|disconnect|clear|rese
 const SCREENS: { path: string; as: keyof typeof ACCOUNTS }[] = [
   { path: "/dashboard", as: "clientOwner" },
   { path: "/discovery", as: "clientOwner" },
-  { path: "/influencers/inf_0001", as: "clientOwner" },
+  { path: "/influencers/__creator1__", as: "clientOwner" },
   { path: "/shortlists", as: "clientOwner" },
   { path: "/shortlists/sl_q4_tech", as: "clientOwner" },
-  { path: "/compare?ids=inf_0001,inf_0004", as: "clientOwner" },
+  { path: "/compare?ids=__creator1__,__creator2__", as: "clientOwner" },
   { path: "/campaigns", as: "clientOwner" },
   { path: "/campaigns/new", as: "clientOwner" },
   { path: "/campaigns/cmp_orbit_launch", as: "clientOwner" },
@@ -65,11 +66,12 @@ async function snapshot(page: Page) {
   }));
 }
 
-test("audit interactive controls", async ({ page }) => {
+test("audit interactive controls", async ({ page, request }) => {
   test.setTimeout(25 * 60_000);
   let signedInAs: string | null = null;
 
-  for (const screen of SCREENS) {
+  const ids = await creatorIds(request, 3);
+  for (const screen of withCreatorIds(SCREENS, ids)) {
     if (signedInAs !== screen.as) {
       await page.context().clearCookies();
       await signIn(page, ACCOUNTS[screen.as]);

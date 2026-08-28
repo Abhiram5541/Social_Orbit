@@ -1,8 +1,8 @@
 import { test, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { writeFileSync, mkdirSync } from "node:fs";
-import { ACCOUNTS, signIn } from "../support";
-import { AUDIT_ROUTES } from "./routes";
+import { ACCOUNTS, creatorIds, signIn } from "../test-helpers";
+import { AUDIT_ROUTES, withCreatorIds } from "./route-inventory";
 
 /* ---------------------------------------------------------------------------
  * UI audit.
@@ -54,12 +54,13 @@ async function statusOf(page: Page, url: string): Promise<number> {
 
 test.describe.configure({ mode: "serial" });
 
-test("audit every route", async ({ page, baseURL }) => {
+test("audit every route", async ({ page, baseURL, request }) => {
   test.setTimeout(20 * 60_000);
 
   let signedInAs: string | null = null;
+  const routes = withCreatorIds(AUDIT_ROUTES, await creatorIds(request, 3));
 
-  for (const route of AUDIT_ROUTES) {
+  for (const route of routes) {
     const label = `${route.path} [${route.as}]`;
 
     // Session per role, reused across that role's routes.

@@ -54,3 +54,13 @@ next-env.d.ts
 # Audit reports
 /test-results/ui-audit.json
 /test-results/control-audit.json
+
+# Ingested platform data — real observations, not fixtures. Rebuildable from
+# the connectors, large, and not something a repository should carry.
+/.data/
+
+# Browser-automation session logs and snapshots — debugging debris, not source.
+/.playwright-mcp/
+
+# Local editor/agent settings that are personal to one machine.
+.claude/settings.local.json

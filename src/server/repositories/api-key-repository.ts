@@ -3,7 +3,7 @@ import type { Plan, SessionUser } from "@/lib/contracts/auth";
 import { PLAN_CONFIG } from "@/lib/contracts/auth";
 import type { ApiKeyView, ApiScope } from "@/lib/contracts/api-key";
 import { ApiFailure, assertTenantAccess } from "@/server/auth/rbac";
-import { shared } from "@/server/data/store";
+import { shared } from "@/server/data/process-store";
 
 export type { ApiKeyView, ApiScope };
 

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { RotateCcw } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 import {
   ActivityStatus,
   CATEGORY_LABEL,
@@ -46,6 +46,7 @@ const VERIFICATION_LABEL: Record<VerificationStatus, string> = {
 };
 
 const RISK_LABEL: Record<RiskLevel, string> = {
+  unknown: "Not assessed",
   low: "Low",
   medium: "Medium",
   high: "High",

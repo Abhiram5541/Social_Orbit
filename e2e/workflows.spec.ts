@@ -1,9 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { ACCOUNTS, apiSignIn, signIn } from "./support";
+import { creatorIds, ACCOUNTS, apiSignIn, signIn } from "./test-helpers";
 
 test.describe("shortlists", () => {
   test("creates a shortlist, adds a creator, annotates and removes them", async ({
     page,
+    request,
   }, testInfo) => {
     test.skip(
       testInfo.project.name === "mobile",
@@ -21,7 +22,8 @@ test.describe("shortlists", () => {
     await expect(page.getByRole("link", { name: new RegExp(name) })).toBeVisible();
 
     // Discovery hands a creator over through the URL.
-    await page.goto("/shortlists?add=inf_0002");
+    const [handedOver] = await creatorIds(request, 1);
+    await page.goto(`/shortlists?add=${handedOver}`);
     const pickDialog = page.getByRole("dialog", { name: "Add to a shortlist" });
     await pickDialog.getByRole("button", { name: new RegExp(name) }).click();
     await expect(page.getByText(/Added to/)).toBeVisible();

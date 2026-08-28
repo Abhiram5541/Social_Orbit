@@ -1,6 +1,6 @@
 import { PLAN_CONFIG, type Plan } from "@/lib/contracts/auth";
 import type { SearchQuota } from "@/lib/contracts/search";
-import { shared } from "@/server/data/store";
+import { shared } from "@/server/data/process-store";
 
 /* ---------------------------------------------------------------------------
  * Usage metering — Architecture doc §3.

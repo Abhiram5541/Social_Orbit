@@ -238,7 +238,13 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   sports: "Sports",
 };
 
-export const RiskLevel = z.enum(["low", "medium", "high"]);
+/**
+ * `unknown` is not a fourth severity — it means no audience-quality signal was
+ * measurable for this creator. A public API exposes none of them, so a creator
+ * indexed without authorized access is unassessed, and saying "low" would be a
+ * safety claim the platform never earned.
+ */
+export const RiskLevel = z.enum(["unknown", "low", "medium", "high"]);
 export type RiskLevel = z.infer<typeof RiskLevel>;
 
 export const ActivityStatus = z.enum([

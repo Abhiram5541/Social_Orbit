@@ -10,7 +10,7 @@ import {
   TrendingUp,
   Minus,
 } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 import { NO_VALUE, direction, formatDelta, formatRelativeTime, isStale } from "@/lib/format";
 import {
   type ConfidenceBand,

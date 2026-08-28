@@ -1,4 +1,4 @@
-import { ACCOUNTS } from "../support";
+import { ACCOUNTS } from "../test-helpers";
 
 /**
  * Every route in the application, paired with the role that is allowed to see
@@ -10,6 +10,23 @@ export interface AuditRoute {
   as: keyof typeof ACCOUNTS | "anonymous";
   /** Set when the route is expected to redirect rather than render. */
   redirects?: boolean;
+}
+
+/**
+ * Creator ids are substituted at run time. The influencer database is built by
+ * ingesting real channels, so no fixed id survives a rebuild — see
+ * `creatorIds` in e2e/support.ts.
+ */
+export const CREATOR_SLOT = ["__creator1__", "__creator2__", "__creator3__"] as const;
+
+export function withCreatorIds<T extends { path: string }>(routes: T[], ids: string[]): T[] {
+  return routes.map((route) => ({
+    ...route,
+    path: CREATOR_SLOT.reduce(
+      (path, slot, index) => path.split(slot).join(ids[index] ?? ids[0]),
+      route.path,
+    ),
+  }));
 }
 
 export const AUDIT_ROUTES: AuditRoute[] = [
@@ -25,13 +42,13 @@ export const AUDIT_ROUTES: AuditRoute[] = [
   { path: "/discovery", as: "clientOwner" },
   { path: "/discovery?platform=youtube&healthMin=60", as: "clientOwner" },
   { path: "/influencers", as: "clientOwner", redirects: true },
-  { path: "/influencers/inf_0001", as: "clientOwner" },
-  { path: "/influencers/inf_0004", as: "clientOwner" },
+  { path: "/influencers/__creator1__", as: "clientOwner" },
+  { path: "/influencers/__creator2__", as: "clientOwner" },
   { path: "/shortlists", as: "clientOwner" },
   { path: "/shortlists/sl_q4_tech", as: "clientOwner" },
   { path: "/shortlists/sl_beauty_always_on", as: "clientOwner" },
   { path: "/compare", as: "clientOwner" },
-  { path: "/compare?ids=inf_0001,inf_0004,inf_0009", as: "clientOwner" },
+  { path: "/compare?ids=__creator1__,__creator2__,__creator3__", as: "clientOwner" },
   { path: "/campaigns", as: "clientOwner" },
   { path: "/campaigns/new", as: "clientOwner" },
   { path: "/campaigns/cmp_orbit_launch", as: "clientOwner" },

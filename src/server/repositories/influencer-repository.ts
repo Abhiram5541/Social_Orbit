@@ -44,15 +44,17 @@ import {
   normaliseEngagementQuality,
   normaliseEngagementRate,
   type HealthEvidence,
-} from "@/server/scoring/health";
+} from "@/server/scoring/formulas";
+import { ingestedRevision } from "@/server/data/ingested-store";
 import {
-  devDataset,
+  readRecords,
   EPOCH,
+  type DataView,
   type RawAccount,
   type RawContent,
   type RawInfluencer,
   type RawSnapshot,
-} from "@/server/data/dev-dataset";
+} from "@/server/data/records";
 import { FOLLOWER_BANDS, type FollowerBand } from "@/lib/contracts/search";
 
 /* ---------------------------------------------------------------------------
@@ -85,22 +87,64 @@ interface Assembled {
   snapshots: RawSnapshot[];
 }
 
+/**
+ * Rows grouped by owner, built once per revision.
+ *
+ * `assemble` runs once per creator, and a collection read runs it for the whole
+ * database — so scanning the content table inside it is quadratic. At fixture
+ * scale that was invisible; against a real harvest it is 600 creators times
+ * 30,000 content rows on every request. Grouping first makes it linear.
+ */
+interface Index {
+  influencers: Map<string, RawInfluencer>;
+  accounts: Map<string, RawAccount[]>;
+  content: Map<string, RawContent[]>;
+  snapshots: Map<string, RawSnapshot[]>;
+}
+
+let indexCache: { data: DataView; index: Index } | null = null;
+
+function groupBy<T>(rows: T[], key: (row: T) => string): Map<string, T[]> {
+  const grouped = new Map<string, T[]>();
+  for (const row of rows) {
+    const bucket = grouped.get(key(row));
+    if (bucket) bucket.push(row);
+    else grouped.set(key(row), [row]);
+  }
+  return grouped;
+}
+
+function index(): Index {
+  const data = readRecords();
+  // `readRecords()` returns the same object until the store changes, so identity
+  // is the revision check.
+  if (indexCache?.data === data) return indexCache.index;
+
+  const built: Index = {
+    influencers: new Map(data.influencers.map((row) => [row.id, row])),
+    accounts: groupBy(data.accounts, (row) => row.influencerId),
+    content: groupBy(data.content, (row) => row.influencerId),
+    snapshots: groupBy(data.snapshots, (row) => row.accountId),
+  };
+  indexCache = { data, index: built };
+  return built;
+}
+
 function assemble(id: string): Assembled | null {
-  const data = devDataset();
-  const raw = data.influencers.find((item) => item.id === id);
+  const rows = index();
+  const raw = rows.influencers.get(id);
   if (!raw) return null;
 
-  const accounts = data.accounts.filter((account) => account.influencerId === id);
+  const accounts = rows.accounts.get(id) ?? [];
   const primary = accounts.find((account) => account.isPrimary) ?? accounts[0];
   if (!primary) return null;
 
-  const accountIds = new Set(accounts.map((account) => account.id));
   return {
     raw,
     accounts,
     primary,
-    content: data.content.filter((item) => item.influencerId === id),
-    snapshots: data.snapshots.filter((point) => accountIds.has(point.accountId)),
+    content: rows.content.get(id) ?? [],
+    snapshots: accounts.flatMap((account) => rows.snapshots.get(account.id) ?? []),
   };
 }
 
@@ -189,13 +233,21 @@ function followerBandOf(followers: number | null): FollowerBand {
  * Scoring depends on them, so this must run before any score is normalised —
  * an engagement rate means nothing without the cohort it is measured against.
  */
-let cohortCache: Map<string, Cohort> | null = null;
+/**
+ * Rebuilt whenever the record set changes. Ingesting a creator moves the
+ * medians every other creator in their cohort is normalised against, so a
+ * cache that outlived a write would score the whole band against a database
+ * that no longer exists — and withhold the benchmark of the creator that had
+ * just completed the cohort.
+ */
+let cohortCache: { revision: number; map: Map<string, Cohort> } | null = null;
 
 function cohorts(now: Date): Map<string, Cohort> {
-  if (cohortCache) return cohortCache;
+  const revision = ingestedRevision();
+  if (cohortCache?.revision === revision) return cohortCache.map;
 
   const buckets = new Map<string, { engagement: number[]; vpf: number[]; medianViews: number[] }>();
-  for (const raw of devDataset().influencers) {
+  for (const raw of readRecords().influencers) {
     const record = assemble(raw.id);
     if (!record) continue;
     const derived = derive(record, now);
@@ -207,7 +259,7 @@ function cohorts(now: Date): Map<string, Cohort> {
     buckets.set(key, bucket);
   }
 
-  cohortCache = new Map(
+  const map = new Map<string, Cohort>(
     [...buckets].map(([key, bucket]) => [
       key,
       {
@@ -220,7 +272,8 @@ function cohorts(now: Date): Map<string, Cohort> {
       },
     ]),
   );
-  return cohortCache;
+  cohortCache = { revision, map };
+  return map;
 }
 
 function cohortFor(record: Assembled, now: Date): Cohort | null {
@@ -276,11 +329,15 @@ function verificationOf(raw: RawInfluencer): VerificationStatus {
 /* --- Score assembly ----------------------------------------------------- */
 
 function scoreOf(record: Assembled, now: Date) {
-  const data = devDataset();
+  const data = readRecords();
   const derived = derive(record, now);
   const cohort = cohortFor(record, now);
-  const signals = data.signals.get(record.raw.id)!;
-  const ai = data.ai.get(record.raw.id)!;
+  // Both are absent for a creator ingested from a public API: bot-risk signals
+  // are not observable without authorized access, and no model has classified
+  // them. Absent stays absent — the scoring engine renormalises around an
+  // unmeasurable component, which is the whole reason it tracks availability.
+  const signals = data.signals.get(record.raw.id) ?? null;
+  const ai = data.ai.get(record.raw.id) ?? null;
 
   const engagementRateScore = normaliseEngagementRate(
     derived.engagementRatePct,
@@ -290,10 +347,13 @@ function scoreOf(record: Assembled, now: Date) {
     derived.viewsPerFollower,
     cohort?.viewsPerFollowerMedian ?? null,
   );
-  const authenticity = normaliseAuthenticity(signals.botRisk, signals.inactiveAudience);
+  const authenticity = normaliseAuthenticity(
+    signals?.botRisk ?? null,
+    signals?.inactiveAudience ?? null,
+  );
   const engagementQuality = normaliseEngagementQuality(
     engagementRateScore,
-    ai.commentQuality,
+    ai?.commentQuality ?? null,
     audienceActivity,
   );
 
@@ -303,7 +363,10 @@ function scoreOf(record: Assembled, now: Date) {
       cohortMedian: cohort?.engagementMedian ?? null,
       cohortSize: cohort?.size ?? null,
     },
-    authenticity: { botRisk: signals.botRisk, inactiveAudience: signals.inactiveAudience },
+    authenticity: {
+      botRisk: signals?.botRisk ?? null,
+      inactiveAudience: signals?.inactiveAudience ?? null,
+    },
     audienceActivity: {
       viewsPerFollowerRatio: derived.viewsPerFollower,
       cohortMedian: cohort?.viewsPerFollowerMedian ?? null,
@@ -311,11 +374,11 @@ function scoreOf(record: Assembled, now: Date) {
     growthPattern: { snapshotsObserved: record.snapshots.length },
     viewConsistency: { contentObserved: record.content.length },
     uploadConsistency: { uploadsPerWeek: derived.uploadFrequencyPerWeek },
-    commentQuality: { aiCommentQuality: ai.commentQuality },
-    brandSafety: { aiBrandSafety: ai.brandSafetyScore },
+    commentQuality: { aiCommentQuality: ai?.commentQuality ?? null },
+    brandSafety: { aiBrandSafety: ai?.brandSafetyScore ?? null },
     engagementQuality: {
       engagementRateScore,
-      commentQuality: ai.commentQuality,
+      commentQuality: ai?.commentQuality ?? null,
       audienceActivity,
     },
   };
@@ -328,9 +391,9 @@ function scoreOf(record: Assembled, now: Date) {
       growthPattern: derived.growthPattern,
       viewConsistency: derived.viewConsistencyScore,
       audienceActivity,
-      commentQuality: ai.commentQuality,
+      commentQuality: ai?.commentQuality ?? null,
       uploadConsistency: derived.uploadConsistencyScore,
-      brandSafety: ai.brandSafetyScore,
+      brandSafety: ai?.brandSafetyScore ?? null,
     },
     evidence,
     now,
@@ -338,21 +401,24 @@ function scoreOf(record: Assembled, now: Date) {
 
   const risk = computeRiskSignals(
     {
-      botRisk: signals.botRisk,
-      inactiveAudience: signals.inactiveAudience,
+      botRisk: signals?.botRisk ?? null,
+      inactiveAudience: signals?.inactiveAudience ?? null,
       viewAnomaly: derived.viewAnomaly,
-      brandSafety: ai.brandSafetyScore,
+      brandSafety: ai?.brandSafetyScore ?? null,
     },
-    signals.evidence,
+    signals?.evidence ?? [],
     now,
   );
 
   const fit = computeCampaignFit(
     {
       categoryBenchmark: clamp(health.value, 0, 100),
-      engagementQuality: engagementQuality ?? 0,
-      audienceFit: authenticity ?? 0,
-      commercialIntent: ai.commercialIntent,
+      // Null, not zero. `computeCampaignFit` drops an unmeasurable component
+      // and renormalises; a zero would score "we could not measure this" the
+      // same as "this is as bad as it gets".
+      engagementQuality,
+      audienceFit: authenticity,
+      commercialIntent: ai?.commercialIntent ?? null,
       // Null until a client supplies real campaign outcomes — never guessed.
       historicalCampaignPerformance: null,
       costEfficiency: null,
@@ -368,6 +434,10 @@ function confidenceOf(
   hasAudience: boolean,
   now: Date,
 ): DataConfidence {
+  // The provenance mix has to describe *this* profile. A creator no model has
+  // classified contains no inferred facts, and reporting a 14% AI share for
+  // them would misdescribe the very thing the readout exists to disclose.
+  const hasAi = readRecords().ai.has(record.raw.id);
   const snapshotCount = record.snapshots.filter(
     (point) => point.accountId === record.primary.id,
   ).length;
@@ -392,7 +462,7 @@ function confidenceOf(
   // reflect this profile's real composition rather than a fixed split.
   const verified = record.raw.isConnected && record.raw.identityMatched ? 22 : 0;
   const observed = 62 - verified * 0.4;
-  const inferred = 14;
+  const inferred = hasAi ? 14 : 0;
   const estimated = 6;
   const derivedShare = Math.max(0, 100 - verified - observed - inferred - estimated);
 
@@ -423,7 +493,7 @@ export function toSummary(id: string, now: Date = EPOCH): InfluencerSummary | nu
   const record = assemble(id);
   if (!record) return null;
   const { derived, health, risk, fit } = scoreOf(record, now);
-  const confidence = confidenceOf(record, devDataset().audience.has(id), now);
+  const confidence = confidenceOf(record, readRecords().audience.has(id), now);
 
   return {
     id: record.raw.id,
@@ -475,7 +545,13 @@ function historySeries(snapshots: RawSnapshot[]): HistorySeries {
 }
 
 function toContentItem(raw: RawContent, medianViews: number | null): ContentItem {
-  const interactions = raw.likes + raw.comments + raw.shares;
+  // A creator who hides likes and disables comments has no *observed*
+  // interactions, which is not the same as zero interactions. Summing the
+  // absent ones as zero would publish a confident 0.0% engagement rate.
+  const counted = [raw.likes, raw.comments, raw.shares].filter(
+    (value): value is number => value !== null,
+  );
+  const interactions = counted.reduce((sum, value) => sum + value, 0);
   const base = raw.platform === "youtube" ? raw.views : null;
   return {
     id: raw.id,
@@ -490,7 +566,9 @@ function toContentItem(raw: RawContent, medianViews: number | null): ContentItem
     shares: raw.shares,
     durationSeconds: raw.durationSeconds,
     engagementRate:
-      base && base > 0 ? Number(((interactions / base) * 100).toFixed(2)) : null,
+      counted.length > 0 && base && base > 0
+        ? Number(((interactions / base) * 100).toFixed(2))
+        : null,
     performanceIndex:
       raw.views !== null && medianViews && medianViews > 0
         ? Number((raw.views / medianViews).toFixed(2))
@@ -505,7 +583,7 @@ export function toProfile(id: string, now: Date = EPOCH): InfluencerProfile | nu
   const record = assemble(id);
   if (!summary || !record) return null;
 
-  const data = devDataset();
+  const data = readRecords();
   const { derived, cohort, health, risk, fit, ai } = scoreOf(record, now);
   const rawAudience = data.audience.get(id) ?? null;
   const confidence = confidenceOf(record, Boolean(rawAudience), now);
@@ -591,7 +669,7 @@ export function toProfile(id: string, now: Date = EPOCH): InfluencerProfile | nu
         provenance: null,
       };
 
-  const aiIntelligence: AiProfileIntelligence = {
+  const aiIntelligence: AiProfileIntelligence | null = ai === null ? null : {
     summary: buildSummary(record.raw, summary, derived),
     signalReading: buildSignalReading(record.raw, summary, derived, risk, health.value),
     creatorType: ai.creatorType,
@@ -755,11 +833,15 @@ function buildSignalReading(
     parts.push("follower growth is uneven period on period");
   }
 
-  if (risk.botRisk >= 45) {
+  if (risk.botRisk === null && risk.inactiveAudience === null) {
+    parts.push(
+      "audience-quality signals were not measurable for this creator, so risk is unassessed rather than clean",
+    );
+  } else if (risk.botRisk !== null && risk.botRisk >= 45) {
     parts.push(
       `audience-quality signals are the main concern, with an estimated bot-risk signal of ${risk.botRisk}/100`,
     );
-  } else if (risk.inactiveAudience >= 35) {
+  } else if (risk.inactiveAudience !== null && risk.inactiveAudience >= 35) {
     parts.push(`a measurable share of the audience shows no recent activity (${risk.inactiveAudience}/100)`);
   } else {
     parts.push("audience-quality signals are clean");
@@ -777,18 +859,18 @@ function buildSignalReading(
 /* --- Collection reads --------------------------------------------------- */
 
 export function allSummaries(now: Date = EPOCH): InfluencerSummary[] {
-  return devDataset()
+  return readRecords()
     .influencers.filter((raw) => raw.status === "published")
     .map((raw) => toSummary(raw.id, now))
     .filter((summary): summary is InfluencerSummary => summary !== null);
 }
 
 export function countInfluencers(): number {
-  return devDataset().influencers.length;
+  return readRecords().influencers.length;
 }
 
 export function platformsOf(id: string): Platform[] {
-  return devDataset()
+  return readRecords()
     .accounts.filter((account) => account.influencerId === id)
     .map((account) => account.platform);
 }

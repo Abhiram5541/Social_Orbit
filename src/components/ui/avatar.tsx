@@ -1,6 +1,6 @@
 import * as React from "react";
 import { BadgeCheck } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/class-names";
 import { initials } from "@/lib/format";
 import type { VerificationStatus } from "@/lib/contracts/common";
 
@@ -37,6 +37,10 @@ export function Avatar({
           alt=""
           loading="lazy"
           decoding="async"
+          // Google's avatar CDN refuses hotlinked requests that carry a
+          // referrer, and the browser reports it as ERR_BLOCKED_BY_ORB rather
+          // than a 403 — so every creator avatar rendered as a broken image.
+          referrerPolicy="no-referrer"
           className={cn(
             "rounded-full border border-line bg-sunken object-cover",
             SIZES[size],

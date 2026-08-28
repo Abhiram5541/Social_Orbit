@@ -22,6 +22,16 @@ npm run dev                       # http://localhost:3000
 No database or Redis is needed to run the app today — see
 [Data driver](#data-driver) below.
 
+The influencer database starts **empty**. It is built by ingesting real channels, not from
+fixtures: sign in as a platform operator and use **Ingestion** in the admin workspace, or
+
+```bash
+curl -X POST localhost:3000/api/internal/connectors/youtube/harvest   -H 'Content-Type: application/json'   -d '{"categories":["technology"],"target":40,"videos":50}'
+```
+
+one category at a time. Needs `YOUTUBE_API_KEY`. See
+[`src/server/data/README.md`](src/server/data/README.md) for quota costs.
+
 Generate the secrets the app needs:
 
 ```bash
@@ -29,6 +39,31 @@ openssl rand -base64 48    # AUTH_SECRET
 openssl rand -base64 32    # TOKEN_ENCRYPTION_KEY
 openssl rand -base64 32    # API_KEY_PEPPER
 ```
+
+## Deploying to Vercel
+
+The app builds and runs on Vercel, with two limits worth knowing before you deploy.
+
+**The database does not travel with the repository.** Ingested records live in `.data/`,
+which is gitignored — it is a database, not source, and it is rebuildable from the
+connectors. A fresh deployment therefore starts empty and every screen renders its empty
+state. That is correct behaviour, not a broken deploy.
+
+**A serverless filesystem is read-only.** Ingestion running on Vercel keeps its records in
+the function's memory and logs a warning that they were not persisted; they vanish when the
+instance is recycled. Ingest locally, or attach the PostgreSQL driver, for anything durable.
+
+Set these environment variables in the Vercel project (Settings → Environment Variables) —
+never commit them:
+
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `AUTH_SECRET` | yes | Signs session cookies. The app refuses to boot in production without it |
+| `TOKEN_ENCRYPTION_KEY` | yes | 32-byte base64 |
+| `API_KEY_PEPPER` | yes | Rotating it invalidates every issued API key |
+| `YOUTUBE_API_KEY` | for ingestion | Without it the connector reports `credentials_missing` and the app still runs |
+| `DEV_SEED_PASSWORD` | no | Shared password for the development sign-ins below |
+| `APP_URL` | no | Your deployment URL |
 
 ### Development sign-ins
 

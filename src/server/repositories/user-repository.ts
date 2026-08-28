@@ -1,5 +1,6 @@
 import type { OrgKind, Plan, Role, SessionUser } from "@/lib/contracts/auth";
 import { hashPassword, verifyPassword, equaliseTiming } from "@/server/auth/password";
+import { readRecords } from "@/server/data/records";
 
 /* ---------------------------------------------------------------------------
  * Users and organisations.
@@ -54,8 +55,18 @@ const DEV_USERS: Omit<UserRecord, "passwordHash">[] = [
   { id: "usr_client_owner", email: "owner@northwind.example", name: "Marcus Whitfield", avatarUrl: null, role: "client_owner", orgId: "org_northwind", influencerId: null, createdAt: "2026-02-14T00:00:00.000Z", lastLoginAt: "2026-08-26T08:31:00.000Z", status: "active" },
   { id: "usr_client_member", email: "member@northwind.example", name: "Ines Duarte", avatarUrl: null, role: "client_member", orgId: "org_northwind", influencerId: null, createdAt: "2026-03-02T00:00:00.000Z", lastLoginAt: "2026-08-25T11:18:00.000Z", status: "active" },
   { id: "usr_free_client", email: "hello@lumen.example", name: "Tomas Berg", avatarUrl: null, role: "client_owner", orgId: "org_lumen", influencerId: null, createdAt: "2026-07-30T00:00:00.000Z", lastLoginAt: "2026-08-24T09:02:00.000Z", status: "active" },
-  { id: "usr_creator", email: "creator@socialorbit.io", name: "Aria Chen", avatarUrl: null, role: "influencer", orgId: "org_creators", influencerId: "inf_0001", createdAt: "2026-05-11T00:00:00.000Z", lastLoginAt: "2026-08-26T05:55:00.000Z", status: "active" },
+  // The creator portal needs an account that owns a record in the influencer
+  // database. That database is built by ingesting real channels, so there is no
+  // fixed id to point at and the link is resolved at load time instead. The
+  // account is a development sign-in for exercising the portal — it is not a
+  // claim that this person holds the channel.
+  { id: "usr_creator", email: "creator@socialorbit.io", name: "Creator Portal Demo", avatarUrl: null, role: "influencer", orgId: "org_creators", influencerId: null, createdAt: "2026-05-11T00:00:00.000Z", lastLoginAt: "2026-08-26T05:55:00.000Z", status: "active" },
 ];
+
+/** Lowest id in the database, so the portal opens on the same creator each run. */
+function firstCreatorId(): string | null {
+  return [...readRecords().influencers].sort((a, b) => a.id.localeCompare(b.id))[0]?.id ?? null;
+}
 
 let users: UserRecord[] | null = null;
 
@@ -63,7 +74,12 @@ async function load(): Promise<UserRecord[]> {
   if (users) return users;
   const password = process.env.DEV_SEED_PASSWORD ?? "SocialOrbit-Dev-2026";
   const hash = await hashPassword(password);
-  users = DEV_USERS.map((user) => ({ ...user, passwordHash: hash }));
+  const creatorId = firstCreatorId();
+  users = DEV_USERS.map((user) => ({
+    ...user,
+    influencerId: user.role === "influencer" ? creatorId : user.influencerId,
+    passwordHash: hash,
+  }));
   return users;
 }
 

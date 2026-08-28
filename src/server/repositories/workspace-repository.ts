@@ -8,9 +8,10 @@ import type {
   ShortlistItem,
 } from "@/lib/contracts/campaign";
 import { ApiFailure, assertTenantAccess } from "@/server/auth/rbac";
-import { shared } from "@/server/data/store";
+import { shared } from "@/server/data/process-store";
+import { readRecords } from "@/server/data/records";
 import { toSummary } from "./influencer-repository";
-import { EPOCH } from "@/server/data/dev-dataset";
+import { EPOCH } from "@/server/data/records";
 
 /* ---------------------------------------------------------------------------
  * Client-owned artifacts: shortlists, campaigns and saved creators.
@@ -59,8 +60,14 @@ interface CampaignRow {
  * Development rows. Northwind is populated so real workflows can be exercised;
  * Lumen is intentionally empty so every empty state is reachable without
  * editing code.
+ *
+ * The creators are resolved from whatever the influencer database actually
+ * holds rather than named by id. The database is built by ingesting real
+ * channels, so there are no fixed ids to point at — and a hard-coded one would
+ * dangle the moment the database was rebuilt from a different harvest.
  */
-const SEED_SHORTLISTS: ShortlistRow[] = [
+function seedShortlists(pick: (index: number) => string | null): ShortlistRow[] {
+  const rows: RawShortlistSeed[] = [
   {
     id: "sl_q4_tech",
     orgId: "org_northwind",
@@ -70,10 +77,10 @@ const SEED_SHORTLISTS: ShortlistRow[] = [
     updatedAt: "2026-08-24T15:40:00.000Z",
     createdByName: "Marcus Whitfield",
     items: [
-      { influencerId: "inf_0001", note: "Strongest engagement quality in the set.", addedAt: "2026-08-02T10:14:00.000Z", addedByName: "Marcus Whitfield" },
-      { influencerId: "inf_0004", note: null, addedAt: "2026-08-05T09:02:00.000Z", addedByName: "Ines Duarte" },
-      { influencerId: "inf_0009", note: "Check publishing cadence before confirming.", addedAt: "2026-08-11T13:31:00.000Z", addedByName: "Ines Duarte" },
-      { influencerId: "inf_0017", note: null, addedAt: "2026-08-19T08:20:00.000Z", addedByName: "Marcus Whitfield" },
+      { influencerId: pick(0), note: "Strongest engagement quality in the set.", addedAt: "2026-08-02T10:14:00.000Z", addedByName: "Marcus Whitfield" },
+      { influencerId: pick(1), note: null, addedAt: "2026-08-05T09:02:00.000Z", addedByName: "Ines Duarte" },
+      { influencerId: pick(2), note: "Check publishing cadence before confirming.", addedAt: "2026-08-11T13:31:00.000Z", addedByName: "Ines Duarte" },
+      { influencerId: pick(3), note: null, addedAt: "2026-08-19T08:20:00.000Z", addedByName: "Marcus Whitfield" },
     ],
   },
   {
@@ -85,13 +92,16 @@ const SEED_SHORTLISTS: ShortlistRow[] = [
     updatedAt: "2026-08-21T09:15:00.000Z",
     createdByName: "Ines Duarte",
     items: [
-      { influencerId: "inf_0006", note: null, addedAt: "2026-06-18T11:04:00.000Z", addedByName: "Ines Duarte" },
-      { influencerId: "inf_0012", note: "Audience skews younger than target.", addedAt: "2026-07-02T16:45:00.000Z", addedByName: "Ines Duarte" },
+      { influencerId: pick(4), note: null, addedAt: "2026-06-18T11:04:00.000Z", addedByName: "Ines Duarte" },
+      { influencerId: pick(5), note: "Audience skews younger than target.", addedAt: "2026-07-02T16:45:00.000Z", addedByName: "Ines Duarte" },
     ],
   },
-];
+  ];
+  return rows.map(withResolvedItems);
+}
 
-const SEED_CAMPAIGNS: CampaignRow[] = [
+function seedCampaigns(pick: (index: number) => string | null): CampaignRow[] {
+  const rows: RawCampaignSeed[] = [
   {
     id: "cmp_orbit_launch",
     orgId: "org_northwind",
@@ -107,10 +117,10 @@ const SEED_CAMPAIGNS: CampaignRow[] = [
     createdAt: "2026-07-18T09:00:00.000Z",
     updatedAt: "2026-08-26T06:30:00.000Z",
     participants: [
-      { influencerId: "inf_0001", status: "delivering", talentRate: 1_500_000, clientRate: 1_000_000, agreedRate: 1_200_000 },
-      { influencerId: "inf_0004", status: "delivered", talentRate: 620_000, clientRate: 500_000, agreedRate: 560_000 },
-      { influencerId: "inf_0009", status: "confirmed", talentRate: 340_000, clientRate: 300_000, agreedRate: 320_000 },
-      { influencerId: "inf_0017", status: "negotiating", talentRate: 880_000, clientRate: 600_000, agreedRate: null },
+      { influencerId: pick(0), status: "delivering", talentRate: 1_500_000, clientRate: 1_000_000, agreedRate: 1_200_000 },
+      { influencerId: pick(1), status: "delivered", talentRate: 620_000, clientRate: 500_000, agreedRate: 560_000 },
+      { influencerId: pick(2), status: "confirmed", talentRate: 340_000, clientRate: 300_000, agreedRate: 320_000 },
+      { influencerId: pick(3), status: "negotiating", talentRate: 880_000, clientRate: 600_000, agreedRate: null },
     ],
   },
   {
@@ -128,16 +138,53 @@ const SEED_CAMPAIGNS: CampaignRow[] = [
     createdAt: "2026-04-20T12:00:00.000Z",
     updatedAt: "2026-07-04T10:00:00.000Z",
     participants: [
-      { influencerId: "inf_0006", status: "delivered", talentRate: 450_000, clientRate: 400_000, agreedRate: 420_000 },
-      { influencerId: "inf_0012", status: "delivered", talentRate: 260_000, clientRate: 240_000, agreedRate: 250_000 },
+      { influencerId: pick(4), status: "delivered", talentRate: 450_000, clientRate: 400_000, agreedRate: 420_000 },
+      { influencerId: pick(5), status: "delivered", talentRate: 260_000, clientRate: 240_000, agreedRate: 250_000 },
     ],
   },
-];
+  ];
+  return rows.map(withResolvedParticipants);
+}
 
 // Anchored on the process-wide store so a write from a route handler is
 // visible to the next server render — see src/server/data/store.ts.
-const SHORTLISTS = shared("shortlists", () => [...SEED_SHORTLISTS]);
-const CAMPAIGNS = shared("campaigns", () => [...SEED_CAMPAIGNS]);
+
+/**
+ * Drops any row the database could not supply a creator for, so a small
+ * database yields a smaller demo shortlist rather than a broken one.
+ */
+function withResolvedItems(row: RawShortlistSeed): ShortlistRow {
+  return { ...row, items: row.items.filter((item) => item.influencerId !== null) as ShortlistRow["items"] };
+}
+
+function withResolvedParticipants(row: RawCampaignSeed): CampaignRow {
+  return {
+    ...row,
+    participants: row.participants.filter(
+      (participant) => participant.influencerId !== null,
+    ) as CampaignRow["participants"],
+  };
+}
+
+type RawShortlistSeed = Omit<ShortlistRow, "items"> & {
+  items: (Omit<ShortlistRow["items"][number], "influencerId"> & { influencerId: string | null })[];
+};
+type RawCampaignSeed = Omit<CampaignRow, "participants"> & {
+  participants: (Omit<CampaignRow["participants"][number], "influencerId"> & {
+    influencerId: string | null;
+  })[];
+};
+
+/** Ids of the largest creators in the database, in a stable order. */
+function seedCreatorIds(): (index: number) => string | null {
+  const ids = [...readRecords().influencers]
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map((influencer) => influencer.id);
+  return (index) => ids[index] ?? null;
+}
+
+const SHORTLISTS = shared("shortlists", () => seedShortlists(seedCreatorIds()));
+const CAMPAIGNS = shared("campaigns", () => seedCampaigns(seedCreatorIds()));
 
 /* --- Shortlists --------------------------------------------------------- */
 
