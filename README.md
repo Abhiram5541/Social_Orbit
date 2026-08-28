@@ -62,13 +62,18 @@ never commit them:
 | `TOKEN_ENCRYPTION_KEY` | yes | 32-byte base64 |
 | `API_KEY_PEPPER` | yes | Rotating it invalidates every issued API key |
 | `YOUTUBE_API_KEY` | for ingestion | Without it the connector reports `credentials_missing` and the app still runs |
-| `DEV_SEED_PASSWORD` | no | Shared password for the development sign-ins below |
+| `DEV_SEED_PASSWORD` | for sign-in | Without it, production creates no accounts at all and nobody can log in. Set it to something that is not the documented default |
 | `APP_URL` | no | Your deployment URL |
 
 ### Development sign-ins
 
 All seed accounts share `DEV_SEED_PASSWORD` (default `SocialOrbit-Dev-2026`). The sign-in
 page lists them outside production.
+
+**These accounts include a super_admin and the default password is published right here, so
+they are not created in production unless `DEV_SEED_PASSWORD` is set explicitly.** A
+deployment that omits it has no accounts and nobody can sign in — which is the safe failure.
+If you set it for a demo deployment, set it to something that is not in this file.
 
 | Email | Role | What it shows |
 | --- | --- | --- |

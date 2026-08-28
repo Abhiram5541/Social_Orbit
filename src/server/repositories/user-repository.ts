@@ -72,8 +72,26 @@ let users: UserRecord[] | null = null;
 
 async function load(): Promise<UserRecord[]> {
   if (users) return users;
-  const password = process.env.DEV_SEED_PASSWORD ?? "SocialOrbit-Dev-2026";
-  const hash = await hashPassword(password);
+
+  // These accounts include a super_admin, and the fallback password below is
+  // published in the README. Seeding them in production with a well-known
+  // password would hand platform administration to anyone who read the repo —
+  // and hiding the hint on the sign-in page is presentation, not a control.
+  //
+  // So production requires DEV_SEED_PASSWORD to be set explicitly. Without it
+  // there are no accounts at all: an unreachable deployment is a safe failure,
+  // an administrable one is not.
+  const configured = process.env.DEV_SEED_PASSWORD;
+  if (process.env.NODE_ENV === "production" && !configured) {
+    console.warn(
+      "[auth] DEV_SEED_PASSWORD is not set, so no development sign-ins were created. " +
+        "Set it to enable them, or attach a real user store.",
+    );
+    users = [];
+    return users;
+  }
+
+  const hash = await hashPassword(configured ?? "SocialOrbit-Dev-2026");
   const creatorId = firstCreatorId();
   users = DEV_USERS.map((user) => ({
     ...user,
