@@ -1,0 +1,65 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "dev",
+      "type": "npm",
+      "script": "dev",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "next",
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "starting the development server",
+          "endsPattern": "Ready in"
+        }
+      },
+      "presentation": { "panel": "dedicated" },
+      "runOptions": { "instanceLimit": 1 }
+    },
+    { "label": "build", "type": "npm", "script": "build", "problemMatcher": ["$tsc"] },
+    {
+      "label": "typecheck",
+      "type": "npm",
+      "script": "typecheck",
+      "problemMatcher": ["$tsc"],
+      "group": { "kind": "build", "isDefault": true }
+    },
+    { "label": "lint", "type": "npm", "script": "lint", "problemMatcher": ["$eslint-stylish"] },
+    {
+      "label": "test (unit)",
+      "type": "npm",
+      "script": "test",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      // Reuses a running dev server and starts one otherwise — see
+      // playwright.config.ts. Takes about five minutes for both projects.
+      "label": "test (e2e)",
+      "type": "npm",
+      "script": "e2e",
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": { "panel": "dedicated" }
+    },
+    {
+      // Accessibility and control sweep over every route. Desktop only, single
+      // worker, so it is slow — run it deliberately, not on every change.
+      "label": "audit (a11y + controls)",
+      "type": "npm",
+      "script": "audit",
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": { "panel": "dedicated" }
+    },
+    {
+      // Everything CI would run, in the order that fails fastest.
+      "label": "verify (typecheck + lint + unit)",
+      "dependsOrder": "sequence",
+      "dependsOn": ["typecheck", "lint", "test (unit)"],
+      "problemMatcher": []
+    }
+  ]
+}

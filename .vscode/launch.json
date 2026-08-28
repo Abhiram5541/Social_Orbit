@@ -1,0 +1,56 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // Breakpoints in server components, route handlers, services,
+      // repositories, scoring and the connectors.
+      "name": "Next.js: debug server",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal",
+      "serverReadyAction": {
+        "pattern": "- Local:\\s+(https?://\\S+)",
+        "uriFormat": "%s",
+        "action": "debugWithChrome"
+      }
+    },
+    {
+      // Breakpoints in "use client" components. Attaches to the browser, so the
+      // dev server must already be running.
+      "name": "Next.js: debug client",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "Vitest: debug current file",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vitest", "run", "${relativeFile}"],
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal"
+    },
+    {
+      // Reuses a running dev server if there is one, per playwright.config.ts.
+      "name": "Playwright: debug current spec",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["playwright", "test", "${relativeFile}", "--project=desktop", "--debug"],
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Next.js: debug full stack",
+      "configurations": ["Next.js: debug server", "Next.js: debug client"],
+      "stopAll": true
+    }
+  ]
+}

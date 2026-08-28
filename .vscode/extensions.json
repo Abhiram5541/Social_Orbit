@@ -1,0 +1,19 @@
+{
+  "recommendations": [
+    // The only formatter and linter in this project.
+    "dbaeumer.vscode-eslint",
+    // Tailwind v4 — reads the @theme tokens straight out of globals.css.
+    "bradlc.vscode-tailwindcss",
+    // Run and debug the E2E suite from the test explorer.
+    "ms-playwright.playwright",
+    // Same for the unit and service tests.
+    "vitest.explorer",
+    // Renders the long structural type errors this codebase produces
+    // (Zod-inferred contracts) as something readable.
+    "yoavbls.pretty-ts-errors"
+  ],
+  "unwantedRecommendations": [
+    // Prettier is not configured here; installing it fights ESLint on save.
+    "esbenp.prettier-vscode"
+  ]
+}
