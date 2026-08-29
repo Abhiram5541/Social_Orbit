@@ -18,7 +18,13 @@ import type { Provenance } from "@/lib/contracts/common";
 const API = "https://www.googleapis.com/youtube/v3";
 
 /** Daily quota units per call. `search` is listed only to record why it is unused. */
-const QUOTA_COST = { channels: 1, playlistItems: 1, videos: 1, search: 100 } as const;
+const QUOTA_COST = {
+  channels: 1,
+  playlistItems: 1,
+  videos: 1,
+  commentThreads: 1,
+  search: 100,
+} as const;
 
 export class ConnectorUnavailable extends Error {
   constructor(
@@ -416,6 +422,75 @@ export function parseDuration(iso: string): number | null {
     Number(minutes ?? 0) * 60 +
     Number(seconds ?? 0);
   return total > 0 ? total : null;
+}
+
+/* --- Comments ------------------------------------------------------------ */
+
+const CommentPage = z.object({
+  items: z
+    .array(
+      z.object({
+        snippet: z.object({
+          totalReplyCount: z.number().default(0),
+          topLevelComment: z.object({
+            snippet: z.object({
+              textOriginal: z.string().default(""),
+              likeCount: z.number().nullish(),
+            }),
+          }),
+        }),
+      }),
+    )
+    .default([]),
+});
+
+export interface YouTubeComment {
+  text: string;
+  likes: number | null;
+  replies: number;
+}
+
+/**
+ * Top-level comments on one video, ranked by relevance.
+ *
+ * Comment *quality* is a judgement, and the AI layer makes it — but it has to
+ * judge something real. This is where that material comes from: 1 quota unit,
+ * no OAuth. A video with comments disabled returns none, which is a fact about
+ * the video rather than a failure.
+ */
+export async function fetchTopComments(
+  videoId: string,
+  limit = 15,
+): Promise<YouTubeComment[]> {
+  let page;
+  try {
+    page = await call(
+      "commentThreads",
+      {
+        part: "snippet",
+        videoId,
+        maxResults: String(Math.min(100, limit)),
+        order: "relevance",
+        textFormat: "plainText",
+      },
+      CommentPage,
+    );
+  } catch (error) {
+    // Disabled comments answer 403 `commentsDisabled`. That is a normal state
+    // for a video, not a broken connector, so it yields nothing rather than
+    // failing the whole enrichment.
+    if (error instanceof ConnectorUnavailable && error.reason === "forbidden") return [];
+    throw error;
+  }
+
+  return page.items.map((item) => {
+    const comment = item.snippet.topLevelComment.snippet;
+    return {
+      text: comment.textOriginal,
+      likes: comment.likeCount ?? null,
+      replies: item.snippet.totalReplyCount,
+    };
+  });
 }
 
 /* --- Observation --------------------------------------------------------- */

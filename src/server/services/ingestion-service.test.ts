@@ -58,6 +58,19 @@ describe("riskLevel with nothing measurable", () => {
     ).toBe("unknown");
   });
 
+  it("lets brand safety raise a risk level but never clear one", () => {
+    // Brand safety judges content; a risk level claims something about the
+    // audience. A clean content read must not certify an audience nobody
+    // measured — but a damning one still has to be able to escalate.
+    expect(
+      riskLevel({ botRisk: null, inactiveAudience: null, viewAnomaly: 95, brandSafety: 95 }),
+    ).toBe("unknown");
+
+    expect(
+      riskLevel({ botRisk: null, inactiveAudience: null, viewAnomaly: 95, brandSafety: 20 }),
+    ).toBe("high");
+  });
+
   it("grades normally as soon as one signal is measurable", () => {
     expect(
       riskLevel({ botRisk: 85, inactiveAudience: null, viewAnomaly: null, brandSafety: null }),

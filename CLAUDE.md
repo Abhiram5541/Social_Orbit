@@ -143,6 +143,30 @@ component instead of scoring it 0, and `RiskLevel` gained `unknown` — *not* a 
 severity, but "no audience-quality signal was measurable". Rendering that as "low risk"
 would have been a safety claim manufactured out of missing data.
 
+**D16 — The AI layer is bounded by its schema, not by its prompt.**
+`src/server/ai/` asks OpenAI for one object matching a Zod schema, in `strict` JSON-schema
+mode, and re-validates the reply. The §7 prohibition — no follower counts, view counts,
+engagement rates, demographics or bot percentages — is enforced by there being **no such
+field to fill**. A prompt can be talked around; a schema cannot, and a test asserts no
+field matching those names is ever added. Malformed, refused or truncated output is
+rejected rather than stored: a half-parsed response written to the database is a fabricated
+fact carrying a version stamp.
+
+Consequences:
+- **Comment quality is judged from real comments.** `commentThreads.list` costs 1 quota unit
+  and needs no OAuth, so the model rates material actually read from the platform rather
+  than producing a number from nothing.
+- **Inferred categories are stored apart from observed ones.** `RawAiOutput.categories` is
+  separate from `RawInfluencer.categories`; reads merge them observed-first. YouTube's
+  channel topics put 458 of 627 creators in `lifestyle` and never emit beauty, finance or
+  parenting at all, so without the inferred set those creators are undiscoverable.
+- **Two health components stay unmeasurable, and should.** Authenticity needs a bot-risk
+  signal the model is forbidden to produce; growth pattern needs snapshots over time.
+  Enrichment takes coverage from 5/9 to 7/9, not to 9/9.
+- **Enrichment never runs on a page render.** Each creator is a model call plus comment
+  reads — roughly 2,900 tokens — so it is an explicit operator action, batched, skipping
+  creators already classified.
+
 **D15 — Discovery is the only expensive call, so it is the only one budgeted.**
 `search.list` costs 100 quota units against 10,000/day; every other YouTube endpoint costs 1.
 So the harvest uses search only to *find* channel ids, then reads everything about them

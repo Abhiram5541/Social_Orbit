@@ -21,6 +21,8 @@ import { Tabs, TabPanel } from "@/components/ui/tabs";
 import { Table, TableWrap, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
 import { DataRow, StatRow, StatTile } from "@/components/intelligence/stat";
 import { ProvenanceMark } from "@/components/intelligence/provenance";
+import { BrandSafetyPanel, BrandSignalsPanel } from "@/components/profile/brand-safety-panel";
+import { LookalikePanel, CostEfficiencyPanel } from "@/components/profile/lookalike-panel";
 import { ScoreBar } from "@/components/intelligence/score";
 import { CategoryBars, TrendChart } from "@/components/charts/trend-chart";
 import { RelativeTime } from "@/components/ui/relative-time";
@@ -220,6 +222,13 @@ export function ProfileTabs({ profile }: { profile: InfluencerProfile }) {
           </div>
         )}
 
+        {profile.ai && <BrandSignalsPanel profile={profile} />}
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <CostEfficiencyPanel profile={profile} />
+          <LookalikePanel profile={profile} />
+        </div>
+
         {!profile.ai && (
           <Notice tone="info" title="No AI enrichment for this creator yet">
             Classification, brand-safety and comment-quality readings come from the AI layer,
@@ -340,6 +349,8 @@ export function ProfileTabs({ profile }: { profile: InfluencerProfile }) {
       </TabPanel>
 
       <TabPanel value="authenticity" active={tab === "authenticity"} className="space-y-4">
+        <BrandSafetyPanel profile={profile} />
+
         <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
           <Card>
             <CardHeader>
@@ -364,6 +375,16 @@ export function ProfileTabs({ profile }: { profile: InfluencerProfile }) {
                 risk-1.0.0
               </Badge>
             </CardHeader>
+            {profile.riskSignals.evidence.length === 0 && (
+              <CardContent>
+                <p className="text-[13px] leading-5 text-ink-muted">
+                  No audience-quality evidence has been gathered for this creator. Bot risk
+                  and inactive-audience signals are not observable from a public API and are
+                  not inferred, so there is nothing here to justify — which is why the risk
+                  level above reads as unassessed rather than clean.
+                </p>
+              </CardContent>
+            )}
             <ul className="divide-y divide-line">
               {profile.riskSignals.evidence.map((item) => (
                 <li key={item.signal} className="px-4 py-2.5">

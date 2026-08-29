@@ -179,13 +179,6 @@ export interface RiskInputs {
 }
 
 export function riskLevel(inputs: RiskInputs): RiskLevel {
-  // Audience-quality signals are what a risk level is about. With none of them
-  // measured there is nothing to grade, and defaulting the absent ones to
-  // "clean" would manufacture a low-risk verdict out of missing data.
-  const assessable =
-    inputs.botRisk !== null || inputs.inactiveAudience !== null || inputs.brandSafety !== null;
-  if (!assessable) return "unknown";
-
   const bot = inputs.botRisk ?? 0;
   const inactive = inputs.inactiveAudience ?? 0;
   const safety = inputs.brandSafety ?? 100;
@@ -208,7 +201,18 @@ export function riskLevel(inputs: RiskInputs): RiskLevel {
     composite >= 45 ? "high" : composite >= 22 ? "medium" : "low";
 
   const RANK: Record<RiskLevel, number> = { unknown: 0, low: 0, medium: 1, high: 2 };
-  return RANK[floor] >= RANK[fromComposite] ? floor : fromComposite;
+  const graded = RANK[floor] >= RANK[fromComposite] ? floor : fromComposite;
+
+  // Brand safety can raise a risk level but cannot clear one. It is a judgement
+  // about *content*; a risk level is a claim about the *audience*, and the two
+  // signals that speak to that — bot risk and inactive audience — need
+  // authorized access nobody has here. Reporting "low" off content alone would
+  // certify something no one measured, which is the failure D11 and D13 exist
+  // to prevent. So an escalation stands, and an all-clear does not.
+  const audienceMeasured = inputs.botRisk !== null || inputs.inactiveAudience !== null;
+  if (!audienceMeasured && graded === "low") return "unknown";
+
+  return graded;
 }
 
 export function computeRiskSignals(

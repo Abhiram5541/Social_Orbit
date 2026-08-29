@@ -6,6 +6,8 @@ import {
   type YouTubeVideo,
 } from "@/server/connectors/youtube";
 import { upsertIngested, type IngestedRecord } from "@/server/data/ingested-store";
+import { readRecords } from "@/server/data/records";
+import { checkRateLimit } from "./rate-limit";
 
 /* ---------------------------------------------------------------------------
  * Real-channel ingestion.
@@ -327,5 +329,72 @@ export async function ingestYouTubeChannel(
     displayName: observation.channel.title,
     contentIngested: record.content.length,
     quotaUnitsSpent: observation.quotaUnitsSpent,
+  };
+}
+
+/* --- On-demand refresh --------------------------------------------------- */
+
+/**
+ * Minimum gap between refreshes of the same creator, in minutes.
+ *
+ * The influencer database is global (CLAUDE.md D1), so a refresh anyone
+ * triggers is a write everyone sees, paid for out of one shared daily quota.
+ * Without a floor, one client opening ten profiles and clicking refresh on each
+ * spends the platform's budget on figures that had not moved since breakfast.
+ * Subscriber and view counts change slowly; an hour loses nothing real.
+ */
+export const REFRESH_COOLDOWN_MINUTES = 60;
+
+export class RefreshTooSoon extends Error {
+  constructor(readonly retryAfterMs: number, readonly lastRefreshedAt: string) {
+    super(
+      `This creator was refreshed less than ${REFRESH_COOLDOWN_MINUTES} minutes ago. ` +
+        `The influencer database is shared, so refreshes are pooled rather than per-client.`,
+    );
+    this.name = "RefreshTooSoon";
+  }
+}
+
+export interface RefreshResult {
+  influencerId: string;
+  displayName: string;
+  lastRefreshedAt: string;
+  contentIndexed: number;
+  quotaUnitsSpent: number;
+}
+
+/**
+ * Re-reads one creator from the platform, on request.
+ *
+ * Also appends a snapshot, deduplicated to one per account per day — which is
+ * the only mechanism by which a growth history is ever built, since there is no
+ * scheduler yet (CLAUDE.md D4).
+ */
+export async function refreshInfluencer(influencerId: string): Promise<RefreshResult> {
+  const data = readRecords();
+  const account = data.accounts.find(
+    (item) => item.influencerId === influencerId && item.isPrimary,
+  );
+  if (!account) {
+    throw new IngestionRefused("not_found", "No tracked account for this creator.");
+  }
+
+  const limit = checkRateLimit(`refresh:${influencerId}`, {
+    max: 1,
+    windowMs: REFRESH_COOLDOWN_MINUTES * 60_000,
+  });
+  if (!limit.allowed) {
+    throw new RefreshTooSoon(limit.retryAfterMs, account.lastSyncedAt);
+  }
+
+  const report = await ingestYouTubeChannel(account.platformAccountId, 50);
+  const refreshed = readRecords().accounts.find((item) => item.id === account.id);
+
+  return {
+    influencerId,
+    displayName: report.displayName,
+    lastRefreshedAt: refreshed?.lastSyncedAt ?? new Date().toISOString(),
+    contentIndexed: report.contentIngested,
+    quotaUnitsSpent: report.quotaUnitsSpent,
   };
 }

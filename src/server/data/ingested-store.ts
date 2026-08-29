@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { shared } from "./process-store";
-import type { RawAccount, RawContent, RawInfluencer, RawSnapshot } from "./records";
+import type { RawAccount, RawAiOutput, RawContent, RawInfluencer, RawSnapshot } from "./records";
 
 /* ---------------------------------------------------------------------------
  * Records written by a real connector.
@@ -24,13 +24,15 @@ export interface IngestedRecords {
   accounts: RawAccount[];
   snapshots: RawSnapshot[];
   content: RawContent[];
+  /** Model classifications, kept apart from measurements by design (DPR §7). */
+  ai: RawAiOutput[];
   /** Bumped on every write. Read-side caches derived from the whole database
    *  compare it to know when their basis has changed. */
   revision: number;
 }
 
 function empty(): IngestedRecords {
-  return { influencers: [], accounts: [], snapshots: [], content: [], revision: 0 };
+  return { influencers: [], accounts: [], snapshots: [], content: [], ai: [], revision: 0 };
 }
 
 function load(): IngestedRecords {
@@ -44,6 +46,7 @@ function load(): IngestedRecords {
       accounts: records.accounts ?? [],
       snapshots: records.snapshots ?? [],
       content: records.content ?? [],
+      ai: records.ai ?? [],
       revision: 0,
     };
   } catch (error) {
@@ -141,6 +144,24 @@ export function upsertIngested(records: IngestedRecord[]): void {
   persist(current);
 }
 
+/**
+ * Stores one creator's AI classification, replacing any earlier pass.
+ *
+ * Separate from `upsertIngested` on purpose: enrichment runs long after
+ * ingestion and must not disturb a single observed row. Re-ingesting a creator
+ * likewise leaves their enrichment alone — the observations changed, not the
+ * classification, and re-running the model would cost tokens to learn the same
+ * thing.
+ */
+export function upsertAiOutputs(outputs: RawAiOutput[]): void {
+  if (outputs.length === 0) return;
+  const current = store();
+  const ids = new Set(outputs.map((output) => output.influencerId));
+  current.ai = [...current.ai.filter((item) => !ids.has(item.influencerId)), ...outputs];
+  current.revision += 1;
+  persist(current);
+}
+
 /** Test seam, and the operator's "start over". */
 export function clearIngested(): void {
   const current = store();
@@ -148,6 +169,7 @@ export function clearIngested(): void {
   current.accounts = [];
   current.snapshots = [];
   current.content = [];
+  current.ai = [];
   current.revision += 1;
   persist(current);
 }

@@ -13,6 +13,7 @@ import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Freshness } from "@/components/intelligence/provenance";
 import { ProfileActions } from "./profile-actions";
+import { RefreshButton } from "./refresh-button";
 
 const VERIFICATION: Record<VerificationStatus, { label: string; tone: BadgeTone; note: string }> = {
   verified: {
@@ -116,6 +117,7 @@ export function ProfileHeader({ profile }: { profile: InfluencerProfile }) {
         <div className="flex min-w-0 max-w-full flex-col items-start gap-2 sm:items-end">
           <ProfileActions profile={profile} />
           <Freshness at={profile.lastRefreshedAt} prefix="Data refreshed" />
+          <RefreshButton influencerId={profile.id} />
         </div>
       </div>
 

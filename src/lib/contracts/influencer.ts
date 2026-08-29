@@ -74,6 +74,22 @@ export const AiProfileIntelligence = z.object({
   recommendedIndustries: z.array(z.string()),
   strengths: z.array(z.string()),
   risks: z.array(z.string()),
+  primaryLanguage: z.string().nullable(),
+  creatorInterests: z.array(z.string()),
+  creatorKeywords: z.array(z.string()),
+  mentionedBrands: z.array(z.string()),
+  mentionedProducts: z.array(z.string()),
+  brandAffinity: z.array(z.string()),
+  competitorAffinity: z.array(z.string()),
+  /** Only where the source material stated a commercial relationship. */
+  previousCollaborations: z.array(
+    z.object({ brand: z.string(), evidence: z.string(), sourceUrl: z.string().nullable() }),
+  ),
+  /** The thirteen advertiser-facing checks, each graded with what was seen. */
+  safetyChecks: z.record(
+    z.string(),
+    z.object({ level: z.enum(["none", "low", "moderate", "high"]), note: z.string() }),
+  ),
   evidence: z.array(EvidenceItem),
   provider: z.string(),
   model: z.string(),
@@ -188,6 +204,32 @@ export const InfluencerSummary = z.object({
 export type InfluencerSummary = z.infer<typeof InfluencerSummary>;
 
 /** The full profile — DPR §9, §20. */
+/** A creator resembling another, with the reasons that made them resemble it. */
+export const LookalikeCreator = z.object({
+  id: z.string(),
+  displayName: z.string(),
+  handle: z.string(),
+  avatarUrl: z.string().nullable(),
+  followers: z.number().int().nullable(),
+  score: z.number(),
+  reasons: z.array(z.string()),
+});
+export type LookalikeCreator = z.infer<typeof LookalikeCreator>;
+
+const CostBand = z.object({ currency: z.string(), low: z.number(), high: z.number() });
+
+/**
+ * Modelled cost efficiency. Every figure derives from the estimated rate band,
+ * never from a rate card — SocialOrbit does not hold creator rates.
+ */
+export const CostEfficiency = z.object({
+  placementRate: CostBand.nullable(),
+  cpm: CostBand.nullable(),
+  cpe: CostBand.nullable(),
+  cpv: CostBand.nullable(),
+});
+export type CostEfficiency = z.infer<typeof CostEfficiency>;
+
 export const InfluencerProfile = InfluencerSummary.extend({
   bio: z.string().nullable(),
   status: z.enum(["draft", "in_review", "published", "archived"]),
@@ -200,6 +242,8 @@ export const InfluencerProfile = InfluencerSummary.extend({
   ai: AiProfileIntelligence.nullable(),
   audience: AudienceBreakdown,
   benchmarks: BenchmarkPosition.nullable(),
+  lookalikes: z.array(LookalikeCreator),
+  costEfficiency: CostEfficiency,
   topContent: z.array(ContentItem),
   recentContent: z.array(ContentItem),
   followerHistory: HistorySeries,

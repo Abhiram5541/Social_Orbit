@@ -14,7 +14,7 @@ not mean a production database is attached yet.
 | Check | Result |
 | --- | --- |
 | TypeScript, `strict`, whole project | clean |
-| Unit tests (Vitest) | 55 passed |
+| Unit tests (Vitest) | 66 passed |
 | E2E (Playwright, desktop + mobile) | 140 passed, 10 skipped |
 | Accessibility + control audit | 0 findings |
 | Influencer database | 627 real YouTube channels, 30,759 indexed uploads |
@@ -91,7 +91,7 @@ covered by the responsive suite.
 | Connectors — YouTube | **Live.** Real YouTube Data API v3 calls: channel resolution by id/@handle/URL, channel statistics, recent uploads with per-video statistics, YouTube's own topic categories. Zod-validated responses, quota- and credential-aware failures, an operator probe at `/admin/connectors` | OAuth round trip, so no `oauth_authorized` tier data (watch time, impressions, demographics) |
 | Ingestion — YouTube | **Live.** `/admin/ingestion` ingests real channels into the influencer database. They are searchable, comparable, shortlistable and scored through the same engines as the seeded fixtures, carrying observed statistics only | A scheduler: ingestion is an explicit operator action, since each channel spends shared daily quota. Snapshots accumulate only as often as someone re-ingests, so trend lines need repeat passes |
 | Connectors — Instagram, TikTok | Adapter boundary, per-platform requirements, honest status reporting, degradation | The HTTP calls themselves; blocked on credentials |
-| AI enrichment | Provider abstraction shape, structured output contract, evidence, versioning | Live OpenAI/Gemini calls; blocked on credentials |
+| AI enrichment | **Live.** OpenAI structured-output classification: category, creator type, commercial intent, brand safety and comment quality, the last judged from comments actually read from the platform. Every output stores provider, model, prompt and schema version, and its evidence. Operator control on `/admin/ai` | Gemini as the second opinion, and therefore the DPR UC-12 conflict queue, which has nothing to compare yet. No worker, so enrichment is a batched operator action |
 | Reports | Report types, provenance guarantees, generation UI | Async generation, PDF/CSV rendering, storage |
 | Verification | Full status model, creator-facing flow, admin review queue | The OAuth round trip itself |
 | Notifications | Alert model, real detections from tracked creators, both inboxes | Delivery (email/webhook), read state |
@@ -133,6 +133,9 @@ Nothing known. Every defect found during the build was fixed and is covered by a
 | `daysSinceLastPublication` went negative when a connector returned a video newer than `now` | Clamped at zero |
 | Every creator avatar rendered broken — Google's CDN refuses hotlinked requests carrying a referrer, reported as `ERR_BLOCKED_BY_ORB` rather than a 403 | `referrerPolicy="no-referrer"` on the one `Avatar` primitive every surface uses; the audit went from 126 findings to 0 |
 | `assemble()` scanned the whole content table per creator. Invisible at 84 creators and 4,400 rows; 19M operations per request at 627 and 30,759 | Rows grouped by owner once per revision — search API 500ms → 120ms |
+| The seven development sign-ins, including a `super_admin`, were seeded in production with a password printed in the public README | Production requires `DEV_SEED_PASSWORD` to be set explicitly; without it no accounts exist at all |
+| Content ids split on the last `_` to recover a video id — but YouTube video ids contain underscores (`v-_d2e7x4KA`), which 500'd every enrichment run | The known `accountId` prefix is stripped instead of a delimiter guessed at |
+| A missing `OPENAI_API_KEY` surfaced as `upstream_error` "OpenAI unreachable", sending the reader after a network fault instead of an unset variable | Credential resolved before the try block; test asserts the reason |
 | Two E2E tests asserted the seeded `inf_` id prefix on whatever a search returned, so an ingested creator in first place failed them | Both match any profile id; the heading assertion that follows was always the real check |
 | `cohortCache` was computed once per process and never invalidated. Written against a frozen fixture set, it went stale the moment anything was ingested — so benchmarks stayed null and every creator in a band was normalised against an out-of-date median | Keyed on a revision counter the ingested store bumps on write |
 | `devDataset()` merged the ingested overlay on *every* call. Reads call it once per influencer and a cohort pass once per influencer in the database, so it copied every content row tens of thousands of times per request — the search API went from 24ms to ~2s and timed out five discovery E2E tests | Merge memoised on the same revision counter; 22–49ms with 11 ingested creators |

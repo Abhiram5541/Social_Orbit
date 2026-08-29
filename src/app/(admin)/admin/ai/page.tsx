@@ -3,6 +3,8 @@ import { requirePagePermission } from "@/server/auth/rbac";
 import { conflictQueue } from "@/server/repositories/ops-repository";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
 import { ReviewTable } from "@/components/admin/review-table";
+import { AiEnrichment } from "@/components/admin/ai-enrichment";
+import { readRecords } from "@/server/data/records";
 
 export const metadata: Metadata = { title: "AI enrichment review" };
 export const dynamic = "force-dynamic";
@@ -10,6 +12,8 @@ export const dynamic = "force-dynamic";
 export default async function Page() {
   await requirePagePermission("analytics:ai_review", "/admin/ai");
   const items = conflictQueue();
+  const data = readRecords();
+  const pending = data.influencers.filter((influencer) => !data.ai.has(influencer.id)).length;
 
   return (
     <>
@@ -22,7 +26,9 @@ export default async function Page() {
           </span>
         }
       />
-      <PageBody>
+      <PageBody className="space-y-4">
+        <AiEnrichment disabled={!process.env.OPENAI_API_KEY} pending={pending} />
+
         <ReviewTable
           items={items}
           emptyTitle="No conflicts open"

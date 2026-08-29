@@ -91,6 +91,13 @@ export interface RawAudience {
 /** Classifications a model produced. Kept apart from measurements by design. */
 export interface RawAiOutput {
   influencerId: string;
+  /**
+   * Categories the model inferred. Deliberately separate from
+   * `RawInfluencer.categories`, which is what YouTube itself published: one is
+   * an observation and the other an inference, and the platform does not store
+   * them in the same field.
+   */
+  categories: Category[];
   creatorType: string;
   contentThemes: string[];
   audienceIntent: string;
@@ -99,6 +106,19 @@ export interface RawAiOutput {
   commentQuality: number;
   sponsorshipSignals: string[];
   recommendedIndustries: string[];
+  /** Language the creator publishes in, as classified. Distinct from the
+   *  `languages` on the influencer, which the creator declared on their videos. */
+  primaryLanguage: string | null;
+  creatorInterests: string[];
+  creatorKeywords: string[];
+  mentionedBrands: string[];
+  mentionedProducts: string[];
+  brandAffinity: string[];
+  competitorAffinity: string[];
+  /** Only where the material states a commercial relationship. */
+  previousCollaborations: { brand: string; evidence: string; sourceUrl: string | null }[];
+  /** The thirteen advertiser-facing checks, each graded with what was seen. */
+  safetyChecks: Record<string, { level: "none" | "low" | "moderate" | "high"; note: string }>;
   strengths: string[];
   risks: string[];
   evidence: { claim: string; sourceUrl: string | null; confidence: number }[];
@@ -141,11 +161,12 @@ export interface RawInfluencer {
 /**
  * Everything the repository layer reads.
  *
- * `signals`, `audience` and `ai` are the slots for facts a public API cannot
- * reach: audience-quality signals and demographics need OAuth, and
- * classifications need an AI provider. They stay empty until those credentials
- * exist, and the scoring engine renormalises around what is missing rather
- * than substituting a number nobody measured.
+ * `signals` and `audience` are the slots for facts a public API cannot reach:
+ * audience-quality signals and demographics need OAuth. They stay empty until
+ * that credential exists, and the scoring engine renormalises around what is
+ * missing rather than substituting a number nobody measured.
+ *
+ * `ai` is populated once enrichment has run over a creator.
  */
 export interface DataView {
   influencers: RawInfluencer[];
@@ -159,7 +180,6 @@ export interface DataView {
 
 const NO_SIGNALS: DataView["signals"] = new Map();
 const NO_AUDIENCE: DataView["audience"] = new Map();
-const NO_AI: DataView["ai"] = new Map();
 
 /**
  * Memoised against the store's revision. Reads call this once per influencer,
@@ -168,6 +188,42 @@ const NO_AI: DataView["ai"] = new Map();
  * a single request.
  */
 let view: { revision: number; data: DataView } | null = null;
+
+/**
+ * Fills in fields added after a record was written.
+ *
+ * Enrichment schemas version independently of the store, so a database holds
+ * records from every schema that has ever run. Normalising here — the one place
+ * the driver hands data to the rest of the application — means no consumer has
+ * to know which version produced a row. The alternative is every component
+ * guarding every field, and forgetting one renders a 500 instead of a profile.
+ *
+ * The defaults are empty, never invented: a record written before a field
+ * existed has no value for it, and an empty list says so honestly.
+ */
+function normaliseAi(output: RawAiOutput): RawAiOutput {
+  return {
+    ...output,
+    primaryLanguage: output.primaryLanguage ?? null,
+    creatorInterests: output.creatorInterests ?? [],
+    creatorKeywords: output.creatorKeywords ?? [],
+    mentionedBrands: output.mentionedBrands ?? [],
+    mentionedProducts: output.mentionedProducts ?? [],
+    brandAffinity: output.brandAffinity ?? [],
+    competitorAffinity: output.competitorAffinity ?? [],
+    previousCollaborations: output.previousCollaborations ?? [],
+    // Empty rather than thirteen "not observed" rows: this creator was never
+    // checked, and the panel must say that rather than imply a pass.
+    safetyChecks: output.safetyChecks ?? {},
+    categories: output.categories ?? [],
+    contentThemes: output.contentThemes ?? [],
+    sponsorshipSignals: output.sponsorshipSignals ?? [],
+    recommendedIndustries: output.recommendedIndustries ?? [],
+    strengths: output.strengths ?? [],
+    risks: output.risks ?? [],
+    evidence: output.evidence ?? [],
+  };
+}
 
 export function readRecords(): DataView {
   const ingested = ingestedRecords();
@@ -182,7 +238,7 @@ export function readRecords(): DataView {
       content: ingested.content,
       signals: NO_SIGNALS,
       audience: NO_AUDIENCE,
-      ai: NO_AI,
+      ai: new Map(ingested.ai.map((output) => [output.influencerId, normaliseAi(output)])),
     },
   };
   return view.data;

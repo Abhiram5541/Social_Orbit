@@ -12,8 +12,10 @@ import type {
   BenchmarkPosition,
   ContentItem,
   HistorySeries,
+  CostEfficiency,
   InfluencerProfile,
   InfluencerSummary,
+  LookalikeCreator,
   ProfileGlance,
   SocialAccount,
 } from "@/lib/contracts/influencer";
@@ -56,6 +58,8 @@ import {
   type RawSnapshot,
 } from "@/server/data/records";
 import { FOLLOWER_BANDS, type FollowerBand } from "@/lib/contracts/search";
+import { costEfficiency, placementRate } from "@/server/analytics/pricing";
+import { lookalikes, type SimilarityCandidate } from "@/server/analytics/similarity";
 
 /* ---------------------------------------------------------------------------
  * Influencer repository.
@@ -279,6 +283,80 @@ function cohorts(now: Date): Map<string, Cohort> {
 function cohortFor(record: Assembled, now: Date): Cohort | null {
   const key = `${record.raw.categories[0]}:${followerBandOf(record.primary.followers)}`;
   return cohorts(now).get(key) ?? null;
+}
+
+/**
+ * A creator's categories: what YouTube published, plus what the model inferred.
+ * Deduplicated, observed first, so the highest-tier source leads.
+ */
+function categoriesFor(raw: RawInfluencer): Category[] {
+  const inferred = readRecords().ai.get(raw.id)?.categories ?? [];
+  return [...new Set([...raw.categories, ...inferred])];
+}
+
+/**
+ * Cost efficiency, entirely from the modelled rate band.
+ *
+ * Not observed and not asked of a model: it is arithmetic over the estimate the
+ * profile already labels as modelled, so it inherits that label rather than
+ * acquiring a stronger one.
+ */
+function costEfficiencyFor(glance: ProfileGlance, derived: Derived): CostEfficiency {
+  const rate = placementRate(glance.estimatedMonthlyEarnings, derived.uploadFrequencyPerWeek);
+  return {
+    placementRate: rate,
+    ...costEfficiency(rate, derived.medianViews, derived.engagementRatePct),
+  };
+}
+
+/**
+ * Creators resembling this one.
+ *
+ * Deterministic overlap over stored attributes — see `analytics/similarity.ts`.
+ * Themes come from AI classification where it has run, so a creator with no
+ * enrichment still matches on category, size, country and language.
+ */
+function lookalikesFor(record: Assembled, now: Date): LookalikeCreator[] {
+  const data = readRecords();
+  const candidate = (raw: RawInfluencer): SimilarityCandidate | null => {
+    const account = data.accounts.find((item) => item.influencerId === raw.id && item.isPrimary);
+    if (!account) return null;
+    const ai = data.ai.get(raw.id);
+    return {
+      id: raw.id,
+      categories: categoriesFor(raw),
+      themes: [...(ai?.contentThemes ?? []), ...(ai?.creatorInterests ?? [])],
+      followers: account.followers,
+      country: raw.countryCode || null,
+      language: raw.languages[0] ?? null,
+    };
+  };
+
+  const subject = candidate(record.raw);
+  if (!subject) return [];
+
+  const pool = data.influencers
+    .filter((raw) => raw.status === "published")
+    .map(candidate)
+    .filter((item): item is SimilarityCandidate => item !== null);
+
+  return lookalikes(subject, pool)
+    .map((match) => {
+      const raw = data.influencers.find((item) => item.id === match.id);
+      const summary = raw ? toSummary(raw.id, now) : null;
+      return summary
+        ? {
+            id: match.id,
+            displayName: summary.displayName,
+            handle: summary.primaryHandle,
+            avatarUrl: summary.avatarUrl,
+            followers: summary.followers,
+            score: match.score,
+            reasons: match.reasons,
+          }
+        : null;
+    })
+    .filter((item): item is LookalikeCreator => item !== null);
 }
 
 /* --- Provenance --------------------------------------------------------- */
@@ -512,7 +590,12 @@ export function toSummary(id: string, now: Date = EPOCH): InfluencerSummary | nu
     healthScore: health.weightCovered > 0 ? health.value : null,
     campaignFit: fit.value,
     risk: risk.level,
-    categories: record.raw.categories,
+    // Observed first, then anything the model inferred that YouTube did not
+    // publish. YouTube's channel topics are coarse — most channels come back
+    // as "Lifestyle" — so without the inferred ones a beauty or finance
+    // creator is undiscoverable by category. The profile's AI panel lists
+    // which of these came from a model.
+    categories: categoriesFor(record.raw),
     countryCode: record.raw.countryCode,
     countryName: record.raw.countryName,
     languages: record.raw.languages,
@@ -681,6 +764,15 @@ export function toProfile(id: string, now: Date = EPOCH): InfluencerProfile | nu
     recommendedIndustries: ai.recommendedIndustries,
     strengths: ai.strengths,
     risks: ai.risks,
+    primaryLanguage: ai.primaryLanguage,
+    creatorInterests: ai.creatorInterests,
+    creatorKeywords: ai.creatorKeywords,
+    mentionedBrands: ai.mentionedBrands,
+    mentionedProducts: ai.mentionedProducts,
+    brandAffinity: ai.brandAffinity,
+    competitorAffinity: ai.competitorAffinity,
+    previousCollaborations: ai.previousCollaborations,
+    safetyChecks: ai.safetyChecks,
     evidence: ai.evidence,
     provider: ai.provider,
     model: ai.model,
@@ -739,6 +831,8 @@ export function toProfile(id: string, now: Date = EPOCH): InfluencerProfile | nu
     ai: aiIntelligence,
     audience,
     benchmarks,
+    lookalikes: lookalikesFor(record, now),
+    costEfficiency: costEfficiencyFor(glance, derived),
     topContent: [...primaryContent]
       .filter((item) => item.views !== null)
       .sort((a, b) => (b.views ?? 0) - (a.views ?? 0))
