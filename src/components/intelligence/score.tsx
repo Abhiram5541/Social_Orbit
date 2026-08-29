@@ -54,7 +54,13 @@ export function ScoreRing({
   const stroke = size >= 120 ? 7 : size >= 80 ? 6 : 5;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
-  const pct = value === null ? 0 : Math.max(0, Math.min(100, value));
+  // A measured zero still gets a visible sliver. Rendering it as literally no
+  // bar makes it indistinguishable at a glance from a component that was never
+  // measured, and those mean opposite things: "we looked, it is the floor"
+  // against "nobody looked". The number beside it says which, but the bar is
+  // what the eye reads first.
+  const raw = value === null ? 0 : Math.max(0, Math.min(100, value));
+  const pct = value === null ? 0 : Math.max(raw, 1.5);
   const offset = circumference * (1 - pct / 100);
 
   const track = tone === "instrument" ? "stroke-instrument-line" : "stroke-line";
@@ -141,7 +147,13 @@ export function ScoreBar({
   index?: number;
   className?: string;
 }) {
-  const pct = value === null ? 0 : Math.max(0, Math.min(100, value));
+  // A measured zero still gets a visible sliver. Rendering it as literally no
+  // bar makes it indistinguishable at a glance from a component that was never
+  // measured, and those mean opposite things: "we looked, it is the floor"
+  // against "nobody looked". The number beside it says which, but the bar is
+  // what the eye reads first.
+  const raw = value === null ? 0 : Math.max(0, Math.min(100, value));
+  const pct = value === null ? 0 : Math.max(raw, 1.5);
   const labelColour = tone === "instrument" ? "text-instrument-muted" : "text-ink-muted";
   const valueColour = tone === "instrument" ? "text-instrument-ink" : "text-ink";
   const trackColour = tone === "instrument" ? "bg-instrument-line" : "bg-line";
@@ -162,7 +174,7 @@ export function ScoreBar({
       <div className={cn("col-span-2 h-1 overflow-hidden rounded-sm", trackColour)}>
         {available && value !== null && (
           <div
-            className={cn("animate-extend h-full rounded-sm", componentTone(value, tone))}
+            className={cn("animate-extend h-full rounded-sm", componentTone(raw, tone))}
             style={
               {
                 width: `${pct}%`,

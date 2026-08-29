@@ -567,7 +567,7 @@ function confidenceOf(
 
 /* --- Public reads ------------------------------------------------------- */
 
-export function toSummary(id: string, now: Date = EPOCH): InfluencerSummary | null {
+export function toSummary(id: string, now: Date = new Date()): InfluencerSummary | null {
   const record = assemble(id);
   if (!record) return null;
   const { derived, health, risk, fit } = scoreOf(record, now);
@@ -661,7 +661,7 @@ function toContentItem(raw: RawContent, medianViews: number | null): ContentItem
   };
 }
 
-export function toProfile(id: string, now: Date = EPOCH): InfluencerProfile | null {
+export function toProfile(id: string, now: Date = new Date()): InfluencerProfile | null {
   const summary = toSummary(id, now);
   const record = assemble(id);
   if (!summary || !record) return null;
@@ -952,7 +952,7 @@ function buildSignalReading(
 
 /* --- Collection reads --------------------------------------------------- */
 
-export function allSummaries(now: Date = EPOCH): InfluencerSummary[] {
+export function allSummaries(now: Date = new Date()): InfluencerSummary[] {
   return readRecords()
     .influencers.filter((raw) => raw.status === "published")
     .map((raw) => toSummary(raw.id, now))

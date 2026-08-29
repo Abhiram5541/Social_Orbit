@@ -28,7 +28,7 @@ export interface DatabaseStats {
   byCountry: { country: string; count: number }[];
 }
 
-export function databaseStats(now: Date = EPOCH): DatabaseStats {
+export function databaseStats(now: Date = new Date()): DatabaseStats {
   const data = readRecords();
   const summaries = allSummaries(now);
 
@@ -110,7 +110,7 @@ const CONNECTOR_NOTES: Record<Platform, string> = {
  * credentials is reported as such rather than shown "green" — a dashboard that
  * lies about its integrations is worse than no dashboard.
  */
-export function connectorStatuses(now: Date = EPOCH): ConnectorStatus[] {
+export function connectorStatuses(now: Date = new Date()): ConnectorStatus[] {
   const data = readRecords();
 
   return (Object.keys(CONNECTOR_REQUIREMENTS) as Platform[]).map((platform) => {
@@ -189,7 +189,7 @@ export interface ReviewItem {
 }
 
 /** Profiles where two sources disagreed — DPR UC-12. Never silently resolved. */
-export function conflictQueue(now: Date = EPOCH): ReviewItem[] {
+export function conflictQueue(now: Date = new Date()): ReviewItem[] {
   return readRecords()
     .influencers.filter((raw) => raw.conflictCount > 0)
     .map((raw) => ({
@@ -206,7 +206,7 @@ export function conflictQueue(now: Date = EPOCH): ReviewItem[] {
 }
 
 /** Profiles too thin to publish a confident score against. */
-export function lowConfidenceQueue(now: Date = EPOCH): ReviewItem[] {
+export function lowConfidenceQueue(now: Date = new Date()): ReviewItem[] {
   return allSummaries(now)
     .filter((summary) => summary.confidence < 50)
     .map((summary) => ({

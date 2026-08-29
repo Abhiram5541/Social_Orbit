@@ -15,11 +15,17 @@ import { ingestedRecords } from "./ingested-store";
  * ------------------------------------------------------------------------ */
 
 /**
- * The reference instant reads default to.
+ * A fixed reference instant, for tests and anything that must be reproducible.
  *
- * Analytics take `now` as a parameter so a score is reproducible rather than
- * dependent on when it happened to run. Callers that want live figures pass
- * their own clock.
+ * Reads do **not** default to this. They once did, back when the database was a
+ * frozen fixture set and a frozen clock cost nothing. Against live data it
+ * quietly broke everything time-relative: scores recomputed on every request
+ * were stamped with this date, so a profile refreshed a minute ago reported
+ * "computed 3 days ago" and drifted further every day, while days-since-last-
+ * upload and activity status were all measured from a date in the past.
+ *
+ * Analytics and scoring still take `now` as a parameter, so passing this value
+ * gives an exactly reproducible result whenever a test needs one.
  */
 export const EPOCH = new Date("2026-08-26T09:00:00.000Z");
 
