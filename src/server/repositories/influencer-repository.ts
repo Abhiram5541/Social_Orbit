@@ -20,6 +20,7 @@ import type {
   SocialAccount,
 } from "@/lib/contracts/influencer";
 import type { RiskSignals } from "@/lib/contracts/score";
+import type { ContentObservation } from "@/server/analytics/metrics";
 import {
   activityStatus,
   clamp,
@@ -27,7 +28,9 @@ import {
   detectViewAnomalies,
   engagementRate,
   gainedOverWindow,
+  type WindowGain,
   growthPatternScore,
+  reachTrendScore,
   mean,
   median,
   uploadConsistency,
@@ -50,7 +53,6 @@ import {
 import { ingestedRevision } from "@/server/data/ingested-store";
 import {
   readRecords,
-  EPOCH,
   type DataView,
   type RawAccount,
   type RawContent,
@@ -58,6 +60,7 @@ import {
   type RawSnapshot,
 } from "@/server/data/records";
 import { FOLLOWER_BANDS, type FollowerBand } from "@/lib/contracts/search";
+import { FORMULA_VERSION } from "@/lib/contracts/score";
 import { costEfficiency, placementRate } from "@/server/analytics/pricing";
 import { lookalikes, type SimilarityCandidate } from "@/server/analytics/similarity";
 
@@ -163,12 +166,53 @@ interface Derived {
   viewConsistencyScore: number | null;
   viewAnomaly: number | null;
   growthPattern: number | null;
+  /** Which observation produced it — the two are not equally strong. */
+  growthMethod: "follower_snapshots" | "upload_reach_trend" | null;
   viewsPerFollower: number | null;
   activity: ActivityStatus;
   dormantDays: number | null;
-  followersGained7d: number | null;
-  viewsGained7d: number | null;
+  followersGained: WindowGain | null;
+  viewsGained: WindowGain | null;
   averageDuration: number | null;
+}
+
+/**
+ * Every upload the platform has told us about, newest window first.
+ *
+ * The fully-stored recent content and the lean historical series describe the
+ * same uploads from two reads, so they are merged by video and deduplicated —
+ * a deeper backfill overlaps the recent window by design.
+ */
+function uploadHistoryFor(record: Assembled): ContentObservation[] {
+  const points = readRecords().viewHistory.filter(
+    (point) => point.influencerId === record.raw.id,
+  );
+
+  const seen = new Set<string>();
+  const rows: ContentObservation[] = [];
+
+  for (const item of record.content) {
+    const videoId = item.id.startsWith(`${item.accountId}_`)
+      ? item.id.slice(item.accountId.length + 1)
+      : item.id;
+    seen.add(videoId);
+    rows.push(item);
+  }
+
+  for (const point of points) {
+    if (seen.has(point.videoId)) continue;
+    seen.add(point.videoId);
+    rows.push({
+      publishedAt: point.publishedAt,
+      views: point.views,
+      likes: null,
+      comments: null,
+      shares: null,
+      durationSeconds: null,
+    });
+  }
+
+  return rows;
 }
 
 function derive(record: Assembled, now: Date): Derived {
@@ -179,6 +223,7 @@ function derive(record: Assembled, now: Date): Derived {
     .map((item) => item.views)
     .filter((value): value is number => value !== null);
 
+  const growthHistory = uploadHistoryFor(record);
   const primarySnapshots = record.snapshots.filter(
     (point) => point.accountId === record.primary.id,
   );
@@ -198,12 +243,22 @@ function derive(record: Assembled, now: Date): Derived {
     uploadConsistencyScore: uploadConsistency(primaryContent),
     viewConsistencyScore: viewConsistency(primaryContent),
     viewAnomaly: viewAnomalyScore(primaryContent),
-    growthPattern: growthPatternScore(primarySnapshots),
+    // Snapshots are the better instrument, so they win whenever there are
+    // enough of them. Until then the creator's own upload history says whether
+    // reach is climbing — weaker, but observed, and the alternative is a blank
+    // component for everyone until a week of snapshots has accumulated.
+    growthPattern:
+      growthPatternScore(primarySnapshots) ?? reachTrendScore(growthHistory, now),
+    growthMethod: (growthPatternScore(primarySnapshots) !== null
+      ? "follower_snapshots"
+      : reachTrendScore(growthHistory, now) !== null
+        ? "upload_reach_trend"
+        : null) as "follower_snapshots" | "upload_reach_trend" | null,
     viewsPerFollower: viewsPerFollowerRatio(medianViews, record.primary.followers),
     activity: activityStatus(primaryContent, now),
     dormantDays: daysSinceLastPublication(primaryContent, now),
-    followersGained7d: gainedOverWindow(primarySnapshots, "followers", 7, now),
-    viewsGained7d: gainedOverWindow(primarySnapshots, "views", 7, now),
+    followersGained: gainedOverWindow(primarySnapshots, "followers", 7, now),
+    viewsGained: gainedOverWindow(primarySnapshots, "views", 7, now),
     averageDuration: mean(
       primaryContent
         .map((item) => item.durationSeconds)
@@ -252,10 +307,14 @@ function cohorts(now: Date): Map<string, Cohort> {
 
   const buckets = new Map<string, { engagement: number[]; vpf: number[]; medianViews: number[] }>();
   for (const raw of readRecords().influencers) {
+    // A demonstration record's figures were chosen, not measured. Letting one
+    // into a bucket would move the median every real creator in that category
+    // and follower band is ranked against.
+    if (raw.isDemo) continue;
     const record = assemble(raw.id);
     if (!record) continue;
     const derived = derive(record, now);
-    const key = `${raw.categories[0]}:${followerBandOf(record.primary.followers)}`;
+    const key = cohortKey(record);
     const bucket = buckets.get(key) ?? { engagement: [], vpf: [], medianViews: [] };
     if (derived.engagementRatePct !== null) bucket.engagement.push(derived.engagementRatePct);
     if (derived.viewsPerFollower !== null) bucket.vpf.push(derived.viewsPerFollower);
@@ -280,9 +339,22 @@ function cohorts(now: Date): Map<string, Cohort> {
   return map;
 }
 
+/**
+ * Platform first, because the engagement rate it keys is not the same
+ * measurement across platforms.
+ *
+ * YouTube reports views on every item, so engagement is interactions over
+ * views — a few percent. Instagram reach needs authorized access, so the
+ * honest denominator there is followers, which yields roughly a fifth of the
+ * figure for an equally engaged audience. Pooling the two put Instagram
+ * creators against a YouTube median and scored a healthy 1.1% as near-failing.
+ */
+function cohortKey(record: Assembled): string {
+  return `${record.primary.platform}:${record.raw.categories[0]}:${followerBandOf(record.primary.followers)}`;
+}
+
 function cohortFor(record: Assembled, now: Date): Cohort | null {
-  const key = `${record.raw.categories[0]}:${followerBandOf(record.primary.followers)}`;
-  return cohorts(now).get(key) ?? null;
+  return cohorts(now).get(cohortKey(record)) ?? null;
 }
 
 /**
@@ -449,7 +521,11 @@ function scoreOf(record: Assembled, now: Date) {
       viewsPerFollowerRatio: derived.viewsPerFollower,
       cohortMedian: cohort?.viewsPerFollowerMedian ?? null,
     },
-    growthPattern: { snapshotsObserved: record.snapshots.length },
+    growthPattern: {
+      snapshotsObserved: record.snapshots.length,
+      // Recorded so a reader can tell a measured trend from an inferred one.
+      method: derived.growthMethod,
+    },
     viewConsistency: { contentObserved: record.content.length },
     uploadConsistency: { uploadsPerWeek: derived.uploadFrequencyPerWeek },
     commentQuality: { aiCommentQuality: ai?.commentQuality ?? null },
@@ -587,7 +663,7 @@ export function toSummary(id: string, now: Date = new Date()): InfluencerSummary
       derived.engagementRatePct === null
         ? null
         : Number(derived.engagementRatePct.toFixed(2)),
-    healthScore: health.weightCovered > 0 ? health.value : null,
+    healthScore: health.sufficient ? health.value : null,
     campaignFit: fit.value,
     risk: risk.level,
     // Observed first, then anything the model inferred that YouTube did not
@@ -600,6 +676,7 @@ export function toSummary(id: string, now: Date = new Date()): InfluencerSummary
     countryName: record.raw.countryName,
     languages: record.raw.languages,
     activity: derived.activity,
+    isDemo: record.raw.isDemo === true,
     lastActiveAt:
       derived.dormantDays === null
         ? null
@@ -671,6 +748,7 @@ export function toProfile(id: string, now: Date = new Date()): InfluencerProfile
   const rawAudience = data.audience.get(id) ?? null;
   const confidence = confidenceOf(record, Boolean(rawAudience), now);
 
+  const growthHistory = uploadHistoryFor(record);
   const primarySnapshots = record.snapshots.filter(
     (point) => point.accountId === record.primary.id,
   );
@@ -698,8 +776,8 @@ export function toProfile(id: string, now: Date = new Date()): InfluencerProfile
     contentCount: record.primary.contentCount,
     medianViews: derived.medianViews,
     averageViews: derived.averageViews,
-    viewsGained7d: derived.viewsGained7d,
-    followersGained7d: derived.followersGained7d,
+    viewsGained: derived.viewsGained,
+    followersGained: derived.followersGained,
     uploadFrequency:
       derived.uploadFrequencyPerWeek === null
         ? null
@@ -947,7 +1025,7 @@ function buildSignalReading(
     );
   }
 
-  return `${parts.join("; ")}. Overall health resolves to ${healthValue.toFixed(0)}/100 under formula ${"health-1.0.0"}.`;
+  return `${parts.join("; ")}. Overall health resolves to ${healthValue.toFixed(0)}/100 under formula ${FORMULA_VERSION}.`;
 }
 
 /* --- Collection reads --------------------------------------------------- */

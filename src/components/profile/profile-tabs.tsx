@@ -11,7 +11,6 @@ import {
   formatFrequency,
   formatNumber,
   formatPercent,
-  formatRelativeTime,
   NO_VALUE,
 } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +44,24 @@ const TABS = [
   { value: "benchmarks", label: "Benchmarks" },
 ] as const;
 
-export function ProfileTabs({ profile }: { profile: InfluencerProfile }) {
+/**
+ * Names the span a delta was actually measured over.
+ *
+ * Falls back to the nominal window when there is no delta to describe, so the
+ * tile still says what it would measure once a second snapshot lands.
+ */
+function windowLabel(gain: { days: number } | null): string {
+  return `${gain?.days ?? 7}d`;
+}
+
+export function ProfileTabs({
+  profile,
+  linkToProfiles = true,
+}: {
+  profile: InfluencerProfile;
+  /** False in the creator portal, where other creators' profiles are barred. */
+  linkToProfiles?: boolean;
+}) {
   const [tab, setTab] = React.useState<string>("overview");
 
   const collected = profile.lastRefreshedAt ?? profile.createdAt;
@@ -226,7 +242,7 @@ export function ProfileTabs({ profile }: { profile: InfluencerProfile }) {
 
         <div className="grid gap-4 lg:grid-cols-2">
           <CostEfficiencyPanel profile={profile} />
-          <LookalikePanel profile={profile} />
+          <LookalikePanel profile={profile} linkToProfiles={linkToProfiles} />
         </div>
 
         {!profile.ai && (
@@ -241,14 +257,14 @@ export function ProfileTabs({ profile }: { profile: InfluencerProfile }) {
       <TabPanel value="growth" active={tab === "growth"} className="space-y-4">
         <StatRow>
           <StatTile
-            label="Followers gained (7d)"
-            value={formatNumber(profile.glance.followersGained7d)}
+            label={`Followers gained (${windowLabel(profile.glance.followersGained)})`}
+            value={formatNumber(profile.glance.followersGained?.gained ?? null)}
             provenance={derived}
-            hint="Current snapshot minus the nearest snapshot at or before seven days ago."
+            hint="Latest snapshot minus the oldest one inside a seven-day window. The label states the span actually measured, which is shorter while an account's history is still building."
           />
           <StatTile
-            label="Views gained (7d)"
-            value={formatNumber(profile.glance.viewsGained7d)}
+            label={`Views gained (${windowLabel(profile.glance.viewsGained)})`}
+            value={formatNumber(profile.glance.viewsGained?.gained ?? null)}
             provenance={derived}
           />
           <StatTile

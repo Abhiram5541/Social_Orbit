@@ -10,7 +10,7 @@ import { RiskLevel } from "./common";
  * ------------------------------------------------------------------------ */
 
 export const SCORE_VERSION = "1.0.0";
-export const FORMULA_VERSION = "health-1.0.0";
+export const FORMULA_VERSION = "health-1.1.0";
 
 /** The nine weighted inputs to the health score (DPR §10.1). */
 export const HealthComponentKey = z.enum([
@@ -60,7 +60,13 @@ export const ScoreComponent = z.object({
   value: z.number().min(0).max(100),
   weight: z.number().min(0).max(1),
   /** Raw measurements behind the normalised value. */
-  inputs: z.record(z.string(), z.number().nullable()),
+  /**
+   * The measurements behind the component. Strings are allowed so evidence can
+   * record *how* something was observed and not only what the figure was — a
+   * growth pattern read from snapshots and one inferred from upload history are
+   * the same number carrying very different weight.
+   */
+  inputs: z.record(z.string(), z.union([z.number(), z.string()]).nullable()),
   /** False when there was not enough data; the component is then excluded and weights renormalise. */
   available: z.boolean(),
 });
@@ -72,6 +78,12 @@ export const HealthScore = z.object({
   components: z.array(ScoreComponent),
   /** Sum of weights actually applied. Below 1 when components were unavailable. */
   weightCovered: z.number().min(0).max(1),
+  /**
+   * Whether enough of the formula was measurable to publish the value at all.
+   * False means the score is withheld, not that it is bad — the same
+   * distinction the history series draws with its own `sufficient` flag.
+   */
+  sufficient: z.boolean(),
   scoreVersion: z.string(),
   formulaVersion: z.string(),
   computedAt: z.string().datetime(),

@@ -43,7 +43,10 @@ export function HealthPanel({
 }) {
   const unavailable = health.components.filter((component) => !component.available);
   const percentile = benchmarks?.metrics[0]?.percentile;
-  const measured = health.weightCovered > 0;
+  // Not "was anything measured" but "was enough measured to publish a number".
+  // A creator with one indexed upload can still pin audience activity at 100
+  // and score a flawless 100/100 off a tenth of the formula.
+  const measured = health.sufficient;
 
   return (
     <section className="animate-rise overflow-hidden rounded-xl bg-instrument text-instrument-ink shadow-instrument">
@@ -65,9 +68,15 @@ export function HealthPanel({
           <ScoreRing value={measured ? health.value : null} size={124} tone="instrument" />
           <div className="min-w-0 space-y-2">
             <p className="text-[19px] font-semibold leading-tight tracking-[-0.02em]">
-              {HEALTH_BAND_LABEL[health.band]}
+              {measured ? HEALTH_BAND_LABEL[health.band] : "Not scored"}
             </p>
-            {benchmarks && percentile !== undefined ? (
+            {!measured ? (
+              <p className="max-w-56 text-[12px] leading-5 text-instrument-muted">
+                Only {Math.round(health.weightCovered * 100)}% of the formula could be
+                measured for this creator — too little to publish a score. Withheld rather
+                than rounded up from one component.
+              </p>
+            ) : benchmarks && percentile !== undefined ? (
               <p className="max-w-56 text-[12px] leading-5 text-instrument-muted">
                 {ordinal(percentile)} percentile of {benchmarks.cohortSize} creators in{" "}
                 {benchmarks.category} · {benchmarks.followerBand}

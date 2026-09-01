@@ -54,13 +54,7 @@ export function ScoreRing({
   const stroke = size >= 120 ? 7 : size >= 80 ? 6 : 5;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
-  // A measured zero still gets a visible sliver. Rendering it as literally no
-  // bar makes it indistinguishable at a glance from a component that was never
-  // measured, and those mean opposite things: "we looked, it is the floor"
-  // against "nobody looked". The number beside it says which, but the bar is
-  // what the eye reads first.
-  const raw = value === null ? 0 : Math.max(0, Math.min(100, value));
-  const pct = value === null ? 0 : Math.max(raw, 1.5);
+  const pct = value === null ? 0 : Math.max(0, Math.min(100, value));
   const offset = circumference * (1 - pct / 100);
 
   const track = tone === "instrument" ? "stroke-instrument-line" : "stroke-line";
@@ -152,6 +146,7 @@ export function ScoreBar({
   // measured, and those mean opposite things: "we looked, it is the floor"
   // against "nobody looked". The number beside it says which, but the bar is
   // what the eye reads first.
+  const measured = available && value !== null;
   const raw = value === null ? 0 : Math.max(0, Math.min(100, value));
   const pct = value === null ? 0 : Math.max(raw, 1.5);
   const labelColour = tone === "instrument" ? "text-instrument-muted" : "text-ink-muted";
@@ -163,16 +158,35 @@ export function ScoreBar({
       <div className="flex min-w-0 items-baseline gap-1.5">
         <span className={cn("truncate text-[12px]", labelColour)}>{label}</span>
         {weight !== undefined && (
-          <span className={cn("shrink-0 font-num text-[10px] tabular-nums", labelColour)}>
+          // Named, because it sits beside a value and is not one. A bare "15%"
+          // next to an empty bar reads as the number the bar failed to draw.
+          <span
+            className={cn("shrink-0 font-num text-[10px] tabular-nums", labelColour)}
+            title={`Weight in the formula: ${Math.round(weight * 100)}%`}
+          >
+            <span className="sr-only">weight </span>
             {Math.round(weight * 100)}%
           </span>
         )}
       </div>
       <span className={cn("font-num text-[13px] font-semibold tabular-nums", valueColour)}>
-        {available && value !== null ? Math.round(value) : NO_VALUE}
+        {measured ? Math.round(value) : NO_VALUE}
       </span>
-      <div className={cn("col-span-2 h-1 overflow-hidden rounded-sm", trackColour)}>
-        {available && value !== null && (
+      <div
+        className={cn(
+          "col-span-2 h-1 overflow-hidden rounded-sm",
+          // An unmeasured component gets a hatched track rather than an empty
+          // one. Empty reads as "a bar that failed to render"; hatched reads as
+          // "there is nothing to draw here", which is what is true.
+          measured ? trackColour : "border border-dashed",
+          measured
+            ? ""
+            : tone === "instrument"
+              ? "border-instrument-line bg-transparent"
+              : "border-line bg-transparent",
+        )}
+      >
+        {measured && (
           <div
             className={cn("animate-extend h-full rounded-sm", componentTone(raw, tone))}
             style={

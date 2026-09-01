@@ -37,6 +37,11 @@ export const SocialAccount = z.object({
 });
 export type SocialAccount = z.infer<typeof SocialAccount>;
 
+const WindowGain = z.object({
+  gained: z.number().int(),
+  days: z.number().int().positive(),
+});
+
 /** DPR §9.2 — "Channel/Profile at a glance". */
 export const ProfileGlance = z.object({
   followers: z.number().int().nullable(),
@@ -44,9 +49,14 @@ export const ProfileGlance = z.object({
   contentCount: z.number().int().nullable(),
   medianViews: z.number().int().nullable(),
   averageViews: z.number().int().nullable(),
-  /** Current snapshot minus the seven-day-prior snapshot. Null until history exists. */
-  viewsGained7d: z.number().int().nullable(),
-  followersGained7d: z.number().int().nullable(),
+  /**
+   * Change since the oldest snapshot inside a seven-day window, with the span
+   * it was actually measured over. Shorter than seven days while an account's
+   * history is still building, so the UI labels the span rather than assuming
+   * a full week. Null until a second snapshot exists.
+   */
+  viewsGained: WindowGain.nullable(),
+  followersGained: WindowGain.nullable(),
   /** Publications per week over the selected window. */
   uploadFrequency: z.number().nullable(),
   /** Seconds. Only where the platform reports duration. */
@@ -200,6 +210,12 @@ export const InfluencerSummary = z.object({
   activity: ActivityStatus,
   lastActiveAt: z.string().datetime().nullable(),
   confidence: z.number().min(0).max(100),
+  /**
+   * A hand-built demonstration record rather than an observed creator. The UI
+   * must label it wherever the creator appears — an unlabelled fabrication in
+   * a provenance product is worse than no record at all.
+   */
+  isDemo: z.boolean(),
 });
 export type InfluencerSummary = z.infer<typeof InfluencerSummary>;
 

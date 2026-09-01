@@ -39,8 +39,30 @@ export interface HealthInputs {
 
 /** The measurements behind each normalised input, stored for reproducibility. */
 export type HealthEvidence = Partial<
-  Record<HealthComponentKey, Record<string, number | null>>
+  Record<HealthComponentKey, Record<string, number | string | null>>
 >;
+
+/**
+ * Share of the formula that must be measurable before a health score is
+ * published at all.
+ *
+ * Renormalising is right when most of the formula is present and one or two
+ * components are missing. It is not right when almost nothing is: a channel
+ * with a single upload has no engagement rate, no consistency and no history,
+ * so the only measurable component is audience activity — and one viral video
+ * against a small subscriber count pins that at 100, producing a flawless
+ * headline score out of one number.
+ *
+ * The confidence axis already reports such a profile as preliminary, but a
+ * 100/100 is the most quotable figure on the page and few readers will get as
+ * far as the caveat. This is the same judgement D10 makes about benchmarks
+ * below a cohort of eight: withhold the number rather than publish noise
+ * wearing the costume of a statistic.
+ *
+ * 0.40 sits well clear of a normally-indexed creator, who reaches 0.55 without
+ * AI enrichment and 0.65 with it.
+ */
+export const MIN_HEALTH_COVERAGE = 0.4;
 
 export function computeHealthScore(
   inputs: HealthInputs,
@@ -81,6 +103,7 @@ export function computeHealthScore(
     band: healthBand(rounded),
     components,
     weightCovered: Number(covered.toFixed(4)),
+    sufficient: covered >= MIN_HEALTH_COVERAGE,
     scoreVersion: SCORE_VERSION,
     formulaVersion: FORMULA_VERSION,
     computedAt: now.toISOString(),
@@ -159,9 +182,20 @@ export function normaliseAudienceActivity(
   viewsPerFollowerRatio: number | null,
   cohortRatio: number | null,
 ): number | null {
-  if (viewsPerFollowerRatio === null) return null;
+  if (viewsPerFollowerRatio === null || viewsPerFollowerRatio <= 0) return null;
+
   const benchmark = cohortRatio && cohortRatio > 0 ? cohortRatio : 20;
-  return clamp((viewsPerFollowerRatio / benchmark) * 70, 0, 100);
+
+  // Every doubling against the cohort median is worth ten points, and the
+  // median creator sits at 60.
+  //
+  // The previous curve multiplied the plain ratio by 70, which reached the
+  // ceiling at 1.43x the median — so 42% of creators scored exactly 100 and the
+  // component could not tell a good channel from an extraordinary one. Real
+  // views-per-follower spans three orders of magnitude across this database
+  // (0.13x to 68x the cohort median), which is a log scale whether or not the
+  // formula admits it.
+  return clamp(60 + 10 * Math.log2(viewsPerFollowerRatio / benchmark), 0, 100);
 }
 
 /* ---------------------------------------------------------------------------

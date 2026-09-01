@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HEALTH_WEIGHTS } from "@/lib/contracts/score";
+import { FORMULA_VERSION, HEALTH_WEIGHTS } from "@/lib/contracts/score";
 import {
   computeConfidence,
   computeHealthScore,
@@ -69,7 +69,11 @@ describe("computeHealthScore", () => {
       medianRate: 4.2,
       cohortMedian: 3.1,
     });
-    expect(score.formulaVersion).toBe("health-1.0.0");
+    // Against the constant, not a literal: the guarantee is that a score
+    // carries the version that produced it, and a literal here would fail on
+    // every legitimate recalibration while proving nothing extra.
+    expect(score.formulaVersion).toBe(FORMULA_VERSION);
+    expect(score.formulaVersion).toMatch(/^health-\d+\.\d+\.\d+$/);
     expect(score.computedAt).toBe(AT.toISOString());
   });
 
@@ -185,5 +189,49 @@ describe("computeConfidence", () => {
     );
     expect(worst.score).toBeGreaterThanOrEqual(0);
     expect(worst.score).toBeLessThanOrEqual(100);
+  });
+});
+
+describe("minimum formula coverage", () => {
+  const only = (key: keyof HealthInputs, value: number): HealthInputs => ({
+    authenticity: null,
+    engagementQuality: null,
+    engagementRate: null,
+    growthPattern: null,
+    viewConsistency: null,
+    audienceActivity: null,
+    commentQuality: null,
+    uploadConsistency: null,
+    brandSafety: null,
+    [key]: value,
+  });
+
+  it("withholds a score built from a tenth of the formula", () => {
+    // A channel with one indexed upload has no engagement rate, no consistency
+    // and no history. One viral video against a small following pins audience
+    // activity at 100 — and renormalising over that alone published 100/100.
+    const score = computeHealthScore(only("audienceActivity", 100));
+
+    expect(score.weightCovered).toBeCloseTo(0.1);
+    expect(score.sufficient).toBe(false);
+  });
+
+  it("still scores a creator missing only the components nobody can measure", () => {
+    // No bot-risk signal and no snapshot history is the normal state of a
+    // creator read from a public API. That must remain scoreable.
+    const score = computeHealthScore({
+      authenticity: null,
+      growthPattern: null,
+      engagementQuality: 60,
+      engagementRate: 55,
+      viewConsistency: 70,
+      audienceActivity: 50,
+      commentQuality: 65,
+      uploadConsistency: 40,
+      brandSafety: 90,
+    });
+
+    expect(score.weightCovered).toBeCloseTo(0.65);
+    expect(score.sufficient).toBe(true);
   });
 });

@@ -6,7 +6,7 @@
  * depends on these being reproducible, so they are kept boring on purpose.
  * ------------------------------------------------------------------------ */
 
-export const ANALYTICS_VERSION = "1.0.0";
+export const ANALYTICS_VERSION = "1.1.0";
 
 /** Below this many observations a statistic is not reported at all. */
 export const MIN_SAMPLE = 5;
@@ -37,6 +37,56 @@ export function stdDev(values: number[]): number | null {
  * Coefficient of variation — spread relative to level. Comparing raw standard
  * deviations across creators of different sizes would be meaningless.
  */
+/**
+ * Robust dispersion for positive, heavy-tailed data: log10 of the ratio between
+ * the upper and lower quartile.
+ *
+ * View counts and upload gaps are log-normal, not normal — they vary
+ * multiplicatively. A coefficient of variation uses the mean and standard
+ * deviation, both of which one viral video distorts beyond use: measured
+ * against this database, the median creator's view CV is 1.35 against a
+ * threshold of 1.2, so most of them scored zero and the component measured
+ * nothing.
+ *
+ * Quartiles ignore the tails, and the log turns "three times as many views"
+ * into a fixed distance regardless of the channel's size. The result reads
+ * directly: 0.30 means the upper quartile is twice the lower, 1.0 means ten
+ * times.
+ */
+export function logSpread(values: number[]): number | null {
+  const positive = values.filter((value) => value > 0).sort((a, b) => a - b);
+  if (positive.length < MIN_SAMPLE) return null;
+
+  const at = (fraction: number) => positive[Math.floor((positive.length - 1) * fraction)];
+  const low = at(0.25);
+  const high = at(0.75);
+  if (low <= 0 || high <= 0) return null;
+
+  return Math.log10(high / low);
+}
+
+/**
+ * Spread in log space, using every point: the standard deviation of log10.
+ *
+ * Where `logSpread` deliberately ignores the tails, this one is meant to see
+ * them. Which is right depends on what a tail *means*. For view counts a viral
+ * upload is noise. For publishing intervals a long gap is the whole signal —
+ * five uploads in a week and then eight months of silence is exactly the
+ * pattern a cadence score exists to catch, and quartiles cannot see it: with
+ * gaps of 1,1,1,1,1,240 the upper quartile is still 1.
+ */
+export function logStdDev(values: number[]): number | null {
+  const positive = values.filter((value) => value > 0);
+  if (positive.length < MIN_SAMPLE) return null;
+
+  const logs = positive.map((value) => Math.log10(value));
+  const average = logs.reduce((sum, value) => sum + value, 0) / logs.length;
+  const variance =
+    logs.reduce((sum, value) => sum + (value - average) ** 2, 0) / logs.length;
+
+  return Math.sqrt(variance);
+}
+
 export function coefficientOfVariation(values: number[]): number | null {
   const avg = mean(values);
   const sd = stdDev(values);
@@ -141,10 +191,14 @@ export function uploadConsistency(content: ContentObservation[]): number | null 
   const gaps: number[] = [];
   for (let i = 1; i < times.length; i += 1) gaps.push(times[i] - times[i - 1]);
 
-  const cv = coefficientOfVariation(gaps);
-  if (cv === null) return null;
-  // A CV of 0 is perfectly regular; 1.5 or above is effectively arrhythmic.
-  return invertedScore(cv, 1.5);
+  const spread = logStdDev(gaps);
+  if (spread === null) return null;
+
+  // A log standard deviation of 1.0 means intervals routinely differ by an
+  // order of magnitude — a schedule in name only. Across this database the
+  // median creator measures 0.42 and the ninetieth percentile 0.71, so real
+  // creators land between roughly 30 and 80 rather than bunched at either end.
+  return invertedScore(spread, 1.0);
 }
 
 export function daysSinceLastPublication(
@@ -193,10 +247,14 @@ export function viewConsistency(content: ContentObservation[]): number | null {
     .filter((value): value is number => value !== null && value > 0);
   if (views.length < MIN_SAMPLE) return null;
 
-  const cv = coefficientOfVariation(views);
-  if (cv === null) return null;
-  // View counts are naturally skewed; 1.2 is where a catalogue stops being readable.
-  return invertedScore(cv, 1.2);
+  const spread = logSpread(views);
+  if (spread === null) return null;
+
+  // 1.3 is a twenty-fold gap between the upper and lower quartile — a catalogue
+  // with no readable typical performance. Measured across this database the
+  // median creator sits at 0.53 and the ninetieth percentile at 0.93, so the
+  // scale spreads real creators across its range instead of pinning them.
+  return invertedScore(spread, 1.3);
 }
 
 export interface Anomaly {
@@ -268,6 +326,62 @@ export interface SnapshotObservation {
  * two snapshots cannot describe a pattern, so this returns null rather than
  * guessing.
  */
+/**
+ * Reach trajectory read from a creator's own upload history.
+ *
+ * Snapshots are the right way to measure growth, but they only exist from the
+ * day a platform starts taking them — a creator indexed last week has no past.
+ * Their uploads do: every one carries a publish date and a view count, and both
+ * are openly available. Comparing the older half of that history against the
+ * newer half says whether reach is climbing or fading.
+ *
+ * Two corrections make it honest:
+ *
+ * Uploads younger than 30 days are excluded. Views are heavily front-loaded but
+ * not instant, and a video published last week has not finished accruing them.
+ *
+ * The neutral point is 0.75, not 1.0. Even after that exclusion an older video
+ * has had months longer to gather views, so a perfectly flat channel still
+ * reads as a decline: measured across this database the median creator sits at
+ * 0.75. Treating 1.0 as neutral would tell three-quarters of them they were
+ * shrinking. The constant is empirical and belongs to this sampling window —
+ * re-derive it if the number of uploads read per channel changes.
+ *
+ * This is a weaker instrument than a snapshot series and is used only until one
+ * exists. Callers record which method produced the number.
+ */
+export const REACH_TREND_NEUTRAL = 0.75;
+
+export function reachTrendScore(
+  content: ContentObservation[],
+  now: Date = new Date(),
+): number | null {
+  const settled = content
+    .filter((item) => item.views !== null && item.views > 0)
+    .filter((item) => {
+      const age = now.getTime() - new Date(item.publishedAt).getTime();
+      return Number.isFinite(age) && age > 30 * 86_400_000;
+    })
+    .sort((a, b) => a.publishedAt.localeCompare(b.publishedAt));
+
+  // Too few uploads, or too short a window, and the two halves are the same
+  // moment in the channel's life rather than two different ones.
+  if (settled.length < 8) return null;
+  const spanDays =
+    (new Date(settled[settled.length - 1].publishedAt).getTime() -
+      new Date(settled[0].publishedAt).getTime()) /
+    86_400_000;
+  if (spanDays < 90) return null;
+
+  const half = Math.floor(settled.length / 2);
+  const older = median(settled.slice(0, half).map((item) => item.views as number));
+  const newer = median(settled.slice(-half).map((item) => item.views as number));
+  if (older === null || newer === null || older <= 0 || newer <= 0) return null;
+
+  // Every doubling against the neutral ratio is worth 25 points.
+  return clamp(50 + 25 * Math.log2(newer / older / REACH_TREND_NEUTRAL), 0, 100);
+}
+
 export function growthPatternScore(snapshots: SnapshotObservation[]): number | null {
   const series = snapshots
     .filter((point): point is SnapshotObservation & { followers: number } => point.followers !== null)
@@ -300,12 +414,31 @@ export function growthPatternScore(snapshots: SnapshotObservation[]): number | n
 }
 
 /** Change over a trailing window, using the nearest snapshot at or before the cutoff. */
+export interface WindowGain {
+  gained: number;
+  /** Days actually spanned. Shorter than the window while history is still
+   *  building, longer where snapshots are sparse. Always the real span. */
+  days: number;
+}
+
+/**
+ * Change in a counter over the last `days`, and the span it was measured over.
+ *
+ * The anchor is the oldest reading at or before the cutoff where one exists —
+ * a true `days`-long delta. Where none does, because the account has been
+ * observed for less time than the window, the oldest reading held is used and
+ * the real span is returned with it. Refusing to answer until a full window
+ * accumulates left every creator showing a dash for the first week of their
+ * history while two perfectly good snapshots sat in the store; reporting the
+ * short span as though it were the full one would have been the other, worse
+ * failure. The caller labels the span it is given.
+ */
 export function gainedOverWindow(
   snapshots: SnapshotObservation[],
   field: "followers" | "views",
   days: number,
   now: Date = new Date(),
-): number | null {
+): WindowGain | null {
   const series = snapshots
     .filter((point) => point[field] !== null)
     .sort((a, b) => a.date.localeCompare(b.date));
@@ -318,10 +451,18 @@ export function gainedOverWindow(
   for (const point of series) {
     if (new Date(point.date).getTime() <= cutoff) prior = point;
   }
-  if (!prior) return null;
+  // No reading predates the window: fall back to the oldest one held, which by
+  // definition sits inside it.
+  prior ??= series[0];
+  if (prior === latest) return null;
 
   const from = prior[field];
   const to = latest[field];
   if (from === null || to === null) return null;
-  return to - from;
+
+  const span =
+    (new Date(latest.date).getTime() - new Date(prior.date).getTime()) / 86_400_000;
+  if (!Number.isFinite(span) || span <= 0) return null;
+
+  return { gained: to - from, days: Math.max(1, Math.round(span)) };
 }
