@@ -2,7 +2,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { Category } from "@/lib/contracts/common";
 import { ApiFailure, handler, requirePermission } from "@/server/auth/rbac";
-import { HARVEST_CATEGORIES, harvest, refreshStored } from "@/server/services/harvest-service";
+import {
+  HARVEST_CATEGORIES,
+  backfillViewHistory,
+  harvest,
+  refreshStored,
+} from "@/server/services/harvest-service";
 
 const Body = z.object({
   /** Omit to sweep every category. */
@@ -11,6 +16,10 @@ const Body = z.object({
   videos: z.number().int().min(5).max(50).default(50),
   /** Re-read channels already held instead of discovering new ones. */
   refresh: z.boolean().default(false),
+  /** Read further back through a channel's uploads, storing a lean series. */
+  history: z.boolean().default(false),
+  /** Uploads to read per channel when backfilling history. */
+  uploads: z.number().int().min(50).max(500).default(200),
   offset: z.number().int().min(0).default(0),
   limit: z.number().int().min(1).max(200).default(100),
 });
@@ -24,12 +33,24 @@ const Body = z.object({
  * interrupted sweep keeps the quota it already spent.
  */
 export async function POST(request: NextRequest) {
-  return handler(async () => {
+  // The three modes return different report shapes, so the handler is widened
+  // rather than each branch pretending to be the other.
+  return handler<unknown>(async () => {
     await requirePermission("admin:ingestion");
 
     const parsed = Body.safeParse(await request.json().catch(() => ({})));
     if (!parsed.success) {
       throw new ApiFailure("validation_failed", parsed.error.issues[0].message);
+    }
+
+    if (parsed.data.history) {
+      return NextResponse.json(
+        await backfillViewHistory({
+          offset: parsed.data.offset,
+          limit: parsed.data.limit,
+          uploads: parsed.data.uploads,
+        }),
+      );
     }
 
     if (parsed.data.refresh) {

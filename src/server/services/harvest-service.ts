@@ -5,7 +5,14 @@ import {
   fetchChannels,
   fetchRecentVideos,
 } from "@/server/connectors/youtube";
-import { ingestedRecords, upsertIngested, type IngestedRecord } from "@/server/data/ingested-store";
+import {
+  ingestedRecords,
+  touchIngested,
+  upsertIngested,
+  upsertViewHistory,
+  type IngestedRecord,
+} from "@/server/data/ingested-store";
+import { readRecords } from "@/server/data/records";
 import { IngestionRefused, buildRecord } from "./ingestion-service";
 
 /* ---------------------------------------------------------------------------
@@ -234,6 +241,183 @@ export async function refreshStored(
   return report;
 }
 
+export interface StaleRefreshReport extends HarvestReport {
+  /** Accounts still carrying an older reading after this pass. */
+  remaining: number;
+  oldestRemaining: string | null;
+}
+
+/**
+ * Refreshes whichever accounts have gone longest without a reading.
+ *
+ * This is what a scheduler calls. It takes a time budget rather than a fixed
+ * list because a serverless invocation is killed at a wall-clock limit — a job
+ * that tried to sweep 627 channels in one call would be cut off mid-flight
+ * every night and the last channels would never be read at all.
+ *
+ * Ordering by staleness makes the partial pass self-correcting: whoever is
+ * missed tonight is at the front of the queue tomorrow, so coverage evens out
+ * without anyone tracking a cursor.
+ */
+export async function refreshStale(
+  options: { budgetMs?: number; maxChannels?: number; videosPerChannel?: number } = {},
+): Promise<StaleRefreshReport> {
+  const budgetMs = options.budgetMs ?? 50_000;
+  const maxChannels = options.maxChannels ?? 200;
+  const startedAt = Date.now();
+
+  const report: StaleRefreshReport = {
+    discovered: 0,
+    ingested: 0,
+    skipped: [],
+    quotaUnitsSpent: 0,
+    stoppedEarly: null,
+    remaining: 0,
+    oldestRemaining: null,
+  };
+
+  // One snapshot per account per day, so anything already read today would be
+  // deduplicated on write — spending quota to learn nothing.
+  const today = new Date().toISOString().slice(0, 10);
+  const isDue = (account: { lastSyncedAt: string; unavailableSince?: string | null }) =>
+    !account.unavailableSince && account.lastSyncedAt.slice(0, 10) !== today;
+
+  const due = [...ingestedRecords().accounts]
+    .filter(isDue)
+    .sort((a, b) => a.lastSyncedAt.localeCompare(b.lastSyncedAt));
+
+  const batch = due.slice(0, maxChannels);
+  report.discovered = batch.length;
+
+  try {
+    for (let i = 0; i < batch.length; i += 25) {
+      if (Date.now() - startedAt > budgetMs) {
+        report.stoppedEarly = `Time budget of ${budgetMs}ms reached.`;
+        break;
+      }
+      await readAndStore(
+        batch.slice(i, i + 25).map((account) => account.platformAccountId),
+        options.videosPerChannel ?? 50,
+        report,
+      );
+    }
+  } catch (error) {
+    if (error instanceof ConnectorUnavailable) report.stoppedEarly = error.message;
+    else throw error;
+  }
+
+  const stillDue = [...ingestedRecords().accounts]
+    .filter(isDue)
+    .sort((a, b) => a.lastSyncedAt.localeCompare(b.lastSyncedAt));
+
+  report.remaining = stillDue.length;
+  report.oldestRemaining = stillDue[0]?.lastSyncedAt ?? null;
+  return report;
+}
+
+/** Records that the platform has stopped answering for these channels. */
+function markUnavailable(channelIds: string[]): void {
+  const data = ingestedRecords();
+  const gone = new Set(channelIds);
+  const at = new Date().toISOString();
+  let changed = false;
+
+  for (const account of data.accounts) {
+    if (gone.has(account.platformAccountId) && !account.unavailableSince) {
+      account.unavailableSince = at;
+      changed = true;
+    }
+  }
+  if (changed) touchIngested();
+}
+
+export interface HistoryBackfillReport {
+  channelsRead: number;
+  pointsStored: number;
+  quotaUnitsSpent: number;
+  remaining: number;
+  stoppedEarly: string | null;
+}
+
+/**
+ * Reads further back through a creator's uploads and stores the dates and view
+ * counts as a lean series.
+ *
+ * The growth calculation needs a window long enough for "older" and "newer" to
+ * mean different periods of a channel's life. Reading only the fifty most
+ * recent uploads gives a daily poster about seven weeks, which is why a third
+ * of the database had no growth reading at all.
+ *
+ * Only the publish date and view count are kept. Titles, captions, thumbnails
+ * and hashtags for two hundred uploads across six hundred channels would cost
+ * roughly 110MB against 14MB for these, and no screen renders them.
+ */
+export async function backfillViewHistory(
+  options: { offset?: number; limit?: number; uploads?: number; budgetMs?: number } = {},
+): Promise<HistoryBackfillReport> {
+  const uploads = options.uploads ?? 200;
+  const budgetMs = options.budgetMs ?? 600_000;
+  const startedAt = Date.now();
+
+  const report: HistoryBackfillReport = {
+    channelsRead: 0,
+    pointsStored: 0,
+    quotaUnitsSpent: 0,
+    remaining: 0,
+    stoppedEarly: null,
+  };
+
+  const data = readRecords();
+  const already = new Set(data.viewHistory.map((point) => point.influencerId));
+  const due = [...data.accounts]
+    .filter((account) => !account.unavailableSince && !already.has(account.influencerId))
+    .sort((a, b) => a.id.localeCompare(b.id));
+
+  const batch = due.slice(options.offset ?? 0, (options.offset ?? 0) + (options.limit ?? 50));
+
+  try {
+    for (const account of batch) {
+      if (Date.now() - startedAt > budgetMs) {
+        report.stoppedEarly = `Time budget of ${budgetMs}ms reached.`;
+        break;
+      }
+
+      const channels = await fetchChannels([account.platformAccountId]);
+      report.quotaUnitsSpent += 1;
+      const playlist = channels[0]?.uploadsPlaylistId;
+      if (!playlist) continue;
+
+      const videos = await fetchRecentVideos(playlist, uploads);
+      // One playlistItems page and one videos call per fifty uploads.
+      report.quotaUnitsSpent += 2 * Math.max(1, Math.ceil(videos.length / 50));
+
+      upsertViewHistory(
+        account.influencerId,
+        videos.map((video) => ({
+          influencerId: account.influencerId,
+          accountId: account.id,
+          videoId: video.videoId,
+          publishedAt: video.publishedAt,
+          views: video.views,
+        })),
+      );
+
+      report.channelsRead += 1;
+      report.pointsStored += videos.length;
+    }
+  } catch (error) {
+    if (error instanceof ConnectorUnavailable) report.stoppedEarly = error.message;
+    else throw error;
+  }
+
+  const done = new Set(readRecords().viewHistory.map((point) => point.influencerId));
+  report.remaining = readRecords().accounts.filter(
+    (account) => !account.unavailableSince && !done.has(account.influencerId),
+  ).length;
+
+  return report;
+}
+
 function counters(report: HarvestReport) {
   return {
     discovered: report.discovered,
@@ -250,6 +434,18 @@ async function readAndStore(
 ): Promise<void> {
   const channels = await fetchChannels(channelIds);
   report.quotaUnitsSpent += Math.ceil(channelIds.length / 50);
+
+  // Ids the platform no longer answers for. Recorded rather than silently
+  // dropped: otherwise a deleted channel is asked for again every night, and
+  // its last-known figures go on being served as though they were current.
+  const returned = new Set(channels.map((channel) => channel.channelId));
+  const vanished = channelIds.filter((id) => !returned.has(id));
+  if (vanished.length > 0) {
+    markUnavailable(vanished);
+    for (const id of vanished) {
+      report.skipped.push({ channelId: id, reason: "No longer returned by the platform." });
+    }
+  }
 
   const collectedAt = new Date().toISOString();
   const records: IngestedRecord[] = [];

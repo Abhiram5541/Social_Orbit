@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ConnectorUnavailable, fetchChannel, parseChannelInput, parseDuration } from "./youtube-connector";
+import {
+  ConnectorUnavailable,
+  fetchChannel,
+  fetchRecentVideos,
+  parseChannelInput,
+  parseDuration,
+} from "./youtube-connector";
 
 /**
  * The parsers and the failure mapping are what break silently when YouTube
@@ -49,6 +55,52 @@ describe("parseDuration", () => {
     // average length calculation down as though the video had no duration.
     expect(parseDuration("P0D")).toBeNull();
     expect(parseDuration("nonsense")).toBeNull();
+  });
+});
+
+describe("fetchRecentVideos resilience", () => {
+  it("skips a video it cannot parse instead of failing the whole page", async () => {
+    // The failure this replaced: one oddly-shaped item failed the page, which
+    // failed the channel, which stopped a two-hundred-channel refresh sweep.
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubEnv("YOUTUBE_API_KEY", "test-key");
+
+    const good = (id: string) => ({
+      id,
+      snippet: { title: `video ${id}`, publishedAt: "2026-01-01T00:00:00Z" },
+      statistics: { viewCount: "100" },
+      contentDetails: { duration: "PT5M" },
+    });
+
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ items: [{ contentDetails: { videoId: "a" } }] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        // A live broadcast with no duration, and something structurally wrong.
+        json: async () => ({
+          items: [
+            good("a"),
+            { id: "live", snippet: { title: "Live", publishedAt: "2026-01-02T00:00:00Z" }, statistics: {}, contentDetails: {} },
+            { id: "broken" },
+            good("b"),
+          ],
+        }),
+      });
+
+    const videos = await fetchRecentVideos("UUxxx", 10);
+
+    expect(videos.map((video) => video.videoId)).toEqual(["a", "live", "b"]);
+    // The live broadcast is kept, with no duration rather than a fabricated one.
+    expect(videos.find((video) => video.videoId === "live")?.durationSeconds).toBeNull();
+
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   });
 });
 

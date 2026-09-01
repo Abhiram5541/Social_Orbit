@@ -6,6 +6,9 @@ import { Badge, type BadgeTone } from "@/components/ui/badge";
 
 const STATE: Record<ConnectorState, { label: string; tone: BadgeTone }> = {
   live: { label: "Live", tone: "positive" },
+  // Caution, not neutral: someone has supplied credentials and is entitled to
+  // know they bought nothing yet.
+  not_implemented: { label: "No adapter yet", tone: "caution" },
   degraded: { label: "Degraded", tone: "caution" },
   credentials_missing: { label: "Credentials missing", tone: "caution" },
   not_configured: { label: "Not configured", tone: "neutral" },

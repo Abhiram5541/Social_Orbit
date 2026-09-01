@@ -78,7 +78,12 @@ export function databaseStats(now: Date = new Date()): DatabaseStats {
 
 /* --- Connectors --------------------------------------------------------- */
 
-export type ConnectorState = "live" | "credentials_missing" | "degraded" | "not_configured";
+export type ConnectorState =
+  | "live"
+  | "credentials_missing"
+  | "degraded"
+  | "not_implemented"
+  | "not_configured";
 
 export interface ConnectorStatus {
   platform: Platform;
@@ -97,11 +102,25 @@ const CONNECTOR_REQUIREMENTS: Record<Platform, string[]> = {
   tiktok: ["TIKTOK_CLIENT_KEY", "TIKTOK_CLIENT_SECRET"],
 };
 
+/**
+ * Platforms with an adapter that can actually read from them.
+ *
+ * Credentials being present is not the same as the platform being reachable.
+ * Meta app keys make the Instagram *environment* configured while there is
+ * still no adapter to call, and reporting that as "Live" would be precisely the
+ * dashboard-that-flatters-itself this function exists to avoid.
+ */
+const IMPLEMENTED: Record<Platform, boolean> = {
+  youtube: true,
+  instagram: false,
+  tiktok: false,
+};
+
 const CONNECTOR_NOTES: Record<Platform, string> = {
   youtube:
     "Channel resolution, channel statistics, video listings and analytics for OAuth-connected channels.",
   instagram:
-    "Professional-account insights through the Instagram Graph API. Consumer accounts are not accessible and are never estimated.",
+    "Professional-account insights through the Instagram Graph API. Credentials are set, but no adapter is written yet — and the Meta app additionally needs `instagram_basic` and `instagram_manage_insights` through App Review before it can read anything. Instagram also publishes no discovery endpoint, so creators must be named rather than found.",
   tiktok: "Roadmap connector (DPR §29). No creators are indexed for this platform.",
 };
 
@@ -110,7 +129,7 @@ const CONNECTOR_NOTES: Record<Platform, string> = {
  * credentials is reported as such rather than shown "green" — a dashboard that
  * lies about its integrations is worse than no dashboard.
  */
-export function connectorStatuses(now: Date = new Date()): ConnectorStatus[] {
+export function connectorStatuses(): ConnectorStatus[] {
   const data = readRecords();
 
   return (Object.keys(CONNECTOR_REQUIREMENTS) as Platform[]).map((platform) => {
@@ -128,9 +147,13 @@ export function connectorStatuses(now: Date = new Date()): ConnectorStatus[] {
         ? "not_configured"
         : missing.length === requires.length
           ? "credentials_missing"
-          : missing.length > 0
-            ? "degraded"
-            : "live";
+          : // Credentials present but nothing to call them with. Said plainly,
+            // because "Live" here would promise data this platform cannot serve.
+            !IMPLEMENTED[platform]
+            ? "not_implemented"
+            : missing.length > 0
+              ? "degraded"
+              : "live";
 
     return {
       platform,
@@ -189,7 +212,7 @@ export interface ReviewItem {
 }
 
 /** Profiles where two sources disagreed — DPR UC-12. Never silently resolved. */
-export function conflictQueue(now: Date = new Date()): ReviewItem[] {
+export function conflictQueue(): ReviewItem[] {
   return readRecords()
     .influencers.filter((raw) => raw.conflictCount > 0)
     .map((raw) => ({

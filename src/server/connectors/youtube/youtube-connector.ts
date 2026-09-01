@@ -111,7 +111,9 @@ const VideoItem = z.object({
     likeCount: Counter,
     commentCount: Counter,
   }),
-  contentDetails: z.object({ duration: z.string() }),
+  // Optional because a live or scheduled broadcast genuinely has no duration
+  // yet. Absent is a fact about the video, not a malformed response.
+  contentDetails: z.object({ duration: z.string().optional() }).optional(),
 });
 
 const PlaylistPage = z.object({
@@ -120,7 +122,16 @@ const PlaylistPage = z.object({
 });
 
 const ChannelList = z.object({ items: z.array(ChannelItem).default([]) });
-const VideoList = z.object({ items: z.array(VideoItem).default([]) });
+/**
+ * Deliberately lenient: the page is accepted as a list of unknowns and each
+ * item is validated on its own.
+ *
+ * Validating the array as a whole meant one oddly-shaped video failed the page,
+ * which failed the channel, which stopped a two-hundred-channel sweep. A video
+ * the platform describes strangely is a fact about that video; the other
+ * nineteen thousand are still readable.
+ */
+const VideoList = z.object({ items: z.array(z.unknown()).default([]) });
 
 /** Google's error envelope. `reason` is what separates a bad key from a spent quota. */
 const GoogleError = z.object({
@@ -388,7 +399,10 @@ export async function fetchRecentVideos(
       { part: "snippet,statistics,contentDetails", id: ids.slice(i, i + 50).join(",") },
       VideoList,
     );
-    videos.push(...items.map(toVideo));
+    for (const item of items) {
+      const parsed = VideoItem.safeParse(item);
+      if (parsed.success) videos.push(toVideo(parsed.data));
+    }
   }
   return videos;
 }
@@ -405,7 +419,9 @@ function toVideo(video: z.infer<typeof VideoItem>): YouTubeVideo {
     views: video.statistics.viewCount,
     likes: video.statistics.likeCount,
     comments: video.statistics.commentCount,
-    durationSeconds: parseDuration(video.contentDetails.duration),
+    durationSeconds: video.contentDetails?.duration
+      ? parseDuration(video.contentDetails.duration)
+      : null,
     language: video.snippet.defaultAudioLanguage ?? null,
     categoryId: video.snippet.categoryId ?? null,
   };

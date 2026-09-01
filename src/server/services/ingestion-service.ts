@@ -1,6 +1,5 @@
 import type { Category } from "@/lib/contracts/common";
 import {
-  fetchRecentVideos,
   observeChannel,
   type YouTubeChannel,
   type YouTubeVideo,
