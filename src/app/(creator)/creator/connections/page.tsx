@@ -6,7 +6,8 @@ import { requireOwnProfile } from "@/server/auth/creator";
 import { connectorStatuses } from "@/server/repositories/ops-repository";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, LinkButton } from "@/components/ui/button";
+import { DisconnectButton } from "@/components/creator/disconnect-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Notice } from "@/components/ui/states";
 import { DataRow } from "@/components/intelligence/stat";
@@ -26,9 +27,14 @@ const SCOPES: Record<Platform, string[]> = {
   tiktok: [],
 };
 
-export default async function ConnectionsPage() {
+export default async function ConnectionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ connection?: string; detail?: string }>;
+}) {
   const { profile } = await requireOwnProfile("/creator/connections");
   const connectors = connectorStatuses();
+  const outcome = await searchParams;
 
   const connectorFor = (platform: Platform) =>
     connectors.find((connector) => connector.platform === platform);
@@ -40,6 +46,23 @@ export default async function ConnectionsPage() {
         description="Connecting an account is how you become SocialOrbit Verified and how first-party analytics become available."
       />
       <PageBody className="space-y-4">
+        {outcome.connection === "connected" && (
+          <Notice tone="positive" icon={ShieldCheck} title="Account connected">
+            {outcome.detail ? `${outcome.detail} is now linked. ` : ""}
+            Your authorized analytics will appear once they have been read for the first time.
+          </Notice>
+        )}
+        {outcome.connection === "cancelled" && (
+          <Notice tone="info" title="Connection cancelled">
+            Nothing was stored. You can start again whenever you like.
+          </Notice>
+        )}
+        {outcome.connection === "failed" && (
+          <Notice tone="critical" icon={TriangleAlert} title="Connection could not be completed">
+            {outcome.detail ?? "Something went wrong. Nothing was stored."}
+          </Notice>
+        )}
+
         <Notice tone="info" icon={ShieldCheck} title="What connecting does and does not do">
           SocialOrbit requests the narrowest scopes that let it read your own statistics. Your
           access tokens are encrypted at rest and never sent to a browser. SocialOrbit cannot
@@ -119,14 +142,26 @@ export default async function ConnectionsPage() {
                   )}
 
                   <div className="flex flex-wrap gap-2 border-t border-line pt-3">
-                    <Button variant="primary" disabled={!available}>
-                      {account?.isConnected ? "Reconnect" : `Connect ${PLATFORM_LABEL[platform]}`}
-                    </Button>
-                    {account?.isConnected && (
-                      <Button variant="ghost" disabled={!available}>
-                        Disconnect
+                    {platform === "youtube" && available ? (
+                      // A plain link, not a fetch: this leaves the app for
+                      // Google's consent screen, and a redirect a browser
+                      // follows itself is the whole mechanism.
+                      <LinkButton href="/api/internal/connect/youtube/start" variant="primary">
+                        {account?.isConnected ? "Reconnect" : "Connect YouTube"}
+                      </LinkButton>
+                    ) : (
+                      <Button variant="primary" disabled>
+                        {account?.isConnected ? "Reconnect" : `Connect ${PLATFORM_LABEL[platform]}`}
                       </Button>
                     )}
+                    {account?.isConnected &&
+                      (platform === "youtube" ? (
+                        <DisconnectButton disabled={!available} />
+                      ) : (
+                        <Button variant="ghost" disabled>
+                          Disconnect
+                        </Button>
+                      ))}
                   </div>
                 </CardContent>
               </Card>

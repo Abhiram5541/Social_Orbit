@@ -40,7 +40,7 @@ export default async function CreatorAnalyticsPage() {
           benchmarks={profile.benchmarks}
         />
 
-        <ProfileTabs profile={profile} />
+        <ProfileTabs profile={profile} linkToProfiles={false} />
 
         <Card>
           <CardContent>

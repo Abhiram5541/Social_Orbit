@@ -34,7 +34,7 @@ export default async function CreatorProfilePage() {
           request and a reviewer will check the source.
         </Notice>
 
-        <ProfileHeader profile={profile} />
+        <ProfileHeader profile={profile} showClientActions={false} />
 
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
