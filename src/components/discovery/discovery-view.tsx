@@ -23,10 +23,12 @@ import {
 } from "@/lib/contracts/search";
 import type { InfluencerSummary } from "@/lib/contracts/influencer";
 import type { Paged } from "@/lib/contracts/common";
-import { formatCompact, formatRelativeTime, pluralise } from "@/lib/format";
+import { formatCompact, pluralise } from "@/lib/format";
 import { Button, LinkButton } from "@/components/ui/button";
 import { FilterChip } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Popover } from "@/components/ui/overlay";
+import { useMediaQuery } from "@/components/ui/use-media-query";
 import { SearchInput, Select } from "@/components/ui/field";
 import { Sheet } from "@/components/ui/dialog";
 import { EmptyState, ErrorState, Notice, TableSkeleton } from "@/components/ui/states";
@@ -152,24 +154,17 @@ export function DiscoveryView({
 
   const quota = data?.quota ?? initialQuota;
   const activeFilters = countActiveFilters(query);
+  // `lg`, matching the Tailwind breakpoint the rest of this view uses.
+  const wideEnoughForDropdown = useMediaQuery("(min-width: 1024px)");
   const chips = describeFilters(query);
 
   return (
     <div className="flex min-h-0 flex-1">
-      {/* Desktop filter rail */}
-      <aside className="hidden w-64 shrink-0 border-r border-line bg-surface xl:flex xl:flex-col">
-        <FilterPanel
-          draft={draft}
-          facets={data?.facets ?? []}
-          onChange={(next) => {
-            setDraft(next);
-            apply(next);
-          }}
-          onReset={() => apply({ sort: query.sort })}
-          className="sticky top-topbar max-h-[calc(100dvh-var(--spacing-topbar))]"
-        />
-      </aside>
-
+      {/* Below `lg` the filters open as a sheet: a dropdown holding nine filter
+          groups is unusable on a phone. Only one of the two is ever mounted —
+          hiding the other with a class would put a second copy of every
+          checkbox and label in the page. */}
+      {!wideEnoughForDropdown && (
       <Sheet
         open={filtersOpen}
         onClose={() => setFiltersOpen(false)}
@@ -209,6 +204,7 @@ export function DiscoveryView({
           />
         )}
       </Sheet>
+      )}
 
       <div className="min-w-0 flex-1">
         <div className="space-y-3 border-b border-line bg-surface px-4 py-3 sm:px-6">
@@ -234,19 +230,53 @@ export function DiscoveryView({
             <Button type="submit" variant="primary">
               Search
             </Button>
-            <Button
-              type="button"
-              onClick={() => setFiltersOpen(true)}
-              className="gap-1.5 xl:hidden"
-            >
-              <SlidersHorizontal className="size-4" aria-hidden />
-              Filters
-              {activeFilters > 0 && (
-                <span className="rounded bg-brand px-1 font-num text-[11px] text-white">
-                  {activeFilters}
-                </span>
-              )}
-            </Button>
+            {wideEnoughForDropdown ? (
+              <Popover
+                title="Filters"
+                className="w-[min(56rem,calc(100vw-1rem))]"
+                onOpenChange={setFiltersOpen}
+                trigger={(props) => (
+                  <Button type="button" {...props} className="gap-1.5">
+                    <SlidersHorizontal className="size-4" aria-hidden />
+                    Filters
+                    {activeFilters > 0 && (
+                      <span className="rounded bg-brand px-1 font-num text-[11px] text-white">
+                        {activeFilters}
+                      </span>
+                    )}
+                  </Button>
+                )}
+              >
+                {/* Mounted only while open, exactly as the sheet is. A panel of
+                    nine filter groups sitting in every discovery page's initial
+                    tree is hydration work nobody asked for, and it opened a
+                    window where an interaction could land before React had
+                    attached its handlers. */}
+                {filtersOpen && (
+                <FilterPanel
+                  draft={draft}
+                  facets={data?.facets ?? []}
+                  onChange={(next) => {
+                    setDraft(next);
+                    apply(next);
+                  }}
+                  onReset={() => apply({ sort: query.sort })}
+                  columns
+                  className="min-h-0"
+                />
+                )}
+              </Popover>
+            ) : (
+              <Button type="button" onClick={() => setFiltersOpen(true)} className="gap-1.5">
+                <SlidersHorizontal className="size-4" aria-hidden />
+                Filters
+                {activeFilters > 0 && (
+                  <span className="rounded bg-brand px-1 font-num text-[11px] text-white">
+                    {activeFilters}
+                  </span>
+                )}
+              </Button>
+            )}
             <label className="flex items-center gap-2 text-[13px] text-ink-muted">
               <span className="hidden sm:inline">Sort</span>
               <Select

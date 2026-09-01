@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { MessageSquare, Scale, Trash2, UserPlus } from "lucide-react";
 import type { ShortlistDetail as ShortlistDetailData } from "@/lib/contracts/campaign";
 import { PLATFORM_LABEL } from "@/lib/contracts/common";
-import { formatCompact, formatPercent, formatRelativeTime } from "@/lib/format";
+import { formatCompact, formatPercent } from "@/lib/format";
 import { Avatar } from "@/components/ui/avatar";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

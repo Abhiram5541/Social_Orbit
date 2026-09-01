@@ -169,3 +169,88 @@ export function MenuLabel({ children }: { children: React.ReactNode }) {
     </p>
   );
 }
+
+/* ---------------------------------------------------------------------------
+ * Popover — a panel of arbitrary content anchored to its trigger.
+ *
+ * `Menu` above is `role="menu"`, which promises menuitem children and the
+ * arrow-key model that goes with them. A panel of checkboxes is not a menu, and
+ * announcing it as one sends a screen-reader user looking for commands. This is
+ * the same platform popover, labelled as a dialog.
+ * ------------------------------------------------------------------------ */
+
+export function Popover({
+  trigger,
+  title,
+  children,
+  align = "start",
+  className,
+  onOpenChange,
+}: {
+  trigger: (props: { popoverTarget: string; "aria-haspopup": "dialog" }) => React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+  align?: "start" | "end";
+  className?: string;
+  /** Lets a caller mount heavy content only while the panel is open. */
+  onOpenChange?: (open: boolean) => void;
+}) {
+  const rawId = React.useId();
+  const id = `popover${rawId.replace(/:/g, "")}`;
+  const titleId = `${id}title`;
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  // Positioned against the trigger's viewport box: the top layer has no
+  // offset parent to lay out against.
+  const place = React.useCallback(() => {
+    const panel = ref.current;
+    if (!panel) return;
+    const trigger = document.querySelector<HTMLElement>(`[popovertarget="${id}"]`);
+    if (!trigger) return;
+
+    const box = trigger.getBoundingClientRect();
+    const width = panel.offsetWidth;
+    const left = align === "end" ? box.right - width : box.left;
+
+    panel.style.top = `${Math.round(box.bottom + 6)}px`;
+    panel.style.left = `${Math.round(Math.max(8, Math.min(left, window.innerWidth - width - 8)))}px`;
+    // Never taller than the space below the trigger; the content scrolls.
+    panel.style.maxHeight = `${Math.round(window.innerHeight - box.bottom - 24)}px`;
+  }, [align, id]);
+
+  React.useEffect(() => {
+    const onResize = () => {
+      if (ref.current?.matches(":popover-open")) place();
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [place]);
+
+  return (
+    <>
+      {trigger({ popoverTarget: id, "aria-haspopup": "dialog" })}
+      <div
+        ref={ref}
+        id={id}
+        popover="auto"
+        role="dialog"
+        aria-labelledby={titleId}
+        onToggle={(event) => {
+          const open = (event as unknown as { newState: string }).newState === "open";
+          if (open) place();
+          onOpenChange?.(open);
+        }}
+        className={cn(
+          "fixed m-0 flex flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-popover",
+          "[&:not(:popover-open)]:hidden",
+          className,
+        )}
+      >
+        <h2 id={titleId} className="sr-only">
+          {title}
+        </h2>
+        {children}
+      </div>
+    </>
+  );
+}

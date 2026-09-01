@@ -33,23 +33,36 @@ interface Finding {
 }
 
 const findings: Finding[] = [];
-const linkCache = new Map<string, number>();
+const linkCache = new Map<string, { status: number; to: string | null }>();
 
 function record(f: Finding) {
   findings.push(f);
 }
 
 /** Resolves a link once and caches the status, so a nav link is not fetched 50 times. */
-async function statusOf(page: Page, url: string): Promise<number> {
-  if (linkCache.has(url)) return linkCache.get(url)!;
+/**
+ * The immediate response to a link, not the end of its redirect chain.
+ *
+ * Following redirects hid a whole class of defect: a link to a route this role
+ * cannot reach answers 307 and lands on the dashboard, and reporting only the
+ * final 200 made that look healthy. What matters is whether clicking the link
+ * takes you where its text said it would.
+ */
+async function probeLink(page: Page, url: string): Promise<{ status: number; to: string | null }> {
+  const cached = linkCache.get(url);
+  if (cached) return cached;
+
+  let result: { status: number; to: string | null };
   try {
-    const response = await page.request.get(url, { maxRedirects: 5 });
-    linkCache.set(url, response.status());
-    return response.status();
+    const response = await page.request.get(url, { maxRedirects: 0 });
+    const location = response.headers()["location"] ?? null;
+    result = { status: response.status(), to: location };
   } catch {
-    linkCache.set(url, 0);
-    return 0;
+    result = { status: 0, to: null };
   }
+
+  linkCache.set(url, result);
+  return result;
 }
 
 test.describe.configure({ mode: "serial" });
@@ -190,15 +203,39 @@ test("audit every route", async ({ page, baseURL, request }) => {
         ),
     );
     for (const href of [...new Set(hrefs)]) {
-      const code = await statusOf(page, new URL(href, baseURL).toString());
-      if (code === 0 || code >= 400) {
+      const target = new URL(href, baseURL).toString();
+      const { status, to } = await probeLink(page, target);
+
+      if (status === 0 || status >= 400) {
         record({
           route: route.path,
           role: route.as,
           kind: "broken-link",
-          detail: `${href} → ${code === 0 ? "request failed" : code}`,
+          detail: `${href} → ${status === 0 ? "request failed" : status}`,
           severity: "high",
         });
+        continue;
+      }
+
+      if (status >= 300 && status < 400 && to) {
+        const destination = new URL(to, baseURL);
+        const landsOn = destination.pathname;
+
+        // A redirect off this origin is the point of the link, not a fault:
+        // the OAuth start route exists to hand the browser to Google.
+        const leavesTheApp = destination.origin !== new URL(baseURL!).origin;
+
+        if (!leavesTheApp && landsOn !== new URL(target).pathname) {
+          record({
+            route: route.path,
+            role: route.as,
+            kind: "broken-link",
+            detail:
+              `${href} → ${status} → ${landsOn}. This role cannot reach the linked page, ` +
+              `so the link goes somewhere other than its label promises.`,
+            severity: "high",
+          });
+        }
       }
     }
 

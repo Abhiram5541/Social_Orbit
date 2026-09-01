@@ -24,7 +24,7 @@ import {
   UserCircle,
   Users,
 } from "lucide-react";
-import type { Permission, Workspace } from "@/lib/contracts/auth";
+import type { Permission, Workspace, OrgKind } from "@/lib/contracts/auth";
 
 /* ---------------------------------------------------------------------------
  * Navigation is derived from permissions, not from roles. A nav item and the
@@ -61,13 +61,11 @@ const CLIENT_NAV: NavSection[] = [
         permission: "influencer:search",
         matchNested: true,
       },
-      {
-        href: "/influencers",
-        label: "Influencers",
-        icon: Users,
-        permission: "influencer:read",
-        matchNested: true,
-      },
+      // `/influencers` is deliberately absent. It is a shared route that sends
+      // each role to their own list, and for a client that is `/discovery` —
+      // the item directly above. Keeping both put a nav entry on every page
+      // that bounced through a redirect to land where the previous one already
+      // goes.
     ],
   },
   {
@@ -253,6 +251,17 @@ export const WORKSPACE_HOME: Record<Workspace, string> = {
 };
 
 /** Drop items the session cannot reach, then drop sections left empty. */
+/**
+ * Where a given viewer browses creators.
+ *
+ * Platform staff and clients reach the same profile pages but from different
+ * lists — `/discovery` is a client route and redirects staff away, so a link
+ * hard-coded to it silently bounces half the people who click it.
+ */
+export function discoveryHomeFor(orgKind: OrgKind): string {
+  return orgKind === "platform" ? "/admin/influencers" : "/discovery";
+}
+
 export function visibleNav(
   workspace: Workspace,
   can: (permission: Permission) => boolean,

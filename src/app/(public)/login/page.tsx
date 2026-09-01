@@ -7,7 +7,6 @@ import { WORKSPACE_HOME } from "@/lib/navigation";
 import { getSession } from "@/server/auth/session";
 import { Wordmark } from "@/components/shell/logo";
 import { LoginForm } from "./login-form";
-import { DevCredentials } from "./dev-credentials";
 
 export const metadata: Metadata = { title: "Sign in" };
 
@@ -73,7 +72,17 @@ export default async function LoginPage({
             </p>
           </div>
 
-          <LoginForm next={next} />
+          {/* The password is read here, on the server, and only passed down
+              outside production — so the development accounts never reach a
+              production bundle at all. */}
+          <LoginForm
+            next={next}
+            devPassword={
+              process.env.NODE_ENV === "production"
+                ? undefined
+                : (process.env.DEV_SEED_PASSWORD ?? "SocialOrbit-Dev-2026")
+            }
+          />
 
           <p className="text-[13px] text-ink-muted">
             New to SocialOrbit?{" "}
@@ -82,7 +91,6 @@ export default async function LoginPage({
             </Link>
           </p>
 
-          <DevCredentials />
         </div>
       </section>
     </div>

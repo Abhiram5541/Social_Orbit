@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Check, Copy, KeyRound, RotateCw, Trash2 } from "lucide-react";
-import { formatDateTime, formatRelativeTime } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { API_SCOPES, type ApiKeyView, type ApiScope } from "@/lib/contracts/api-key";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

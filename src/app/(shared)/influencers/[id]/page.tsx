@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CATEGORY_LABEL } from "@/lib/contracts/common";
+import { discoveryHomeFor } from "@/lib/navigation";
 import { requirePagePermission } from "@/server/auth/rbac";
 import { toProfile } from "@/server/repositories/influencer-repository";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
@@ -33,6 +34,8 @@ export default async function InfluencerProfilePage({
   const profile = toProfile(id);
   if (!profile) notFound();
 
+  const discoveryHome = discoveryHomeFor(user.orgKind);
+
   // Authorized audience analytics are first-party creator data. Clients see the
   // public profile; the creator and SocialOrbit reviewers see the audience
   // breakdown (DPR §22). The route handler applies the identical rule.
@@ -57,9 +60,20 @@ export default async function InfluencerProfilePage({
   return (
     <>
       <PageHeader
+        // This page is shared, so the crumbs cannot be: `/discovery` is a
+        // client route that redirects platform staff straight back to /admin,
+        // and a breadcrumb that bounces the person who clicks it is worse than
+        // no breadcrumb at all.
         breadcrumbs={[
-          { label: "Discovery", href: "/discovery" },
-          { label: CATEGORY_LABEL[profile.categories[0]], href: `/discovery?category=${profile.categories[0]}` },
+          { label: "Discovery", href: discoveryHome },
+          ...(profile.categories[0]
+            ? [
+                {
+                  label: CATEGORY_LABEL[profile.categories[0]],
+                  href: `${discoveryHome}?category=${profile.categories[0]}`,
+                },
+              ]
+            : []),
           { label: profile.displayName },
         ]}
         className="py-2.5"

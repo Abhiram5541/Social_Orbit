@@ -46,24 +46,23 @@ test.describe("discovery", () => {
   });
 
   test("the filter surface writes into the URL", async ({ page }) => {
-    // Which surface is on screen follows from the viewport, not from probing
-    // visibility: `isVisible()` is a one-shot check that can run before
-    // hydration and silently send the test down the wrong branch.
+    // Filters sit behind a control at every width: a dropdown on a wide screen,
+    // a sheet on a narrow one. Which one follows from the viewport rather than
+    // from probing visibility — `isVisible()` is a one-shot check that can run
+    // before hydration and silently send the test down the wrong branch.
     const width = page.viewportSize()?.width ?? 1440;
-    const usesSheet = width < 1280;
-
+    const usesSheet = width < 1024;
     const showResults = page.getByRole("button", { name: "Show results" });
-    if (usesSheet) {
-      // Below xl the controls only exist while the sheet is open.
-      await page.getByRole("button", { name: /^Filters/ }).click();
-      await expect(showResults).toBeVisible();
-    }
 
-    // Name the control rather than taking "the first visible checkbox": both
-    // filter surfaces render the same names and one of them is display:none,
-    // so the assertion has to say which filter it means.
-    const surface = usesSheet ? page.getByRole("dialog", { name: "Filters" }) : page;
+    await page.getByRole("button", { name: /^Filters/ }).click();
+
+    // Scope to the open surface and name the control: only one filter surface
+    // is ever mounted, but naming it keeps the assertion about a specific
+    // filter rather than "whichever checkbox came first".
+    const surface = page.getByRole("dialog", { name: "Filters" });
     await surface.getByLabel("YouTube").check();
+
+    // The sheet defers until "Show results"; the dropdown applies as you go.
     if (usesSheet) await showResults.click();
 
     await expect(page).toHaveURL(/platform=youtube/);
@@ -78,6 +77,12 @@ test.describe("discovery", () => {
 
   test("sorting by followers actually orders the column", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === "mobile", "the table view only exists above lg");
+
+    // Wait for results before touching the control. A `<select>` driven before
+    // hydration has its value reset by React's first render, so the selection
+    // is silently discarded — the same reason the sibling tests in this file
+    // wait for a row first.
+    await expect(resultLinks(page).first()).toBeVisible();
     await page.getByLabel("Sort results").selectOption("followers_desc");
     await page.waitForURL(/sort=followers_desc/);
 

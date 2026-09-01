@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ListChecks, Plus } from "lucide-react";
 import type { Shortlist } from "@/lib/contracts/campaign";
 import type { InfluencerSummary } from "@/lib/contracts/influencer";
-import { formatRelativeTime, pluralise } from "@/lib/format";
+import { pluralise } from "@/lib/format";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

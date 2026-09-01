@@ -97,7 +97,7 @@ export default async function AnalyticsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Health score weights</CardTitle>
-            <span className="font-num text-[12px] text-ink-muted">health-1.0.0</span>
+            <span className="font-num text-[12px] text-ink-muted">health-1.1.0</span>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">

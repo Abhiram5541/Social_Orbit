@@ -39,14 +39,13 @@ for (const surface of SURFACES) {
       const before = await totalResults(page);
 
       const width = page.viewportSize()?.width ?? 1440;
-      const usesSheet = width < 1280;
+      const usesSheet = width < 1024;
       const showResults = page.getByRole("button", { name: "Show results" });
-      if (usesSheet) {
-        await page.getByRole("button", { name: /^Filters/ }).click();
-        await expect(showResults).toBeVisible();
-      }
 
-      const scope = usesSheet ? page.getByRole("dialog", { name: "Filters" }) : page;
+      // A dropdown on a wide screen, a sheet on a narrow one — either way the
+      // surface has to be opened before a filter can be reached.
+      await page.getByRole("button", { name: /^Filters/ }).click();
+      const scope = page.getByRole("dialog", { name: "Filters" });
       // An audience-size band, not a platform: the database is harvested from
       // YouTube, so every creator matches a YouTube filter and it narrows
       // nothing. A filter that cannot exclude anything cannot test narrowing.

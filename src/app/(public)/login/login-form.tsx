@@ -7,10 +7,22 @@ import { LoginInput } from "@/lib/contracts/auth";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { Notice } from "@/components/ui/states";
+import { DevCredentials } from "./dev-credentials";
 
-export function LoginForm({ next }: { next?: string }) {
+export function LoginForm({
+  next,
+  devPassword,
+}: {
+  next?: string;
+  /** Present only outside production — see dev-credentials.tsx. */
+  devPassword?: string;
+}) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
+  // Controlled so the development account picker can fill them. React would
+  // otherwise not know a value had changed underneath it.
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
   const [formError, setFormError] = React.useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
 
@@ -19,11 +31,7 @@ export function LoginForm({ next }: { next?: string }) {
     setFormError(null);
     setFieldErrors({});
 
-    const data = new FormData(event.currentTarget);
-    const parsed = LoginInput.safeParse({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    const parsed = LoginInput.safeParse({ email, password });
 
     // Validate client-side for immediate feedback; the server validates the
     // same schema again, because this check is a convenience, not a control.
@@ -73,6 +81,8 @@ export function LoginForm({ next }: { next?: string }) {
           type="email"
           autoComplete="username"
           placeholder="you@company.com"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
           autoFocus
           required
         />
@@ -91,12 +101,32 @@ export function LoginForm({ next }: { next?: string }) {
           </Link>
         }
       >
-        <Input name="password" type="password" autoComplete="current-password" required />
+        <Input
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          required
+        />
       </Field>
 
       <Button type="submit" variant="primary" size="lg" loading={pending} className="w-full">
         Sign in
       </Button>
+
+      {devPassword && (
+        <DevCredentials
+          password={devPassword}
+          selected={email || null}
+          onSelect={(nextEmail, nextPassword) => {
+            setEmail(nextEmail);
+            setPassword(nextPassword);
+            setFormError(null);
+            setFieldErrors({});
+          }}
+        />
+      )}
     </form>
   );
 }

@@ -57,12 +57,18 @@ export function FilterPanel({
   facets,
   onChange,
   onReset,
+  columns,
   className,
 }: {
   draft: Draft;
   facets: SearchFacet[];
   onChange: (next: Draft) => void;
   onReset: () => void;
+  /**
+   * Lay the groups out in columns rather than one tall stack. The dropdown is
+   * wide and short; the sheet it replaces on narrow screens is the opposite.
+   */
+  columns?: boolean;
   className?: string;
 }) {
   const facetCount = React.useCallback(
@@ -94,7 +100,16 @@ export function FilterPanel({
         </Button>
       </div>
 
-      <div className="min-h-0 flex-1 divide-y divide-line overflow-y-auto">
+      <div
+        className={cn(
+          "min-h-0 flex-1 overflow-y-auto",
+          columns
+            ? // `divide-*` draws borders between siblings in source order, which
+              // in a multi-column grid lands them in the wrong places entirely.
+              "grid grid-cols-2 gap-x-6 px-2 py-1 xl:grid-cols-3 [&>*]:border-b [&>*]:border-line"
+            : "divide-y divide-line",
+        )}
+      >
         <Group title="Platform" defaultOpen>
           {Platform.options
             .filter((platform) => platform !== "tiktok")

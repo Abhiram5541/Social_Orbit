@@ -10,7 +10,10 @@ test.describe("influencer profile", () => {
 
   test("shows the score, its formula version and its confidence separately", async ({ page }) => {
     await expect(page.getByRole("heading", { name: "SocialOrbit Health" })).toBeVisible();
-    await expect(page.getByText("health-1.0.0").first()).toBeVisible();
+    // Any published formula version, not a fixed one: the guarantee is that a
+    // score says which formula produced it, and pinning the literal makes every
+    // legitimate recalibration look like a regression.
+    await expect(page.getByText(/health-\d+\.\d+\.\d+/).first()).toBeVisible();
     // Confidence must be its own readout, not folded into the score.
     await expect(page.getByText("Data confidence")).toBeVisible();
   });

@@ -74,7 +74,7 @@ export default function LandingPage() {
             <header className="flex items-center justify-between gap-3 border-b border-instrument-line px-4 py-2.5">
               <span className="label-caps text-instrument-muted">SocialOrbit Health</span>
               <span className="font-num text-[11px] tracking-[0.04em] text-instrument-muted">
-                health-1.0.0
+                health-1.1.0
               </span>
             </header>
 

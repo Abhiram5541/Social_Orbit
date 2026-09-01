@@ -80,7 +80,18 @@ export function CostEfficiencyPanel({ profile }: { profile: InfluencerProfile })
   );
 }
 
-export function LookalikePanel({ profile }: { profile: InfluencerProfile }) {
+export function LookalikePanel({
+  profile,
+  linkToProfiles = true,
+}: {
+  profile: InfluencerProfile;
+  /**
+   * False in the creator portal. A creator holds no permission to open another
+   * creator's profile, so the link redirected them back to their own portal —
+   * the comparison is still worth showing, the link is not.
+   */
+  linkToProfiles?: boolean;
+}) {
   return (
     <Card>
       <CardHeader>
@@ -102,12 +113,18 @@ export function LookalikePanel({ profile }: { profile: InfluencerProfile }) {
               <li key={match.id} className="flex items-center gap-3 py-2 first:pt-0 last:pb-0">
                 <Avatar name={match.displayName} src={match.avatarUrl} size="sm" />
                 <div className="min-w-0 flex-1">
-                  <Link
-                    href={`/influencers/${match.id}`}
-                    className="block truncate text-[13px] font-medium text-ink hover:text-brand-ink"
-                  >
-                    {match.displayName}
-                  </Link>
+                  {linkToProfiles ? (
+                    <Link
+                      href={`/influencers/${match.id}`}
+                      className="block truncate text-[13px] font-medium text-ink hover:text-brand-ink"
+                    >
+                      {match.displayName}
+                    </Link>
+                  ) : (
+                    <span className="block truncate text-[13px] font-medium text-ink">
+                      {match.displayName}
+                    </span>
+                  )}
                   <p className="truncate text-[11px] text-ink-muted">
                     {match.reasons.join(" · ")}
                   </p>
