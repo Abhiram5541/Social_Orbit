@@ -1,7 +1,17 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { shared } from "./process-store";
-import type { RawAccount, RawAiOutput, RawContent, RawInfluencer, RawSnapshot } from "./records";
+import type {
+  RawAccount,
+  RawAiOutput,
+  RawAudience,
+  RawAudienceSignals,
+  RawContent,
+  RawInfluencer,
+  RawOAuthGrant,
+  RawSnapshot,
+  RawViewPoint,
+} from "./records";
 
 /* ---------------------------------------------------------------------------
  * Records written by a real connector.
@@ -26,13 +36,32 @@ export interface IngestedRecords {
   content: RawContent[];
   /** Model classifications, kept apart from measurements by design (DPR §7). */
   ai: RawAiOutput[];
+  /** Lean upload history — publish date and views only. */
+  viewHistory: RawViewPoint[];
+  /** OAuth grants, tokens sealed. Never leaves the server (CLAUDE.md §10). */
+  grants: RawOAuthGrant[];
+  /** Audience-quality readings. Only reachable with authorized access. */
+  signals: RawAudienceSignals[];
+  /** Demographic breakdowns. Only reachable with authorized access. */
+  audience: RawAudience[];
   /** Bumped on every write. Read-side caches derived from the whole database
    *  compare it to know when their basis has changed. */
   revision: number;
 }
 
 function empty(): IngestedRecords {
-  return { influencers: [], accounts: [], snapshots: [], content: [], ai: [], revision: 0 };
+  return {
+    influencers: [],
+    accounts: [],
+    snapshots: [],
+    content: [],
+    ai: [],
+    viewHistory: [],
+    grants: [],
+    signals: [],
+    audience: [],
+    revision: 0,
+  };
 }
 
 function load(): IngestedRecords {
@@ -47,6 +76,10 @@ function load(): IngestedRecords {
       snapshots: records.snapshots ?? [],
       content: records.content ?? [],
       ai: records.ai ?? [],
+      viewHistory: records.viewHistory ?? [],
+      grants: records.grants ?? [],
+      signals: records.signals ?? [],
+      audience: records.audience ?? [],
       revision: 0,
     };
   } catch (error) {
@@ -78,8 +111,34 @@ function persist(records: IngestedRecords): void {
   }
 }
 
+/**
+ * The one place the store is reached, and the one place its shape is repaired.
+ *
+ * The object lives on `globalThis` and outlives a hot reload, so code can be
+ * handed a store built by an older revision of this file — one with no `ai`
+ * array, or no `grants`, or no `viewHistory`. Guarding each reader and writer
+ * separately failed three times in a row: whichever call site was forgotten
+ * threw on `undefined.filter`.
+ *
+ * Repairing on access covers every consumer at once and costs a few property
+ * checks. The driver is the right layer for it: the shape of what is stored
+ * always lags the shape of the code that reads it.
+ */
 function store(): IngestedRecords {
-  return shared<IngestedRecords>("ingested", load);
+  const current = shared<IngestedRecords>("ingested", load);
+
+  current.influencers ??= [];
+  current.accounts ??= [];
+  current.snapshots ??= [];
+  current.content ??= [];
+  current.ai ??= [];
+  current.viewHistory ??= [];
+  current.grants ??= [];
+  current.signals ??= [];
+  current.audience ??= [];
+  current.revision ??= 0;
+
+  return current;
 }
 
 export function ingestedRecords(): IngestedRecords {
@@ -162,6 +221,127 @@ export function upsertAiOutputs(outputs: RawAiOutput[]): void {
   persist(current);
 }
 
+/**
+ * Records a creator's OAuth grant, replacing any earlier one for that account.
+ *
+ * A reconnection supersedes the previous grant entirely: the old refresh token
+ * is dead the moment the creator consents again, and keeping it around is a
+ * live credential nobody can use and everybody could leak.
+ */
+export function upsertGrant(grant: RawOAuthGrant): void {
+  const current = store();
+  current.grants = [
+    ...current.grants.filter((item) => item.accountId !== grant.accountId),
+    grant,
+  ];
+  current.revision += 1;
+  persist(current);
+}
+
+export function removeGrant(accountId: string): void {
+  const current = store();
+  current.grants = current.grants.filter((item) => item.accountId !== accountId);
+  current.revision += 1;
+  persist(current);
+}
+
+/**
+ * Persists an in-place edit to the stored records and invalidates read caches.
+ *
+ * For changes made by mutating a record the store already holds, where building
+ * a whole replacement batch would be ceremony around a single field.
+ */
+/**
+ * Replaces one creator's stored upload history.
+ *
+ * Replaced rather than merged: a deeper read is a superset of a shallower one,
+ * and merging would leave duplicates of every video read twice.
+ */
+export function upsertViewHistory(influencerId: string, points: RawViewPoint[]): void {
+  const current = store();
+  current.viewHistory = [
+    ...current.viewHistory.filter((point) => point.influencerId !== influencerId),
+    ...points,
+  ];
+  current.revision += 1;
+  persist(current);
+}
+
+export function touchIngested(): void {
+  const current = store();
+  current.revision += 1;
+  persist(current);
+}
+
+/**
+ * Writes snapshots directly, replacing any reading already held for the same
+ * account and day.
+ *
+ * `upsertIngested` carries exactly one snapshot per creator because an ingest
+ * observes one moment. Backfilling a series needs to write many at once.
+ */
+export function upsertSnapshots(points: RawSnapshot[]): void {
+  if (points.length === 0) return;
+  const current = store();
+  const keys = new Set(points.map((point) => `${point.accountId}@${point.date}`));
+  current.snapshots = [
+    ...current.snapshots.filter((point) => !keys.has(`${point.accountId}@${point.date}`)),
+    ...points,
+  ];
+  current.revision += 1;
+  persist(current);
+}
+
+/**
+ * Replaces one creator's audience-quality readings and demographic breakdown.
+ *
+ * Both are authorized-access facts, so both arrive together from the same
+ * grant and are stored the same way. Passing null clears the reading rather
+ * than leaving a stale one behind a revoked consent.
+ */
+export function upsertAudienceData(
+  influencerId: string,
+  signals: RawAudienceSignals | null,
+  audience: RawAudience | null,
+): void {
+  const current = store();
+  current.signals = [
+    ...current.signals.filter((item) => item.influencerId !== influencerId),
+    ...(signals ? [signals] : []),
+  ];
+  current.audience = [
+    ...current.audience.filter((item) => item.influencerId !== influencerId),
+    ...(audience ? [audience] : []),
+  ];
+  current.revision += 1;
+  persist(current);
+}
+
+/** Removes every record belonging to the given creators, across all tables. */
+export function removeInfluencers(ids: string[]): number {
+  if (ids.length === 0) return 0;
+  const current = store();
+  const set = new Set(ids);
+  const before = current.influencers.length;
+  const accountIds = new Set(
+    current.accounts.filter((item) => set.has(item.influencerId)).map((item) => item.id),
+  );
+
+  current.influencers = current.influencers.filter((item) => !set.has(item.id));
+  current.accounts = current.accounts.filter((item) => !set.has(item.influencerId));
+  current.content = current.content.filter((item) => !set.has(item.influencerId));
+  current.ai = current.ai.filter((item) => !set.has(item.influencerId));
+  current.viewHistory = current.viewHistory.filter((item) => !set.has(item.influencerId));
+  current.signals = current.signals.filter((item) => !set.has(item.influencerId));
+  current.audience = current.audience.filter((item) => !set.has(item.influencerId));
+  current.grants = current.grants.filter((item) => !set.has(item.influencerId));
+  current.snapshots = current.snapshots.filter((point) => !accountIds.has(point.accountId));
+
+  current.revision += 1;
+  persist(current);
+  return before - current.influencers.length;
+}
+
 /** Test seam, and the operator's "start over". */
 export function clearIngested(): void {
   const current = store();
@@ -170,6 +350,10 @@ export function clearIngested(): void {
   current.snapshots = [];
   current.content = [];
   current.ai = [];
+  current.viewHistory = [];
+  current.grants = [];
+  current.signals = [];
+  current.audience = [];
   current.revision += 1;
   persist(current);
 }

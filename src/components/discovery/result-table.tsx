@@ -12,7 +12,7 @@ import {
 } from "@/lib/contracts/common";
 import type { InfluencerSummary } from "@/lib/contracts/influencer";
 import type { SortKey } from "@/lib/contracts/search";
-import { formatCompact, formatPercent, formatRelativeTime } from "@/lib/format";
+import { formatCompact, formatPercent } from "@/lib/format";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -256,6 +256,14 @@ function CreatorCell({ item }: { item: InfluencerSummary }) {
         >
           {item.displayName}
         </Link>
+        {item.isDemo && (
+          <span
+            className="mt-0.5 inline-block rounded border border-caution-line bg-caution-soft px-1 py-px text-[10px] font-medium uppercase tracking-wide text-caution"
+            title="Demonstration record — figures were chosen, not measured."
+          >
+            Demo
+          </span>
+        )}
         <p className="truncate text-[12px] text-ink-muted">
           <span className="font-num">@{item.primaryHandle}</span>
           <span aria-hidden> · </span>

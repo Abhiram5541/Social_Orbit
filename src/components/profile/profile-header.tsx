@@ -33,7 +33,19 @@ const VERIFICATION: Record<VerificationStatus, { label: string; tone: BadgeTone;
   },
 };
 
-export function ProfileHeader({ profile }: { profile: InfluencerProfile }) {
+export function ProfileHeader({
+  profile,
+  showClientActions = true,
+}: {
+  profile: InfluencerProfile;
+  /**
+   * Shortlisting, comparing and campaign hand-off belong to a client
+   * workspace. A creator looking at their own profile has no shortlists, and
+   * the buttons redirected them back to their portal — a control that bounces
+   * whoever presses it is worse than an absent one.
+   */
+  showClientActions?: boolean;
+}) {
   const verification = VERIFICATION[profile.verification];
 
   return (
@@ -57,6 +69,14 @@ export function ProfileHeader({ profile }: { profile: InfluencerProfile }) {
             <Badge tone={verification.tone} title={verification.note}>
               {verification.label}
             </Badge>
+            {profile.isDemo && (
+              <Badge
+                tone="caution"
+                title="A hand-built demonstration record. Its figures were chosen to exercise every panel, not measured from a platform, and it is excluded from cohort benchmarks."
+              >
+                Demo record
+              </Badge>
+            )}
           </div>
 
           <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-ink-muted">
@@ -115,7 +135,7 @@ export function ProfileHeader({ profile }: { profile: InfluencerProfile }) {
         </div>
 
         <div className="flex min-w-0 max-w-full flex-col items-start gap-2 sm:items-end">
-          <ProfileActions profile={profile} />
+          {showClientActions && <ProfileActions profile={profile} />}
           <Freshness at={profile.lastRefreshedAt} prefix="Data refreshed" />
           <RefreshButton influencerId={profile.id} />
         </div>

@@ -46,6 +46,13 @@ export interface RawAccount {
   totalViews: number | null;
   contentCount: number;
   lastSyncedAt: string;
+  /**
+   * Set when the platform stopped returning this account — deleted, terminated
+   * or made private. The stored figures are kept, because they were true when
+   * they were read, but they must never be presented as current and the
+   * scheduler must stop asking for them every night.
+   */
+  unavailableSince?: string | null;
 }
 
 export interface RawSnapshot {
@@ -157,9 +164,62 @@ export interface RawInfluencer {
   countryName: string;
   languages: string[];
   primaryPlatform: Platform;
+  /**
+   * A hand-built demonstration record, not an observation.
+   *
+   * The database is otherwise entirely real (CLAUDE.md D12), so a fabricated
+   * creator sitting undifferentiated among them would be the one thing this
+   * product exists to prevent. The flag is carried all the way to the UI, which
+   * labels it, and cohort benchmarking skips these rows so an invented figure
+   * can never move a real creator's percentile.
+   */
+  isDemo?: boolean;
   createdAt: string;
   lastRefreshedAt: string;
   conflictCount: number;
+}
+
+/**
+ * A creator's OAuth consent.
+ *
+ * Tokens are stored sealed (see `auth/token-crypto.ts`) and are never included
+ * in anything a component or an API response can reach. `scopes` is recorded so
+ * a later request for data the creator did not grant fails here rather than at
+ * Google.
+ */
+export interface RawOAuthGrant {
+  accountId: string;
+  influencerId: string;
+  platform: Platform;
+  /** The platform account id the consenting user actually controls. */
+  platformAccountId: string;
+  sealedAccessToken: string;
+  sealedRefreshToken: string | null;
+  expiresAt: string;
+  scopes: string[];
+  grantedAt: string;
+  /** Set when a refresh failed — the creator revoked access (DPR §21). */
+  needsReauth: boolean;
+}
+
+/**
+ * A creator's upload history, kept lean.
+ *
+ * The growth calculation needs a publish date and a view count and nothing
+ * else. Storing full content rows for two hundred uploads across six hundred
+ * channels would cost about 110MB against 14MB for these — titles, captions,
+ * thumbnails and hashtags for videos no screen ever renders.
+ *
+ * These are real observations with real dates, which is the entire point: a
+ * trend built from them is measured, where one built from invented snapshots
+ * would be a fabrication wearing a timestamp.
+ */
+export interface RawViewPoint {
+  influencerId: string;
+  accountId: string;
+  videoId: string;
+  publishedAt: string;
+  views: number | null;
 }
 
 /* --- Read view ----------------------------------------------------------- */
@@ -167,10 +227,12 @@ export interface RawInfluencer {
 /**
  * Everything the repository layer reads.
  *
- * `signals` and `audience` are the slots for facts a public API cannot reach:
- * audience-quality signals and demographics need OAuth. They stay empty until
- * that credential exists, and the scoring engine renormalises around what is
- * missing rather than substituting a number nobody measured.
+ * `signals` and `audience` hold facts a public API cannot reach: audience-quality
+ * signals and demographics need OAuth. They stay empty for every harvested
+ * creator until that credential exists, and the scoring engine renormalises
+ * around what is missing rather than substituting a number nobody measured.
+ * Demonstration records populate them, and are flagged so nothing mistakes one
+ * for an observation.
  *
  * `ai` is populated once enrichment has run over a creator.
  */
@@ -179,13 +241,13 @@ export interface DataView {
   accounts: RawAccount[];
   snapshots: RawSnapshot[];
   content: RawContent[];
+  /** Lean upload history, older than the fully-stored recent window. */
+  viewHistory: RawViewPoint[];
+  grants: Map<string, RawOAuthGrant>;
   signals: Map<string, RawAudienceSignals>;
   audience: Map<string, RawAudience>;
   ai: Map<string, RawAiOutput>;
 }
-
-const NO_SIGNALS: DataView["signals"] = new Map();
-const NO_AUDIENCE: DataView["audience"] = new Map();
 
 /**
  * Memoised against the store's revision. Reads call this once per influencer,
@@ -238,13 +300,24 @@ export function readRecords(): DataView {
   view = {
     revision: ingested.revision,
     data: {
-      influencers: ingested.influencers,
-      accounts: ingested.accounts,
-      snapshots: ingested.snapshots,
-      content: ingested.content,
-      signals: NO_SIGNALS,
-      audience: NO_AUDIENCE,
-      ai: new Map(ingested.ai.map((output) => [output.influencerId, normaliseAi(output)])),
+      influencers: ingested.influencers ?? [],
+      accounts: ingested.accounts ?? [],
+      snapshots: ingested.snapshots ?? [],
+      content: ingested.content ?? [],
+      viewHistory: ingested.viewHistory ?? [],
+      // `?? []` because a store object can predate a collection: the file on
+      // disk was written before grants existed, and a hot reload can hand this
+      // module a store the previous code built. Same reason the AI records are
+      // normalised below — the shape of what is stored lags the shape of what
+      // reads it, and the reader is the one that has to cope.
+      grants: new Map((ingested.grants ?? []).map((grant) => [grant.accountId, grant])),
+      signals: new Map(
+        (ingested.signals ?? []).map((signal) => [signal.influencerId, signal]),
+      ),
+      audience: new Map(
+        (ingested.audience ?? []).map((entry) => [entry.influencerId, entry]),
+      ),
+      ai: new Map((ingested.ai ?? []).map((output) => [output.influencerId, normaliseAi(output)])),
     },
   };
   return view.data;
