@@ -73,13 +73,21 @@ export default async function LoginPage({
           </div>
 
           {/* The password is read here, on the server, and only passed down
-              outside production — so the development accounts never reach a
-              production bundle at all. */}
+              where the seed accounts actually exist — so they never reach a
+              bundle that has no accounts to sign into.
+
+              Gated on DEV_SEED_PASSWORD rather than NODE_ENV because that is
+              the same variable user-repository uses to decide whether to
+              create the accounts at all. Keying both off one value means the
+              picker cannot offer a sign-in that does not work, and cannot be
+              hidden when one does. A production build shared over a tunnel is
+              still a demo and still needs it; a real deployment simply leaves
+              the variable unset, and then there are no accounts to list. */}
           <LoginForm
             next={next}
             devPassword={
               process.env.NODE_ENV === "production"
-                ? undefined
+                ? process.env.DEV_SEED_PASSWORD
                 : (process.env.DEV_SEED_PASSWORD ?? "SocialOrbit-Dev-2026")
             }
           />

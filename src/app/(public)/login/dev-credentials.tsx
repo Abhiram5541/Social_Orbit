@@ -5,10 +5,12 @@ import { ROLE_LABEL, type Role } from "@/lib/contracts/auth";
 /* ---------------------------------------------------------------------------
  * Development sign-in helper.
  *
- * Rendered only outside production — the server decides that and simply does
- * not pass the accounts in otherwise, so the list cannot reach a production
- * bundle at all. It shows the seed password the local environment is already
- * configured with; it reads no real credential.
+ * Rendered only where the seed accounts exist — the server decides that from
+ * DEV_SEED_PASSWORD, the same variable that decides whether to create them,
+ * and simply does not pass them in otherwise. So the list cannot offer a
+ * sign-in that would fail, and cannot reach a build that has no accounts. It
+ * shows the seed password the environment is already configured with; it
+ * reads no real credential.
  * ------------------------------------------------------------------------ */
 
 export interface DevAccount {

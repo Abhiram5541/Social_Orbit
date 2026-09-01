@@ -9,9 +9,10 @@ import { clearSessionCookie } from "@/server/auth/session";
 export async function POST() {
   return handler(async () => {
     await clearSessionCookie();
-    return NextResponse.redirect(
-      new URL("/login", process.env.APP_URL ?? "http://localhost:3000"),
-      { status: 303 },
-    );
+    // Relative, so the redirect stays on whatever host the request arrived on.
+    // Building it from APP_URL sent every remote user to localhost: correct on
+    // the developer's machine, broken over a tunnel, and wrong on any
+    // deployment whose public host differs from the configured one.
+    return new NextResponse(null, { status: 303, headers: { Location: "/login" } });
   });
 }
