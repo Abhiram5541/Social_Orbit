@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { errorResponse } from "@/server/auth/rbac";
 import { refreshStale } from "@/server/services/harvest-service";
+import { sendOpsEvent } from "@/server/services/notification-service";
 
 /* ---------------------------------------------------------------------------
  * Daily snapshot job.
@@ -49,6 +50,17 @@ export async function GET(request: NextRequest) {
     budgetMs: 45_000,
     maxChannels: 200,
   });
+
+  // Announced on whichever channels are configured. Awaited because a
+  // serverless runtime freezes at return — a floating promise would be cut
+  // off mid-flight — but the job's success never depends on the announcement.
+  await sendOpsEvent("Daily snapshot", [
+    `${report.ingested} creators refreshed, ${report.quotaUnitsSpent} quota units spent.`,
+    report.remaining > 0
+      ? `${report.remaining} still carrying an older reading — tomorrow's pass starts with them.`
+      : "Every account holds a reading from today.",
+    ...(report.stoppedEarly ? [`Stopped early: ${report.stoppedEarly}`] : []),
+  ]);
 
   return NextResponse.json({
     ranAt: new Date().toISOString(),

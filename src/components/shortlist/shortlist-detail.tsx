@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MessageSquare, Scale, Trash2, UserPlus } from "lucide-react";
+import { MessageSquare, Scale, Trash2, UserPlus, Download, } from "lucide-react";
 import type { ShortlistDetail as ShortlistDetailData } from "@/lib/contracts/campaign";
 import { PLATFORM_LABEL } from "@/lib/contracts/common";
 import { formatCompact, formatPercent } from "@/lib/format";
@@ -97,6 +97,12 @@ export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailD
         </LinkButton>
         <LinkButton href={`/campaigns/new?shortlist=${shortlist.id}`} className="gap-1.5">
           Start a campaign from this list
+        </LinkButton>
+        {/* A plain download link, not a fetch: the route sets
+            Content-Disposition, so the browser handles the file itself. */}
+        <LinkButton href={`/api/internal/shortlists/${shortlist.id}/export`} className="gap-1.5">
+          <Download className="size-4" aria-hidden />
+          Export CSV
         </LinkButton>
       </div>
 

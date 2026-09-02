@@ -217,13 +217,13 @@ export function integrationCatalog(): Integration[] {
       id: "crm_generic",
       name: "Generic CRM (CSV / webhook)",
       category: "crm",
-      state: "deferred",
+      state: "live",
       purpose:
-        "A neutral export path — webhook or scheduled CSV — for every CRM this page does not name.",
+        "A neutral export path — CSV download and HMAC-signed webhooks — for every CRM this page does not name.",
       statusDetail:
-        "Deferred with the rest of CRM sync (CLAUDE.md D4). Likely ships first of the three, since it is an export format rather than a vendor API.",
-      requires: [],
-      missing: [],
+        "Shortlist CSV export is live from every shortlist page; no vendor grants anything. Signed webhook delivery is written (sha256, Stripe/GitHub-style verification) but no screen registers a target URL yet, so nothing calls it. Vendor CRM sync itself stays deferred (CLAUDE.md D4).",
+      requires: ["WEBHOOK_SIGNING_SECRET"],
+      missing: env("WEBHOOK_SIGNING_SECRET") ? [] : ["WEBHOOK_SIGNING_SECRET"],
       manageHref: null,
     },
 
@@ -232,36 +232,42 @@ export function integrationCatalog(): Integration[] {
       id: "slack",
       name: "Slack",
       category: "communications",
-      state: "planned",
+      state: env("SLACK_WEBHOOK_URL") ? "live" : "credentials_missing",
       purpose:
-        "Anomaly alerts and scheduled report summaries into a channel the team already watches.",
-      statusDetail: "Planned as an outbound webhook first; interactive commands only if asked for.",
-      requires: [],
-      missing: [],
+        "Anomaly alerts and job reports — the nightly snapshot announces itself here — into a channel the team already watches.",
+      statusDetail: env("SLACK_WEBHOOK_URL")
+        ? "Delivering over an incoming webhook. The daily snapshot job posts its report after every run."
+        : "The adapter is written; supply an incoming-webhook URL to activate it.",
+      requires: ["SLACK_WEBHOOK_URL"],
+      missing: env("SLACK_WEBHOOK_URL") ? [] : ["SLACK_WEBHOOK_URL"],
       manageHref: null,
     },
     {
       id: "microsoft_teams",
       name: "Microsoft Teams",
       category: "communications",
-      state: "planned",
+      state: env("TEAMS_WEBHOOK_URL") ? "live" : "credentials_missing",
       purpose: "The same alert and report delivery for organisations that live in Teams.",
-      statusDetail: "Planned via incoming webhooks, behind Slack in sequence.",
-      requires: [],
-      missing: [],
+      statusDetail: env("TEAMS_WEBHOOK_URL")
+        ? "Delivering Adaptive Cards over an incoming webhook."
+        : "The adapter is written — it shares Slack's delivery path. Supply a Teams incoming-webhook URL to activate it.",
+      requires: ["TEAMS_WEBHOOK_URL"],
+      missing: env("TEAMS_WEBHOOK_URL") ? [] : ["TEAMS_WEBHOOK_URL"],
       manageHref: null,
     },
     {
       id: "email",
       name: "Email",
       category: "communications",
-      state: "planned",
+      state: env("RESEND_API_KEY") && env("EMAIL_FROM") ? "live" : "credentials_missing",
       purpose:
         "Scheduled report delivery, verification notices and correction-request updates by mail.",
       statusDetail:
-        "Planned. No mail provider is configured; today every notification is in-app only.",
-      requires: [],
-      missing: [],
+        env("RESEND_API_KEY") && env("EMAIL_FROM")
+          ? "Delivering through Resend. Until a sending domain is verified there, mail goes out from Resend's onboarding sender — verify a domain to send as your own."
+          : "The adapter is written against Resend; supply an API key and a from address to activate it.",
+      requires: ["RESEND_API_KEY", "EMAIL_FROM"],
+      missing: ["RESEND_API_KEY", "EMAIL_FROM"].filter((key) => !env(key)),
       manageHref: null,
     },
     {
