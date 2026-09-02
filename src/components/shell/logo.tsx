@@ -28,9 +28,12 @@ export function OrbitMark({ className }: { className?: string }) {
 
 export function Wordmark({
   compact = false,
+  inverse = false,
   className,
 }: {
   compact?: boolean;
+  /** For the instrument housing and other dark surfaces. */
+  inverse?: boolean;
   className?: string;
 }) {
   return (
@@ -38,10 +41,20 @@ export function Wordmark({
       <OrbitMark />
       {!compact && (
         <span className="flex flex-col leading-none">
-          <span className="text-[15px] font-semibold tracking-[-0.01em] text-ink">
+          <span
+            className={cn(
+              "text-[15px] font-semibold tracking-[-0.01em]",
+              inverse ? "text-instrument-ink" : "text-ink",
+            )}
+          >
             SocialOrbit
           </span>
-          <span className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-ink-subtle">
+          <span
+            className={cn(
+              "mt-0.5 text-[10px] font-medium uppercase tracking-[0.08em]",
+              inverse ? "text-instrument-muted" : "text-ink-subtle",
+            )}
+          >
             Influencer Intelligence
           </span>
         </span>

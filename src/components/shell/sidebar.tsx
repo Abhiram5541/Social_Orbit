@@ -6,12 +6,15 @@ import { usePathname } from "next/navigation";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { cn } from "@/lib/class-names";
 import { isActive, type NavSection } from "@/lib/navigation";
-import { Eyebrow } from "@/components/ui/card";
 import { Tooltip } from "@/components/ui/overlay";
 import { Wordmark, OrbitMark } from "./logo";
 
 /* ---------------------------------------------------------------------------
- * Primary navigation.
+ * Primary navigation — the instrument housing.
+ *
+ * The score readout established the product's one dark surface; the chrome
+ * now lives on the same surface, so every page reads as light paper set into
+ * a dark instrument. Content stays light; the housing carries the brand.
  *
  * Three responsive shapes rather than one shrunk layout:
  *   ≥ lg   full 240px rail with section labels
@@ -19,27 +22,61 @@ import { Wordmark, OrbitMark } from "./logo";
  *   < lg   a drawer, rendered by AppShell — not this component
  * ------------------------------------------------------------------------ */
 
+type Tone = "instrument" | "light";
+
+const ITEM: Record<Tone, { idle: string; active: string; icon: string; iconActive: string }> = {
+  instrument: {
+    idle: "text-instrument-muted hover:bg-instrument-raised hover:text-instrument-ink",
+    active: "bg-instrument-raised text-instrument-ink",
+    icon: "text-instrument-muted/70 group-hover:text-instrument-muted",
+    iconActive: "text-brand-glow",
+  },
+  light: {
+    idle: "text-ink-muted hover:bg-sunken hover:text-ink",
+    active: "bg-brand-soft text-brand-ink",
+    icon: "text-ink-subtle group-hover:text-ink-muted",
+    iconActive: "text-brand",
+  },
+};
+
 export function SidebarNav({
   sections,
   collapsed,
   onNavigate,
+  tone = "instrument",
 }: {
   sections: NavSection[];
   collapsed: boolean;
   /** Lets the mobile drawer close itself when a destination is chosen. */
   onNavigate?: () => void;
+  /** The mobile drawer renders on a light sheet; the desktop rail is dark. */
+  tone?: Tone;
 }) {
   const pathname = usePathname();
+  const t = ITEM[tone];
 
   return (
     <nav aria-label="Primary" className="flex flex-col gap-4 px-2 py-3">
       {sections.map((section, index) => (
         <div key={section.label ?? index} className="flex flex-col gap-0.5">
           {section.label && !collapsed && (
-            <Eyebrow className="px-2 pb-1 pt-1">{section.label}</Eyebrow>
+            <span
+              className={cn(
+                "label-caps px-2 pb-1 pt-1 text-[10px]",
+                tone === "instrument" ? "text-instrument-muted" : "text-ink-subtle",
+              )}
+            >
+              {section.label}
+            </span>
           )}
           {section.label && collapsed && index > 0 && (
-            <div className="mx-2 mb-1 h-px bg-line" role="separator" />
+            <div
+              className={cn(
+                "mx-2 mb-1 h-px",
+                tone === "instrument" ? "bg-instrument-line" : "bg-line",
+              )}
+              role="separator"
+            />
           )}
           {section.items.map((item) => {
             const active = isActive(item, pathname);
@@ -52,13 +89,19 @@ export function SidebarNav({
                 className={cn(
                   "group relative flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[13px] font-medium transition-colors",
                   collapsed && "justify-center px-0 py-2",
-                  active
-                    ? "bg-brand-soft text-brand-ink"
-                    : "text-ink-muted hover:bg-sunken hover:text-ink",
+                  active ? t.active : t.idle,
                 )}
               >
+                {/* The active rail: cobalt is spent on exactly one place in the
+                    housing — where you are. */}
+                {active && !collapsed && tone === "instrument" && (
+                  <span
+                    aria-hidden
+                    className="absolute inset-y-1 left-0 w-0.5 rounded-full bg-brand-glow"
+                  />
+                )}
                 <item.icon
-                  className={cn("size-4 shrink-0", active ? "text-brand" : "text-ink-subtle group-hover:text-ink-muted")}
+                  className={cn("size-4 shrink-0", active ? t.iconActive : t.icon)}
                   aria-hidden
                 />
                 {!collapsed && <span className="truncate">{item.label}</span>}
@@ -95,33 +138,38 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        "hidden shrink-0 flex-col border-r border-line bg-surface lg:flex",
+        "hidden shrink-0 flex-col bg-instrument lg:flex",
         collapsed ? "w-sidebar-rail" : "w-sidebar",
       )}
     >
       <div
         className={cn(
-          "flex h-topbar shrink-0 items-center border-b border-line",
+          "flex h-topbar shrink-0 items-center border-b border-instrument-line",
           collapsed ? "justify-center px-0" : "px-3",
         )}
       >
         <Link href={homeHref} className="rounded" aria-label="SocialOrbit home">
-          {collapsed ? <OrbitMark /> : <Wordmark />}
+          {collapsed ? <OrbitMark /> : <Wordmark inverse />}
         </Link>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <SidebarNav sections={sections} collapsed={collapsed} />
+      <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--color-instrument-line)_transparent]">
+        <SidebarNav sections={sections} collapsed={collapsed} tone="instrument" />
       </div>
 
-      <div className={cn("border-t border-line p-2", collapsed && "flex justify-center")}>
+      <div
+        className={cn(
+          "border-t border-instrument-line p-2",
+          collapsed && "flex justify-center",
+        )}
+      >
         <button
           type="button"
           onClick={onToggleCollapsed}
           aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
           aria-pressed={collapsed}
           className={cn(
-            "flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[13px] font-medium text-ink-muted transition-colors hover:bg-sunken hover:text-ink",
+            "flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[13px] font-medium text-instrument-muted transition-colors hover:bg-instrument-raised hover:text-instrument-ink",
             collapsed ? "justify-center" : "w-full",
           )}
         >

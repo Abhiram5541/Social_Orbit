@@ -140,6 +140,7 @@ export function AppShell({
         <SidebarNav
           sections={sections}
           collapsed={false}
+          tone="light"
           onNavigate={() => setDrawerOpen(false)}
         />
       </Sheet>
@@ -228,7 +229,7 @@ export function PageHeader({
               titleAs,
               {
                 className:
-                  "text-[21px] font-bold leading-tight tracking-[-0.028em] text-ink",
+                  "text-[24px] font-bold leading-tight tracking-[-0.028em] text-ink",
               },
               title,
             )}

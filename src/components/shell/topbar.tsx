@@ -33,12 +33,12 @@ export function Topbar({
         : "/settings";
 
   return (
-    <header className="sticky top-0 z-30 flex h-topbar shrink-0 items-center gap-2 border-b border-line bg-surface/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
+    <header className="sticky top-0 z-30 flex h-topbar shrink-0 items-center gap-2 border-b border-instrument-line bg-instrument px-3">
       <button
         type="button"
         onClick={onOpenNav}
         aria-label="Open navigation"
-        className="grid size-9 shrink-0 place-items-center rounded-lg text-ink-muted transition-colors hover:bg-sunken hover:text-ink lg:hidden"
+        className="grid size-9 shrink-0 place-items-center rounded-lg text-instrument-muted transition-colors hover:bg-instrument-raised hover:text-instrument-ink lg:hidden"
       >
         <Menu className="size-4.5" aria-hidden />
       </button>
@@ -49,14 +49,14 @@ export function Topbar({
         type="button"
         onClick={onOpenSearch}
         className={cn(
-          "group flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg border border-line bg-canvas px-2.5",
-          "text-left text-[13px] text-ink-subtle transition-colors hover:border-line-strong hover:bg-surface",
+          "group flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg border border-instrument-line bg-instrument-raised px-2.5",
+          "text-left text-[13px] text-instrument-muted transition-colors hover:border-instrument-muted/40 hover:text-instrument-ink",
           "sm:max-w-md",
         )}
       >
         <Search className="size-4 shrink-0" aria-hidden />
         <span className="truncate">Search creators, campaigns, shortlists…</span>
-        <kbd className="ml-auto hidden shrink-0 rounded border border-line bg-surface px-1 font-num text-[10px] text-ink-subtle sm:block">
+        <kbd className="ml-auto hidden shrink-0 rounded border border-instrument-line bg-instrument px-1 font-num text-[10px] text-instrument-muted sm:block">
           /
         </kbd>
       </button>
@@ -71,18 +71,18 @@ export function Topbar({
           aria-label={
             unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"
           }
-          className="relative grid size-9 place-items-center rounded-lg text-ink-muted transition-colors hover:bg-sunken hover:text-ink"
+          className="relative grid size-9 place-items-center rounded-lg text-instrument-muted transition-colors hover:bg-instrument-raised hover:text-instrument-ink"
         >
           <Bell className="size-4.5" aria-hidden />
           {unreadCount > 0 && (
-            <span className="absolute right-1.5 top-1.5 size-2 rounded-full border-2 border-surface bg-brand" />
+            <span className="absolute right-1.5 top-1.5 size-2 rounded-full border-2 border-instrument bg-brand-glow" />
           )}
         </Link>
 
         <Link
           href="/help"
           aria-label="Help and documentation"
-          className="hidden size-9 place-items-center rounded-lg text-ink-muted transition-colors hover:bg-sunken hover:text-ink sm:grid"
+          className="hidden size-9 place-items-center rounded-lg text-instrument-muted transition-colors hover:bg-instrument-raised hover:text-instrument-ink sm:grid"
         >
           <HelpCircle className="size-4.5" aria-hidden />
         </Link>
@@ -92,18 +92,18 @@ export function Topbar({
             <button
               type="button"
               {...props}
-              className="flex items-center gap-1.5 rounded-lg py-1 pl-1 pr-1.5 transition-colors hover:bg-sunken"
+              className="flex items-center gap-1.5 rounded-lg py-1 pl-1 pr-1.5 transition-colors hover:bg-instrument-raised"
             >
               <Avatar name={user.name} src={user.avatarUrl} size="sm" />
               <span className="hidden min-w-0 flex-col items-start leading-tight md:flex">
-                <span className="max-w-32 truncate text-[13px] font-medium text-ink">
+                <span className="max-w-32 truncate text-[13px] font-medium text-instrument-ink">
                   {user.name}
                 </span>
-                <span className="max-w-32 truncate text-[11px] text-ink-muted">
+                <span className="max-w-32 truncate text-[11px] text-instrument-muted">
                   {ROLE_LABEL[user.role]}
                 </span>
               </span>
-              <ChevronDown className="size-3.5 shrink-0 text-ink-subtle" aria-hidden />
+              <ChevronDown className="size-3.5 shrink-0 text-instrument-muted" aria-hidden />
             </button>
           )}
         >
@@ -144,14 +144,14 @@ function QuotaChip({ quota }: { quota: SearchQuota }) {
   return (
     <Link
       href="/usage"
-      className="hidden items-center gap-1.5 rounded-lg border border-line px-2 py-1 text-[12px] transition-colors hover:bg-sunken sm:inline-flex"
+      className="hidden items-center gap-1.5 rounded-lg border border-instrument-line px-2 py-1 text-[12px] transition-colors hover:bg-instrument-raised sm:inline-flex"
       aria-label={`${quota.remaining} of ${quota.limit} searches remaining this month`}
     >
-      <span className="text-ink-muted">Searches</span>
+      <span className="text-instrument-muted">Searches</span>
       <span
         className={cn(
           "font-num font-medium tabular-nums",
-          exhausted ? "text-critical" : low ? "text-caution" : "text-ink",
+          exhausted ? "text-critical" : low ? "text-caution" : "text-instrument-ink",
         )}
       >
         {quota.remaining}/{quota.limit}

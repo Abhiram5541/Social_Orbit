@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import * as React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BadgeCheck, LineChart, ShieldCheck } from "lucide-react";
@@ -23,14 +24,19 @@ export default async function LoginPage({
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1fr_minmax(26rem,32rem)]">
       {/* The pitch panel is desktop-only: on a phone it would push the form
-          below the fold, and someone signing in already knows what this is. */}
-      <section className="hidden flex-col justify-between border-r border-line bg-surface p-10 lg:flex">
+          below the fold, and someone signing in already knows what this is.
+          It sits on the instrument surface — the same housing the app lives
+          in — so the first screen already speaks the product's language. */}
+      <section className="hidden flex-col justify-between bg-instrument p-10 lg:flex">
         <Link href="/" className="w-fit rounded">
-          <Wordmark />
+          <Wordmark inverse />
         </Link>
 
         <div className="max-w-md space-y-8">
-          <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em] text-ink">
+          {/* The most characteristic artifact in this product's world: a score
+              with stated uncertainty, sweeping in like the real one does. */}
+          <ScoreFigure />
+          <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em] text-instrument-ink">
             Every number on a SocialOrbit profile can tell you where it came from.
           </h1>
           <ul className="space-y-5">
@@ -52,7 +58,7 @@ export default async function LoginPage({
           </ul>
         </div>
 
-        <p className="text-[12px] text-ink-subtle">
+        <p className="text-[12px] text-instrument-muted">
           © {new Date().getFullYear()} SocialOrbit. Influencer intelligence platform.
         </p>
       </section>
@@ -116,13 +122,65 @@ function Pitch({
 }) {
   return (
     <li className="flex gap-3">
-      <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg border border-line bg-canvas text-brand">
+      <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg border border-instrument-line bg-instrument-raised text-brand-glow">
         <Icon className="size-4" aria-hidden />
       </span>
       <span className="space-y-0.5">
-        <span className="block text-[14px] font-medium text-ink">{title}</span>
-        <span className="block text-[13px] leading-5 text-ink-muted">{body}</span>
+        <span className="block text-[14px] font-medium text-instrument-ink">{title}</span>
+        <span className="block text-[13px] leading-5 text-instrument-muted">{body}</span>
       </span>
     </li>
+  );
+}
+
+/**
+ * A decorative score readout — the artifact the whole product exists to
+ * produce. Values are illustrative and the figure is aria-hidden; nothing
+ * here claims to be a measurement.
+ */
+function ScoreFigure() {
+  const radius = 34;
+  const circumference = 2 * Math.PI * radius;
+  const value = 83;
+  const arc = circumference * (value / 100);
+
+  return (
+    <div aria-hidden className="flex items-center gap-5">
+      <svg viewBox="0 0 84 84" className="size-24 shrink-0 -rotate-90">
+        <circle
+          cx="42"
+          cy="42"
+          r={radius}
+          fill="none"
+          strokeWidth="5"
+          className="stroke-instrument-line"
+        />
+        <circle
+          cx="42"
+          cy="42"
+          r={radius}
+          fill="none"
+          strokeWidth="5"
+          strokeLinecap="round"
+          strokeDasharray={`${arc} ${circumference}`}
+          className="animate-sweep stroke-brand-glow"
+          style={
+            {
+              "--sweep-from": `${circumference}`,
+              "--sweep-to": `${circumference - arc}`,
+              strokeDashoffset: circumference - arc,
+            } as React.CSSProperties
+          }
+        />
+      </svg>
+      <div className="space-y-1">
+        <p className="font-num text-[34px] font-semibold leading-none tracking-[-0.02em] text-instrument-ink">
+          83<span className="text-[16px] text-instrument-muted">/100</span>
+        </p>
+        <p className="label-caps text-[10px] text-instrument-muted">
+          SocialOrbit health · 89% confidence
+        </p>
+      </div>
+    </div>
   );
 }
