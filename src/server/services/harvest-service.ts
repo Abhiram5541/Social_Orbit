@@ -12,7 +12,7 @@ import {
   upsertViewHistory,
   type IngestedRecord,
 } from "@/server/data/ingested-store";
-import { readRecords } from "@/server/data/records";
+import { readRecords, type RawAccount } from "@/server/data/records";
 import { IngestionRefused, buildRecord } from "./ingestion-service";
 
 /* ---------------------------------------------------------------------------
@@ -204,6 +204,29 @@ export async function harvest(
 }
 
 /**
+ * The accounts a platform sweep is allowed to touch.
+ *
+ * Demonstration records are not observations of anything (see demo-service),
+ * so their platform ids resolve to nothing upstream. Sweeping them wasted a
+ * read per creator, reported four bogus "no longer returned by the platform"
+ * skips, and — because that is how a deleted channel is meant to be handled —
+ * marked all four permanently unavailable, which then hid them from the very
+ * screens they exist to populate.
+ *
+ * Filtered here rather than in each caller: refresh, the nightly scheduler and
+ * the history backfill all select from the same table, and whichever one was
+ * forgotten would quietly re-break them.
+ */
+function refreshableAccounts(): RawAccount[] {
+  const demo = new Set(
+    ingestedRecords()
+      .influencers.filter((influencer) => influencer.isDemo)
+      .map((influencer) => influencer.id),
+  );
+  return ingestedRecords().accounts.filter((account) => !demo.has(account.influencerId));
+}
+
+/**
  * Re-reads channels already held, in id order, from `offset`.
  *
  * Two uses: picking up a field the connector did not previously capture, and
@@ -222,7 +245,7 @@ export async function refreshStored(
     stoppedEarly: null,
   };
 
-  const ids = [...ingestedRecords().accounts]
+  const ids = [...refreshableAccounts()]
     .sort((a, b) => a.id.localeCompare(b.id))
     .map((account) => account.platformAccountId)
     .slice(options.offset ?? 0, (options.offset ?? 0) + (options.limit ?? 100));
@@ -282,7 +305,7 @@ export async function refreshStale(
   const isDue = (account: { lastSyncedAt: string; unavailableSince?: string | null }) =>
     !account.unavailableSince && account.lastSyncedAt.slice(0, 10) !== today;
 
-  const due = [...ingestedRecords().accounts]
+  const due = [...refreshableAccounts()]
     .filter(isDue)
     .sort((a, b) => a.lastSyncedAt.localeCompare(b.lastSyncedAt));
 
@@ -306,7 +329,7 @@ export async function refreshStale(
     else throw error;
   }
 
-  const stillDue = [...ingestedRecords().accounts]
+  const stillDue = [...refreshableAccounts()]
     .filter(isDue)
     .sort((a, b) => a.lastSyncedAt.localeCompare(b.lastSyncedAt));
 
@@ -369,7 +392,7 @@ export async function backfillViewHistory(
 
   const data = readRecords();
   const already = new Set(data.viewHistory.map((point) => point.influencerId));
-  const due = [...data.accounts]
+  const due = [...refreshableAccounts()]
     .filter((account) => !account.unavailableSince && !already.has(account.influencerId))
     .sort((a, b) => a.id.localeCompare(b.id));
 

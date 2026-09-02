@@ -54,7 +54,13 @@ describe("metering rules", () => {
   });
 });
 
-describe("free plan allowance — Architecture doc §3", () => {
+/*
+ * These exercise the real search path, which loads and scores every creator in
+ * the database. That is the point — the quota must be counted against a real
+ * search, not a stub — but it means the first call pays for reading a store
+ * that is now tens of megabytes, which overruns the 5s default.
+ */
+describe("free plan allowance — Architecture doc §3", { timeout: 60_000 }, () => {
   it("permits exactly five searches and then blocks the sixth", async () => {
     for (let attempt = 1; attempt <= 5; attempt += 1) {
       const result = await searchInfluencers(
