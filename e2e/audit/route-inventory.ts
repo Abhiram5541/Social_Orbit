@@ -73,6 +73,7 @@ export const AUDIT_ROUTES: AuditRoute[] = [
   { path: "/admin/anomalies", as: "superAdmin" },
   { path: "/admin/ai", as: "superAdmin" },
   { path: "/admin/connectors", as: "superAdmin" },
+  { path: "/admin/integrations", as: "superAdmin" },
   { path: "/admin/ingestion", as: "superAdmin" },
   { path: "/admin/users", as: "superAdmin" },
   { path: "/admin/orgs", as: "superAdmin" },

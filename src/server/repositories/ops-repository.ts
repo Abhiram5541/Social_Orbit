@@ -120,7 +120,7 @@ const CONNECTOR_NOTES: Record<Platform, string> = {
   youtube:
     "Channel resolution, channel statistics, video listings and analytics for OAuth-connected channels.",
   instagram:
-    "Professional-account insights through the Instagram Graph API. Credentials are set, but no adapter is written yet — and the Meta app additionally needs `instagram_basic` and `instagram_manage_insights` through App Review before it can read anything. Instagram also publishes no discovery endpoint, so creators must be named rather than found.",
+    "Professional-account insights through the Instagram Graph API. No adapter is written yet, and the Meta app needs `instagram_basic` and `instagram_manage_insights` through App Review before it can read anything. Instagram also publishes no discovery endpoint, so creators must be named rather than found.",
   tiktok: "Roadmap connector (DPR §29). No creators are indexed for this platform.",
 };
 

@@ -23,6 +23,7 @@ import {
   Sparkles,
   UserCircle,
   Users,
+  Plug,
 } from "lucide-react";
 import type { Permission, Workspace, OrgKind } from "@/lib/contracts/auth";
 
@@ -164,6 +165,7 @@ const ADMIN_NAV: NavSection[] = [
     label: "Data platform",
     items: [
       { href: "/admin/connectors", label: "Connectors", icon: Blocks, permission: "admin:connectors" },
+      { href: "/admin/integrations", label: "Integrations", icon: Plug, permission: "admin:connectors" },
       { href: "/admin/ingestion", label: "Ingestion", icon: Database, permission: "admin:ingestion" },
     ],
   },
