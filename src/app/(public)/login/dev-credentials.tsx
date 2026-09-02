@@ -40,7 +40,7 @@ export function DevCredentials({
 }) {
   return (
     <details className="rounded-lg border border-line bg-surface text-[12px]" open>
-      <summary className="cursor-pointer select-none px-3 py-2 font-medium text-ink-muted">
+      <summary className="cursor-pointer select-none rounded-t-lg px-3 py-2 font-medium text-ink-muted transition-colors hover:bg-sunken hover:text-ink">
         Development accounts
       </summary>
       <div className="border-t border-line px-3 py-2">
@@ -62,8 +62,8 @@ export function DevCredentials({
                   type="button"
                   onClick={() => onSelect(account.email, password)}
                   aria-pressed={isSelected}
-                  className={`flex w-full flex-wrap items-baseline justify-between gap-x-3 rounded px-1 py-1.5 text-left transition-colors hover:bg-sunken ${
-                    isSelected ? "bg-brand-soft" : ""
+                  className={`press flex w-full flex-wrap items-baseline justify-between gap-x-3 rounded px-1 py-1.5 text-left ${
+                    isSelected ? "bg-brand-soft" : "hover:bg-sunken"
                   }`}
                 >
                   <code className="font-num text-ink">{account.email}</code>

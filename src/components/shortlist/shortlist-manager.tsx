@@ -209,7 +209,7 @@ export function ShortlistManager({
                       type="button"
                       disabled={busy}
                       onClick={() => addTo(shortlist.id)}
-                      className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors hover:bg-sunken disabled:opacity-60"
+                      className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors hover:bg-sunken disabled:cursor-not-allowed disabled:text-ink-subtle disabled:hover:bg-transparent"
                     >
                       <span className="min-w-0">
                         <span className="block truncate text-[13px] font-medium text-ink">

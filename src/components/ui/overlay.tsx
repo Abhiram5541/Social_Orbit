@@ -128,6 +128,11 @@ export function Menu({
         className={cn(
           "fixed m-0 min-w-44 rounded-lg border border-line bg-surface p-1 shadow-popover",
           "[&:not(:popover-open)]:hidden",
+          // Same entrance the dialog gets, tuned smaller: menus should arrive,
+          // not pop. @starting-style animates from the pre-open frame.
+          "opacity-0 translate-y-1 transition-[opacity,translate] duration-(--duration-fast) ease-(--ease-out-quick)",
+          "[&:popover-open]:opacity-100 [&:popover-open]:translate-y-0",
+          "starting:[&:popover-open]:opacity-0 starting:[&:popover-open]:translate-y-1",
           className,
         )}
       >

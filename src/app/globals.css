@@ -323,6 +323,20 @@
     animation: so-draw var(--duration-slow) var(--ease-out-quick) forwards;
   }
 
+  /* Rise each direct child in reading order. For tile rows and card grids —
+     eight steps is the longest row in the product; later children share the
+     last delay rather than queueing forever. */
+  .rise-stagger > * {
+    animation: so-rise var(--duration-base) var(--ease-out-quick) backwards;
+  }
+  .rise-stagger > *:nth-child(2) { animation-delay: 40ms; }
+  .rise-stagger > *:nth-child(3) { animation-delay: 80ms; }
+  .rise-stagger > *:nth-child(4) { animation-delay: 120ms; }
+  .rise-stagger > *:nth-child(5) { animation-delay: 160ms; }
+  .rise-stagger > *:nth-child(6) { animation-delay: 200ms; }
+  .rise-stagger > *:nth-child(7) { animation-delay: 240ms; }
+  .rise-stagger > *:nth-child(n + 8) { animation-delay: 280ms; }
+
   .animate-shimmer {
     background-image: linear-gradient(
       90deg,
@@ -409,6 +423,12 @@
 @layer utilities {
   .sheet-enter { translate: 16px 0; }
   .sheet-enter[open] { translate: none; }
+
+  /* Without this the base dialog @starting-style loses to the utility above
+     and the sheet's entry collapses to a plain fade. */
+  @starting-style {
+    .sheet-enter[open] { translate: 16px 0; }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

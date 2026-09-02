@@ -148,7 +148,7 @@ export function SortableTh({
         onClick={onSort}
         className={cn(
           "flex w-full items-center gap-1 px-2.5 py-2 text-[11px] font-medium uppercase tracking-[0.05em]",
-          "transition-colors hover:text-ink",
+          "press hover:text-ink",
           numeric && "justify-end",
           active && "text-ink",
         )}
@@ -216,7 +216,7 @@ function PageButton({
       type="button"
       className={cn(
         "h-7 rounded-md border border-line bg-surface px-2.5 text-[12px] font-medium text-ink",
-        "transition-colors hover:bg-sunken",
+        "press hover:bg-sunken",
         "disabled:cursor-not-allowed disabled:text-ink-subtle disabled:hover:bg-surface",
       )}
       {...props}

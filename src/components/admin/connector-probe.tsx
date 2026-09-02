@@ -173,7 +173,7 @@ function ProbeReadout({ result }: { result: ConnectorProbeResult }) {
       </Section>
 
       <details className="rounded-lg border border-line">
-        <summary className="cursor-pointer px-3 py-2 text-[13px] font-medium text-ink">
+        <summary className="cursor-pointer px-3 py-2 text-[13px] font-medium text-ink transition-colors hover:bg-sunken">
           Recent uploads ({result.recentContent.length})
         </summary>
         <ul className="divide-y divide-line border-t border-line">

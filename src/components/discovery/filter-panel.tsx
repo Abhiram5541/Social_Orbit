@@ -282,7 +282,7 @@ function Group({
 }) {
   return (
     <details open={defaultOpen} className="group px-4 py-2.5">
-      <summary className="flex cursor-pointer list-none items-center justify-between py-1 text-[13px] font-medium text-ink marker:hidden">
+      <summary className="flex cursor-pointer list-none items-center justify-between rounded py-1 text-[13px] font-medium text-ink transition-colors marker:hidden hover:text-brand-ink">
         {title}
         <svg viewBox="0 0 12 12" className="size-3 text-ink-subtle transition-transform group-open:rotate-180" aria-hidden>
           <path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />

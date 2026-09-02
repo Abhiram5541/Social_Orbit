@@ -106,7 +106,11 @@ export function TabPanel({
       id={`panel-${value}`}
       aria-labelledby={`tab-${value}`}
       tabIndex={0}
-      className={cn("focus:outline-none", className)}
+      // Mounted fresh on every switch, so the entrance replays each time a
+      // panel appears — quiet, 8px, and disabled entirely under reduced motion.
+      // The panel is in the tab order, so the global :focus-visible ring must
+      // reach it — suppressing it left keyboard focus invisible.
+      className={cn("animate-rise", className)}
     >
       {children}
     </div>

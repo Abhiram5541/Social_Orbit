@@ -72,7 +72,6 @@ export function Dialog({
       className={cn(
         "w-[calc(100vw-2rem)] rounded-xl border border-line bg-surface p-0 text-ink shadow-overlay",
         "backdrop:bg-ink/40 backdrop:backdrop-blur-[1px]",
-        "open:animate-in",
         SIZES[size],
         className,
       )}
@@ -152,7 +151,7 @@ export function Sheet({
         if (event.target === ref.current) onClose();
       }}
       className={cn(
-        "m-0 ml-auto h-dvh max-h-none w-[min(24rem,100vw)] max-w-none",
+        "sheet-enter m-0 ml-auto h-dvh max-h-none w-[min(24rem,100vw)] max-w-none",
         "border-l border-line bg-surface p-0 text-ink shadow-overlay",
         "backdrop:bg-ink/40",
       )}

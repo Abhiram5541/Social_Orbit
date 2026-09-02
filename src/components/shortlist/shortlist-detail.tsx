@@ -174,7 +174,7 @@ export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailD
                     <button
                       type="button"
                       onClick={() => setNoteFor(item.influencerId)}
-                      className="flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-left text-[12px] transition-colors hover:bg-sunken"
+                      className="press flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-left text-[12px] hover:bg-sunken"
                     >
                       <MessageSquare className="size-3 shrink-0 text-ink-subtle" aria-hidden />
                       <span className={item.note ? "truncate text-ink" : "text-ink-subtle"}>

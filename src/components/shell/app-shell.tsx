@@ -193,7 +193,12 @@ export function PageHeader({
   return (
     <div className={cn("border-b border-line bg-surface px-4 py-4 sm:px-6", className)}>
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav aria-label="Breadcrumb" className="mb-1.5">
+        // The gap belongs between the strip and a title, not after a
+        // breadcrumb-only header — there it just made the header bottom-heavy.
+        <nav
+          aria-label="Breadcrumb"
+          className={title !== undefined || actions || meta ? "mb-1.5" : undefined}
+        >
           <ol className="flex flex-wrap items-center gap-1 text-[12px] text-ink-muted">
             {breadcrumbs.map((crumb, index) => (
               <li key={`${crumb.label}-${index}`} className="flex items-center gap-1">

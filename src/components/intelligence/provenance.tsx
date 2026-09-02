@@ -145,7 +145,7 @@ export function ConfidenceMeter({
   if (compact) {
     return (
       <span className={cn("inline-flex items-center gap-1.5", className)}>
-        <span className="h-1 w-8 overflow-hidden rounded-full bg-line" aria-hidden>
+        <span className="h-[5px] w-14 overflow-hidden rounded-full bg-line" aria-hidden>
           <span
             className={cn("block h-full rounded-full", style.bar)}
             style={{ width: `${confidence.score}%` }}

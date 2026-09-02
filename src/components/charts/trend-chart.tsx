@@ -271,13 +271,16 @@ export function Sparkline({
       className={cn("overflow-visible", className)}
       aria-hidden
     >
+      {/* pathLength=1 makes the dash math resolution-independent, so the
+          one-time draw-in works for any sparkline width. */}
       <path
         d={path}
+        pathLength={1}
         fill="none"
         strokeWidth={1.5}
         strokeLinecap="round"
         strokeLinejoin="round"
-        className={rising ? "stroke-positive" : "stroke-critical"}
+        className={cn("animate-draw", rising ? "stroke-positive" : "stroke-critical")}
       />
     </svg>
   );

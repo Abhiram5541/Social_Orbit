@@ -12,6 +12,35 @@ const SIZES = {
   xl: "size-20 text-[22px]",
 } as const;
 
+/*
+ * Initials fallbacks take a quiet tint derived from the name, so a screen of
+ * imageless creators reads as a set of distinct people rather than a column
+ * of identical grey coins. Tints come from the existing soft tokens only —
+ * the same four hues the rest of the system already speaks — and the pale
+ * grey original stays in the rotation.
+ */
+const TINTS = [
+  "bg-sunken text-ink-muted",
+  "bg-brand-soft text-brand-ink",
+  "bg-positive-soft text-positive",
+  "bg-inferred-soft text-inferred",
+  "bg-caution-soft text-caution",
+] as const;
+
+const MARK_SIZES: Record<keyof typeof SIZES, string> = {
+  xs: "size-3",
+  sm: "size-3.5",
+  md: "size-4",
+  lg: "size-5",
+  xl: "size-6",
+};
+
+function tintOf(name: string): string {
+  let hash = 0;
+  for (const character of name) hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  return TINTS[hash % TINTS.length];
+}
+
 export function Avatar({
   name,
   src,
@@ -50,7 +79,8 @@ export function Avatar({
         <span
           aria-hidden
           className={cn(
-            "grid place-items-center rounded-full border border-line bg-sunken font-medium text-ink-muted",
+            "grid place-items-center rounded-full border border-line font-semibold",
+            tintOf(name),
             SIZES[size],
           )}
         >
@@ -62,7 +92,12 @@ export function Avatar({
           className="absolute -bottom-0.5 -right-0.5 grid place-items-center rounded-full bg-surface"
           title="SocialOrbit Verified"
         >
-          <BadgeCheck className="size-4 text-verified" aria-label="SocialOrbit Verified" />
+          {/* Scales with the avatar: a fixed 16px mark covered a third of the
+              small size and shrank to a speck on the profile header. */}
+          <BadgeCheck
+            className={cn("text-verified", MARK_SIZES[size])}
+            aria-label="SocialOrbit Verified"
+          />
         </span>
       )}
     </div>

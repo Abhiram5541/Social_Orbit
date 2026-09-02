@@ -84,7 +84,7 @@ export function FilterChip({
   onRemove: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded border border-line bg-surface py-0.5 pl-2 pr-1 text-[12px]">
+    <span className="inline-flex items-center gap-1 rounded-sm border border-line bg-surface py-0.5 pl-2 pr-1 text-[12px]">
       <span className="text-ink-muted">{label}</span>
       <span className="font-medium text-ink">{value}</span>
       <button

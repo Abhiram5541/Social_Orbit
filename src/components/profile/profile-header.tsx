@@ -63,7 +63,7 @@ export function ProfileHeader({
             <h1 className="text-[24px] font-semibold leading-tight tracking-[-0.02em] text-ink">
               {profile.displayName}
             </h1>
-            <span className="rounded border border-line bg-sunken px-1.5 py-0.5 font-num text-[12px] text-ink-muted">
+            <span className="rounded-sm border border-line bg-sunken px-1.5 py-0.5 font-num text-[12px] text-ink-muted">
               @{profile.primaryHandle}
             </span>
             <Badge tone={verification.tone} title={verification.note}>

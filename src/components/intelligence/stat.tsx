@@ -80,7 +80,7 @@ export function StatRow({
   return (
     <div
       className={cn(
-        "grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr))]",
+        "rise-stagger grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr))]",
         className,
       )}
       {...props}

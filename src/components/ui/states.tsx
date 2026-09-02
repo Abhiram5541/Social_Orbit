@@ -14,7 +14,7 @@ export function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivEl
   return (
     <div
       aria-hidden
-      className={cn("animate-pulse rounded bg-sunken-strong/70", className)}
+      className={cn("animate-shimmer rounded bg-sunken-strong/70", className)}
       {...props}
     />
   );
@@ -199,7 +199,7 @@ export function BuildingHistory({
         history to read one honestly.
       </p>
       <div className="h-1 w-32 overflow-hidden rounded-full bg-line">
-        <div className="h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
+        <div className="animate-extend h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );

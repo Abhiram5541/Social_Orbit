@@ -80,7 +80,7 @@ export function ResultTable({
               <Th className="w-9 pr-0">
                 <span className="sr-only">Select</span>
               </Th>
-              <Th>Creator</Th>
+              <Th className="w-[34%]">Creator</Th>
               <SortableTh
                 label="Followers"
                 numeric
@@ -250,20 +250,24 @@ function CreatorCell({ item }: { item: InfluencerSummary }) {
         verification={item.verification}
       />
       <div className="min-w-0">
-        <Link
-          href={`/influencers/${item.id}`}
-          className="block truncate rounded text-[13px] font-medium text-ink hover:text-brand-ink hover:underline"
-        >
-          {item.displayName}
-        </Link>
-        {item.isDemo && (
-          <span
-            className="mt-0.5 inline-block rounded border border-caution-line bg-caution-soft px-1 py-px text-[10px] font-medium uppercase tracking-wide text-caution"
-            title="Demonstration record — figures were chosen, not measured."
+        <div className="flex min-w-0 items-center gap-1.5">
+          <Link
+            href={`/influencers/${item.id}`}
+            className="truncate rounded text-[13px] font-medium text-ink hover:text-brand-ink hover:underline"
           >
-            Demo
-          </span>
-        )}
+            {item.displayName}
+          </Link>
+          {/* On the name line, not under it: a stacked chip made every demo
+              row three lines tall and broke the table's two-line rhythm. */}
+          {item.isDemo && (
+            <span
+              className="shrink-0 rounded-sm border border-caution-line bg-caution-soft px-1 py-px text-[10px] font-medium uppercase tracking-wide text-caution"
+              title="Demonstration record — figures were chosen, not measured."
+            >
+              Demo
+            </span>
+          )}
+        </div>
         <p className="truncate text-[12px] text-ink-muted">
           <span className="font-num">@{item.primaryHandle}</span>
           <span aria-hidden> · </span>
@@ -315,24 +319,24 @@ export function SelectionBar({
     >
       <span className="font-num tabular-nums">{count}</span>
       <span>selected</span>
-      <span className="h-4 w-px bg-white/20" aria-hidden />
+      <span className="h-4 w-px bg-instrument-line" aria-hidden />
       <button
         type="button"
         onClick={onCompare}
         disabled={count < 2}
-        className="rounded px-2 py-1 font-medium text-white transition-colors hover:bg-white/10 disabled:text-white/40 disabled:hover:bg-transparent"
+        className="press rounded px-2 py-1 font-medium text-ink-inverse hover:bg-instrument-raised disabled:text-instrument-muted disabled:hover:bg-transparent"
       >
         Compare
       </button>
       <button
         type="button"
         onClick={onClear}
-        className="rounded px-2 py-1 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+        className="press rounded px-2 py-1 text-instrument-muted hover:bg-instrument-raised hover:text-ink-inverse"
       >
         Clear
       </button>
       {count < 2 && (
-        <span className="text-[12px] text-white/50">Select at least two</span>
+        <span className="text-[12px] text-instrument-muted">Select at least two</span>
       )}
     </div>
   );

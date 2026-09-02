@@ -155,7 +155,7 @@ export function CommandPalette({
       className="mt-[8vh] w-[calc(100vw-2rem)] max-w-xl rounded-xl border border-line bg-surface p-0 text-ink shadow-overlay backdrop:bg-ink/40"
     >
       <div onClick={(event) => event.stopPropagation()}>
-        <div className="flex items-center gap-2 border-b border-line px-3">
+        <div className="flex items-center gap-2 border-b border-line px-3 transition-colors focus-within:border-brand">
           <Search className="size-4 shrink-0 text-ink-subtle" aria-hidden />
           <input
             ref={inputRef}
@@ -165,6 +165,7 @@ export function CommandPalette({
             placeholder="Search creators, or jump to a page…"
             aria-label="Search creators or jump to a page"
             aria-controls="palette-results"
+            data-focus-custom
             className="h-12 min-w-0 flex-1 bg-transparent text-[14px] outline-none placeholder:text-ink-subtle"
           />
           {loading && <Spinner className="text-ink-subtle" />}
