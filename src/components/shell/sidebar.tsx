@@ -10,11 +10,11 @@ import { Tooltip } from "@/components/ui/overlay";
 import { Wordmark, OrbitMark } from "./logo";
 
 /* ---------------------------------------------------------------------------
- * Primary navigation — the instrument housing.
+ * Primary navigation.
  *
- * The score readout established the product's one dark surface; the chrome
- * now lives on the same surface, so every page reads as light paper set into
- * a dark instrument. Content stays light; the housing carries the brand.
+ * Light chrome by explicit decision: the score readout stays the product's
+ * one dark surface, so it keeps its weight. The active item carries a cobalt
+ * rail — the accent spent on exactly one place in the chrome, where you are.
  *
  * Three responsive shapes rather than one shrunk layout:
  *   ≥ lg   full 240px rail with section labels
@@ -43,13 +43,13 @@ export function SidebarNav({
   sections,
   collapsed,
   onNavigate,
-  tone = "instrument",
+  tone = "light",
 }: {
   sections: NavSection[];
   collapsed: boolean;
   /** Lets the mobile drawer close itself when a destination is chosen. */
   onNavigate?: () => void;
-  /** The mobile drawer renders on a light sheet; the desktop rail is dark. */
+  /** Kept for the one surface that may diverge; both default light today. */
   tone?: Tone;
 }) {
   const pathname = usePathname();
@@ -92,12 +92,15 @@ export function SidebarNav({
                   active ? t.active : t.idle,
                 )}
               >
-                {/* The active rail: cobalt is spent on exactly one place in the
-                    housing — where you are. */}
-                {active && !collapsed && tone === "instrument" && (
+                {/* The active rail: cobalt spent on exactly one place in the
+                    chrome — where you are. */}
+                {active && !collapsed && (
                   <span
                     aria-hidden
-                    className="absolute inset-y-1 left-0 w-0.5 rounded-full bg-brand-glow"
+                    className={cn(
+                      "absolute inset-y-1 left-0 w-0.5 rounded-full",
+                      tone === "instrument" ? "bg-brand-glow" : "bg-brand",
+                    )}
                   />
                 )}
                 <item.icon
@@ -138,28 +141,28 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        "hidden shrink-0 flex-col bg-instrument lg:flex",
+        "hidden shrink-0 flex-col border-r border-line bg-surface lg:flex",
         collapsed ? "w-sidebar-rail" : "w-sidebar",
       )}
     >
       <div
         className={cn(
-          "flex h-topbar shrink-0 items-center border-b border-instrument-line",
+          "flex h-topbar shrink-0 items-center border-b border-line",
           collapsed ? "justify-center px-0" : "px-3",
         )}
       >
         <Link href={homeHref} className="rounded" aria-label="SocialOrbit home">
-          {collapsed ? <OrbitMark /> : <Wordmark inverse />}
+          {collapsed ? <OrbitMark /> : <Wordmark />}
         </Link>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--color-instrument-line)_transparent]">
-        <SidebarNav sections={sections} collapsed={collapsed} tone="instrument" />
+      <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:thin]">
+        <SidebarNav sections={sections} collapsed={collapsed} />
       </div>
 
       <div
         className={cn(
-          "border-t border-instrument-line p-2",
+          "border-t border-line p-2",
           collapsed && "flex justify-center",
         )}
       >
@@ -169,7 +172,7 @@ export function Sidebar({
           aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
           aria-pressed={collapsed}
           className={cn(
-            "flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[13px] font-medium text-instrument-muted transition-colors hover:bg-instrument-raised hover:text-instrument-ink",
+            "flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[13px] font-medium text-ink-muted transition-colors hover:bg-sunken hover:text-ink",
             collapsed ? "justify-center" : "w-full",
           )}
         >
