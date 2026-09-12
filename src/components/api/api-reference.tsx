@@ -1,4 +1,5 @@
 import * as React from "react";
+import { cn } from "@/lib/class-names";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableWrap, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
@@ -36,7 +37,7 @@ export function ApiReference() {
       <Card>
         <CardHeader>
           <CardTitle>Endpoints</CardTitle>
-          <span className="text-[12px] text-ink-muted">Base: /v1</span>
+          <span className="text-sm text-ink-muted">Base: /v1</span>
         </CardHeader>
         <TableWrap label="API endpoints">
           <Table>
@@ -50,27 +51,36 @@ export function ApiReference() {
               </Tr>
             </Thead>
             <Tbody>
-              {ENDPOINTS.map((endpoint) => (
-                <Tr key={endpoint.path + endpoint.method}>
-                  <Td>
-                    <code className="font-num text-[12px] font-medium text-brand-ink">
-                      {endpoint.method}
-                    </code>
-                  </Td>
-                  <Td>
-                    <code className="font-num text-[12px] text-ink">{endpoint.path}</code>
-                  </Td>
-                  <Td>
-                    <code className="font-num text-[11px] text-ink-muted">{endpoint.scope}</code>
-                  </Td>
-                  <Td className="text-ink-muted">{endpoint.purpose}</Td>
-                  <Td>
-                    <Badge tone={endpoint.status === "live" ? "positive" : "neutral"}>
-                      {endpoint.status}
-                    </Badge>
-                  </Td>
-                </Tr>
-              ))}
+              {/* Planned rows recede so the table reads its own status at a
+                  glance; weight, not cobalt, separates the method column. */}
+              {ENDPOINTS.map((endpoint) => {
+                const planned = endpoint.status !== "live";
+                return (
+                  <Tr key={endpoint.path + endpoint.method}>
+                    <Td>
+                      <code className="text-sm font-medium text-ink">
+                        {endpoint.method}
+                      </code>
+                    </Td>
+                    <Td>
+                      <code className={cn("text-sm", planned ? "text-ink-subtle" : "text-ink")}>
+                        {endpoint.path}
+                      </code>
+                    </Td>
+                    <Td>
+                      <code className="text-xs text-ink-muted">{endpoint.scope}</code>
+                    </Td>
+                    <Td className={planned ? "text-ink-subtle" : "text-ink-muted"}>
+                      {endpoint.purpose}
+                    </Td>
+                    <Td>
+                      <Badge tone={endpoint.status === "live" ? "positive" : "neutral"}>
+                        {endpoint.status}
+                      </Badge>
+                    </Td>
+                  </Tr>
+                );
+              })}
             </Tbody>
           </Table>
         </TableWrap>
@@ -79,7 +89,7 @@ export function ApiReference() {
       <Card>
         <CardHeader>
           <CardTitle>Query parameters</CardTitle>
-          <span className="text-[12px] text-ink-muted">GET /v1/influencers</span>
+          <span className="text-sm text-ink-muted">GET /v1/influencers</span>
         </CardHeader>
         <TableWrap label="Query parameters">
           <Table>
@@ -94,9 +104,9 @@ export function ApiReference() {
               {PARAMETERS.map((parameter) => (
                 <Tr key={parameter.name}>
                   <Td>
-                    <code className="font-num text-[12px] text-ink">{parameter.name}</code>
+                    <code className="text-sm text-ink">{parameter.name}</code>
                   </Td>
-                  <Td className="font-num text-[12px] text-ink-muted">{parameter.type}</Td>
+                  <Td className="text-sm text-ink-muted">{parameter.type}</Td>
                   <Td className="text-ink-muted">{parameter.detail}</Td>
                 </Tr>
               ))}

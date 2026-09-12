@@ -63,7 +63,7 @@ export function RefreshButton({ influencerId }: { influencerId: string }) {
       {(state.status === "done" || state.status === "error") && (
         <p
           role="status"
-          className={`max-w-xs text-[11px] leading-4 ${
+          className={`max-w-xs text-xs leading-4 ${
             state.status === "error" ? "text-critical" : "text-positive"
           }`}
         >

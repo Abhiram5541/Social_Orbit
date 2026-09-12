@@ -4,6 +4,7 @@ import {
   type YouTubeChannel,
   type YouTubeVideo,
 } from "@/server/connectors/youtube";
+import { observeAccount, type XAccount, type XPost } from "@/server/connectors/x";
 import { upsertIngested, type IngestedRecord } from "@/server/data/ingested-store";
 import { readRecords } from "@/server/data/records";
 import { checkRateLimit } from "./rate-limit";
@@ -331,6 +332,149 @@ export async function ingestYouTubeChannel(
   };
 }
 
+/* --- X ingestion ----------------------------------------------------------
+ *
+ * X's public API carries no topic/category classification at all — nothing
+ * comparable to YouTube's `topicDetails` or per-video `categoryId` (D14). An
+ * X-sourced creator's `categories` therefore stays empty rather than guessed:
+ * a keyword categorizer built from bio/post text would be exactly the
+ * undisclosed-inference pattern D16 forbids — classification the platform
+ * never asserted, presented as if it were observed. If X-sourced creators
+ * need a category later, it has to come through the declared AI-inference
+ * path (`RawAiOutput.categories`) like any other model classification, not a
+ * hand-rolled heuristic living in the connector.
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Maps one X account plus its recent posts onto the canonical record set.
+ * Pure, mirroring `buildRecord` above: no I/O, so a bulk pass can build many
+ * records and commit them in one write.
+ */
+export function buildXRecord(
+  account: XAccount,
+  posts: XPost[],
+  collectedAt: string,
+): IngestedRecord {
+  // X always returns a real follower count for a successful lookup — there is
+  // no `followersHidden` state the way YouTube's `hiddenSubscriberCount` is,
+  // so unlike `buildRecord` there is no unmeasurable-follower-count refusal
+  // to make here.
+  const handle = account.username;
+  const influencerId = `x_${account.userId}`;
+  const accountId = `${influencerId}_x`;
+
+  return {
+    influencer: {
+      id: influencerId,
+      displayName: account.name,
+      primaryHandle: handle,
+      avatarUrl: account.avatarUrl,
+      bio: account.description.slice(0, 400),
+      status: "published",
+      // Both false until OAuth identity match. X's own `xVerifiedBadge` (a
+      // paid subscription badge) is never written here — see CRITICAL RULE 2
+      // in the task and the comment on `UserObject.verified` in the
+      // connector. Verified status is never granted from public data, however
+      // authoritative that data is (Arch §2).
+      isConnected: false,
+      identityMatched: false,
+      // Deliberately empty — see the module comment above (D14/D16).
+      categories: [],
+      countryCode: "",
+      countryName: "",
+      // X's public API declares no per-post language field the creator set
+      // themselves — `lang` on a tweet is X's own automatic language
+      // detection of that post's text, not a creator declaration the way
+      // YouTube's `defaultAudioLanguage` is. Presenting it as the creator's
+      // declared language would overstate what was actually observed, so it
+      // is left empty rather than reused from a different kind of signal.
+      languages: [],
+      primaryPlatform: "x",
+      createdAt: account.createdAt ?? collectedAt,
+      lastRefreshedAt: collectedAt,
+      conflictCount: 0,
+    },
+    accounts: [
+      {
+        id: accountId,
+        influencerId,
+        platform: "x",
+        platformAccountId: account.userId,
+        handle,
+        url: account.url,
+        isPrimary: true,
+        isConnected: false,
+        connectedAt: null,
+        needsReauth: false,
+        followers: account.followers,
+        // X's user object reports no lifetime view/impression total the way
+        // YouTube's `viewCount` is a channel-level statistic — impressions are
+        // only ever per-post, and only with elevated access. Absent, not zero.
+        totalViews: null,
+        contentCount: account.postCount,
+        lastSyncedAt: collectedAt,
+      },
+    ],
+    snapshot: {
+      accountId,
+      date: collectedAt.slice(0, 10),
+      followers: account.followers,
+      views: null,
+      contentCount: account.postCount,
+    },
+    content: posts.map((post) => ({
+      id: `${accountId}_${post.postId}`,
+      accountId,
+      influencerId,
+      platform: "x",
+      title: post.text.slice(0, 120),
+      url: post.url,
+      // X posts carry no dedicated thumbnail field reachable at this access
+      // tier (media requires the `attachments`/`media` expansion this
+      // connector does not request, since most posts carry no media at all).
+      thumbnailUrl: null,
+      publishedAt: post.publishedAt ?? collectedAt,
+      // X has no "views" concept for a post the way YouTube counts video
+      // views; `impressions` is the nearest analogue and is only present with
+      // elevated access, so it stays a distinctly-absent field rather than
+      // being relabelled as `views`.
+      views: post.impressions,
+      likes: post.likes,
+      // Retweets are the closest X concept to a "share", not a comment count —
+      // stored as `shares`, with replies+quotes standing in for `comments`.
+      comments: post.replies + post.quotes,
+      shares: post.retweets,
+      durationSeconds: null,
+      // No disclosure signal is visible on a public post either platform.
+      isSponsored: null,
+      caption: post.text.slice(0, 400),
+      hashtags: extractHashtags(post.text),
+      platformCategoryId: null,
+    })),
+  };
+}
+
+export async function ingestXAccount(input: string, postLimit = 50): Promise<IngestionReport> {
+  const observation = await observeAccount(input, postLimit);
+  if (!observation) {
+    throw new IngestionRefused("not_found", `No X account matched "${input}".`);
+  }
+
+  const record = buildXRecord(
+    observation.account,
+    observation.recentContent,
+    observation.provenance.collectedAt,
+  );
+  upsertIngested([record]);
+
+  return {
+    influencerId: record.influencer.id,
+    displayName: observation.account.name,
+    contentIngested: record.content.length,
+    quotaUnitsSpent: observation.quotaUnitsSpent,
+  };
+}
+
 /* --- On-demand refresh --------------------------------------------------- */
 
 /**
@@ -386,7 +530,10 @@ export async function refreshInfluencer(influencerId: string): Promise<RefreshRe
     throw new RefreshTooSoon(limit.retryAfterMs, account.lastSyncedAt);
   }
 
-  const report = await ingestYouTubeChannel(account.platformAccountId, 50);
+  const report =
+    account.platform === "x"
+      ? await ingestXAccount(account.platformAccountId, 50)
+      : await ingestYouTubeChannel(account.platformAccountId, 50);
   const refreshed = readRecords().accounts.find((item) => item.id === account.id);
 
   return {

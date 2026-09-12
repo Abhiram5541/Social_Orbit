@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   BadgeCheck,
   CircleDot,
+  ExternalLink,
   Sigma,
   Sparkles,
   TrendingDown,
@@ -13,12 +14,14 @@ import {
 import { cn } from "@/lib/class-names";
 import { NO_VALUE, direction, formatDelta, formatRelativeTime, isStale } from "@/lib/format";
 import {
+  confidenceBand,
   type ConfidenceBand,
   type DataConfidence,
   type FactKind,
   type Provenance,
+  type SourceTier,
 } from "@/lib/contracts/common";
-import { Tooltip } from "@/components/ui/overlay";
+import { Popover, Tooltip } from "@/components/ui/overlay";
 import { RelativeTime } from "@/components/ui/relative-time";
 
 /* ---------------------------------------------------------------------------
@@ -105,7 +108,7 @@ export function ProvenanceMark({
     >
       <span
         className={cn(
-          "inline-flex items-center gap-1 align-middle text-[11px]",
+          "inline-flex items-center gap-1 align-middle text-xs",
           kind.className,
           stale && "opacity-60",
           className,
@@ -151,7 +154,7 @@ export function ConfidenceMeter({
             style={{ width: `${confidence.score}%` }}
           />
         </span>
-        <span className="font-num text-[11px] tabular-nums text-ink-muted">
+        <span className="font-num text-xs text-ink-muted">
           {Math.round(confidence.score)}%
         </span>
       </span>
@@ -161,8 +164,8 @@ export function ConfidenceMeter({
   return (
     <div className={cn("space-y-1.5", className)}>
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-[12px] text-ink-muted">Data confidence</span>
-        <span className={cn("font-num text-[13px] font-medium tabular-nums", style.text)}>
+        <span className="text-sm text-ink-muted">Data confidence</span>
+        <span className={cn("font-num text-base font-medium", style.text)}>
           {Math.round(confidence.score)}%
         </span>
       </div>
@@ -172,7 +175,7 @@ export function ConfidenceMeter({
           style={{ width: `${confidence.score}%` }}
         />
       </div>
-      <p className="text-[11px] text-ink-muted">
+      <p className="text-xs text-ink-muted">
         {style.label}
         {confidence.band === "preliminary" &&
           " — too little history to rely on these numbers yet."}
@@ -206,12 +209,12 @@ export function ProvenanceMix({
           <span key={key} className={colour} style={{ width: `${mix[key]}%` }} />
         ))}
       </div>
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-muted">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted">
         {entries.map(([key, colour]) => (
           <span key={key} className="inline-flex items-center gap-1">
             <span className={cn("size-1.5 rounded-full", colour)} aria-hidden />
             {FACT_KIND[key].label}{" "}
-            <span className="font-num tabular-nums text-ink">{Math.round(mix[key])}%</span>
+            <span className="font-num text-ink">{Math.round(mix[key])}%</span>
           </span>
         ))}
       </div>
@@ -244,7 +247,7 @@ export function Delta({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 font-num text-[12px] font-medium tabular-nums",
+        "inline-flex items-center gap-1 font-num text-sm font-medium",
         good && "text-positive",
         bad && "text-critical",
         !good && !bad && "text-ink-muted",
@@ -272,7 +275,7 @@ export function Freshness({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 text-[12px]",
+        "inline-flex items-center gap-1 text-sm",
         stale ? "text-caution" : "text-ink-muted",
         className,
       )}
@@ -280,5 +283,215 @@ export function Freshness({
       <RelativeTime at={at} prefix={prefix} />
       {stale && <span className="sr-only">(stale)</span>}
     </span>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+ * The provenance dossier.
+ *
+ * A tooltip is where a differentiator goes to die: it is unreachable on touch,
+ * cannot be read at leisure and cannot hold a source link. Any number a user
+ * might have to defend in a meeting gets this instead — a click-through panel
+ * naming the source, the collection time, the method, the confidence and, for
+ * a derived figure, the formula that produced it (CLAUDE.md §8, DPR §22).
+ * ------------------------------------------------------------------------ */
+
+const TIER_LABEL: Record<SourceTier, string> = {
+  platform_api: "Official platform API",
+  oauth_authorized: "Creator-authorised account",
+  licensed_provider: "Licensed data provider",
+  public_research: "Permitted public research",
+  ai_inference: "AI classification",
+  manual_entry: "SocialOrbit operator",
+};
+
+/** Tier 1 is the strongest claim; the scale is what makes a tier meaningful. */
+const TIER_RANK: Record<SourceTier, number> = {
+  platform_api: 1,
+  oauth_authorized: 1,
+  licensed_provider: 3,
+  public_research: 4,
+  ai_inference: 5,
+  manual_entry: 4,
+};
+
+export function ProvenanceChip({
+  provenance,
+  className,
+}: {
+  provenance: Provenance;
+  className?: string;
+}) {
+  const kind = FACT_KIND[provenance.kind];
+  const Icon = kind.icon;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full border px-1.5 py-px text-2xs font-semibold uppercase tracking-[0.06em]",
+        provenance.kind === "verified" && "border-brass-line bg-brass-soft text-brass-ink",
+        provenance.kind === "observed" && "border-positive-line bg-positive-soft text-observed",
+        provenance.kind === "derived" && "border-line bg-sunken text-ink-muted",
+        provenance.kind === "estimated" && "border-caution-line bg-caution-soft text-estimated",
+        provenance.kind === "inferred" && "border-inferred-line bg-inferred-soft text-inferred",
+        className,
+      )}
+    >
+      <Icon className="size-2.5" aria-hidden />
+      {kind.label}
+    </span>
+  );
+}
+
+/**
+ * A value that can explain itself. The dotted rule under the figure is the
+ * affordance — the same convention a footnote uses, and quiet enough to sit in
+ * a table column without turning every row into a link.
+ */
+export function TrackedValue({
+  label,
+  value,
+  provenance,
+  derivation,
+  className,
+  valueClassName,
+}: {
+  /** What the figure measures. Titles the panel. */
+  label: string;
+  value: React.ReactNode;
+  provenance: Provenance;
+  /** For a derived figure: the formula, in words or notation. */
+  derivation?: React.ReactNode;
+  className?: string;
+  valueClassName?: string;
+}) {
+  const kind = FACT_KIND[provenance.kind];
+
+  return (
+    <Popover
+      title={`How ${label} was determined`}
+      className="w-[19rem] max-w-[calc(100vw-1rem)]"
+      trigger={(props) => (
+        <button
+          type="button"
+          {...props}
+          className={cn(
+            "group inline-flex items-baseline gap-1.5 rounded-sm text-left",
+            className,
+          )}
+        >
+          <span
+            className={cn(
+              "font-num decoration-line-strong decoration-dotted underline-offset-4 group-hover:decoration-ink-subtle",
+              "underline",
+              valueClassName,
+            )}
+          >
+            {value}
+          </span>
+          <ProvenanceMark provenance={provenance} />
+          <span className="sr-only">— show source and confidence</span>
+        </button>
+      )}
+    >
+      <div className="border-b border-rule px-3 py-2.5">
+        <p className="label-caps-sm text-ink-subtle">{label}</p>
+        <p className="mt-1 flex items-baseline gap-2">
+          <span className="font-num text-stat font-medium text-ink">{value}</span>
+          <ProvenanceChip provenance={provenance} />
+        </p>
+      </div>
+
+      <dl className="divide-y divide-rule px-3 text-sm">
+        <ProvenanceRow term="Method" detail={kind.explain} />
+        <ProvenanceRow
+          term="Source"
+          detail={
+            <>
+              {TIER_LABEL[provenance.tier]}{" "}
+              <span className="text-ink-subtle">· tier {TIER_RANK[provenance.tier]} of 5</span>
+              {provenance.sourceUrl && (
+                <>
+                  <br />
+                  <a
+                    href={provenance.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="inline-flex items-center gap-1 text-brand-ink hover:underline"
+                  >
+                    View source
+                    <ExternalLink className="size-3" aria-hidden />
+                  </a>
+                </>
+              )}
+            </>
+          }
+        />
+        <ProvenanceRow
+          term="Collected"
+          detail={
+            <>
+              <RelativeTime at={provenance.collectedAt} />
+              {isStale(provenance.collectedAt) && (
+                <span className="ml-1.5 text-caution">past refresh window</span>
+              )}
+            </>
+          }
+        />
+        {provenance.verifiedAt && (
+          <ProvenanceRow
+            term="Verified"
+            detail={<RelativeTime at={provenance.verifiedAt} />}
+          />
+        )}
+        {derivation && <ProvenanceRow term="Derivation" detail={derivation} />}
+        {provenance.ai && (
+          <ProvenanceRow
+            term="Model"
+            detail={
+              <>
+                {provenance.ai.provider} {provenance.ai.model}
+                <br />
+                <span className="text-ink-subtle">
+                  prompt {provenance.ai.promptVersion} · schema {provenance.ai.schemaVersion}
+                </span>
+              </>
+            }
+          />
+        )}
+      </dl>
+
+      <div className="border-t border-rule px-3 py-2.5">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-sm text-ink-muted">Field confidence</span>
+          <span className="font-num text-sm font-medium text-ink">
+            {Math.round(provenance.confidence)}%
+          </span>
+        </div>
+        <div className="mt-1 h-1 overflow-hidden rounded-full bg-sunken-strong">
+          <div
+            className={cn(
+              "h-full rounded-full",
+              BAND_STYLE[confidenceBand(provenance.confidence)].bar,
+            )}
+            style={{ width: `${provenance.confidence}%` }}
+          />
+        </div>
+      </div>
+    </Popover>
+  );
+}
+
+function ProvenanceRow({
+  term,
+  detail,
+}: {
+  term: string;
+  detail: React.ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-[5.5rem_1fr] gap-3 py-2">
+      <dt className="text-ink-subtle">{term}</dt>
+      <dd className="min-w-0 text-ink">{detail}</dd>
+    </div>
   );
 }

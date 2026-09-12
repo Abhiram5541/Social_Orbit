@@ -693,6 +693,10 @@ const VIEWS_PER_FOLLOWER: Record<Platform, number> = {
   youtube: 260,
   instagram: 74,
   tiktok: 120,
+  // No demo creators are seeded on X (isDemo records exist only for youtube
+  // and instagram today), so this is never read — present only because the
+  // table is keyed by the full Platform enum.
+  x: 90,
 };
 
 const SNAPSHOT_WEEKS = 14;

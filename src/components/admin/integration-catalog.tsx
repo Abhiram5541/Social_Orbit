@@ -3,9 +3,9 @@ import Link from "next/link";
 import type {
   Integration,
   IntegrationCategory,
-  IntegrationState,
 } from "@/server/repositories/integrations-repository";
-import { Badge, type BadgeTone } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
+import { STATE } from "./status-language";
 
 /*
  * The integrations catalog, grouped by what each integration is for.
@@ -35,16 +35,6 @@ const CATEGORY_NOTE: Record<IntegrationCategory, string> = {
   storage: "Scheduled report export to a client-owned bucket or drive.",
 };
 
-const STATE: Record<IntegrationState, { label: string; tone: BadgeTone }> = {
-  live: { label: "Live", tone: "positive" },
-  not_implemented: { label: "No adapter yet", tone: "caution" },
-  degraded: { label: "Degraded", tone: "caution" },
-  credentials_missing: { label: "Credentials missing", tone: "caution" },
-  not_configured: { label: "Not configured", tone: "neutral" },
-  planned: { label: "Planned", tone: "neutral" },
-  deferred: { label: "Deferred — v1 scope", tone: "neutral" },
-};
-
 const CATEGORY_ORDER: IntegrationCategory[] = [
   "social_platforms",
   "commerce_attribution",
@@ -59,7 +49,7 @@ function IntegrationCard({ integration }: { integration: Integration }) {
   return (
     <li className="flex min-w-0 flex-col rounded-lg border border-line p-3">
       <div className="flex flex-col items-start gap-1.5">
-        <span className="w-full truncate text-[14px] font-semibold text-ink">
+        <span className="w-full truncate font-semibold text-ink">
           {integration.name}
         </span>
         <Badge tone={state.tone} dot>
@@ -67,18 +57,18 @@ function IntegrationCard({ integration }: { integration: Integration }) {
         </Badge>
       </div>
 
-      <p className="mt-1.5 text-[12px] leading-5 text-ink-muted">{integration.purpose}</p>
+      <p className="mt-1.5 text-sm leading-5 text-ink-muted">{integration.purpose}</p>
 
-      <p className="mt-2.5 border-t border-line pt-2 text-[12px] leading-5 text-ink-subtle">
+      <p className="mt-2.5 border-t border-line pt-2 text-sm leading-5 text-ink-subtle">
         {integration.statusDetail}
       </p>
 
       {integration.missing.length > 0 && (
         <div className="mt-2 rounded border border-caution-line bg-caution-soft px-2 py-1.5">
-          <p className="label-caps text-[10px] text-caution">Missing environment</p>
+          <p className="label-caps-sm text-caution">Missing environment</p>
           <ul className="mt-1 space-y-0.5">
             {integration.missing.map((key) => (
-              <li key={key} className="break-all font-num text-[11px] leading-4 text-caution">
+              <li key={key} className="break-all font-num text-xs leading-4 text-caution">
                 {key}
               </li>
             ))}
@@ -90,7 +80,7 @@ function IntegrationCard({ integration }: { integration: Integration }) {
         <p className="mt-auto pt-2">
           <Link
             href={integration.manageHref}
-            className="rounded text-[12px] font-medium text-brand-ink hover:underline"
+            className="rounded text-sm font-medium text-brand-ink hover:underline"
           >
             Connector health <span aria-hidden>→</span>
           </Link>
@@ -111,11 +101,11 @@ export function IntegrationCatalog({ integrations }: { integrations: Integration
           <section key={category} aria-labelledby={`integrations-${category}`}>
             <h2
               id={`integrations-${category}`}
-              className="text-[14px] font-semibold text-ink"
+              className="font-semibold text-ink"
             >
               {CATEGORY_LABEL[category]}
             </h2>
-            <p className="mt-0.5 text-[12px] leading-5 text-ink-muted">
+            <p className="mt-0.5 text-sm leading-5 text-ink-muted">
               {CATEGORY_NOTE[category]}
             </p>
             <ul className="mt-2.5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

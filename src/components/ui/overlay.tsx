@@ -24,6 +24,20 @@ export function Tooltip({
 }) {
   const id = React.useId();
   const [open, setOpen] = React.useState(false);
+  const timer = React.useRef<number | undefined>(undefined);
+
+  React.useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  // Hover waits ~250ms so the tip does not pop on every incidental pointer
+  // pass; focus opens immediately — keyboard users asked for it deliberately.
+  function openAfterDelay() {
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setOpen(true), 250);
+  }
+  function close() {
+    window.clearTimeout(timer.current);
+    setOpen(false);
+  }
 
   const position = {
     top: "bottom-full left-1/2 -translate-x-1/2 mb-1.5",
@@ -35,10 +49,13 @@ export function Tooltip({
   return (
     <span
       className={cn("relative inline-flex", className)}
-      onPointerEnter={() => setOpen(true)}
-      onPointerLeave={() => setOpen(false)}
-      onFocusCapture={() => setOpen(true)}
-      onBlurCapture={() => setOpen(false)}
+      onPointerEnter={openAfterDelay}
+      onPointerLeave={close}
+      onFocusCapture={() => {
+        window.clearTimeout(timer.current);
+        setOpen(true);
+      }}
+      onBlurCapture={close}
     >
       {React.cloneElement(children, { "aria-describedby": open ? id : undefined })}
       {open && (
@@ -47,7 +64,10 @@ export function Tooltip({
           id={id}
           className={cn(
             "pointer-events-none absolute z-50 w-max max-w-64 rounded-md bg-ink px-2 py-1.5",
-            "text-[12px] leading-4 text-ink-inverse shadow-popover",
+            "text-sm text-ink-inverse shadow-popover",
+            // Arrives rather than pops — the Menu panel's entrance, opacity
+            // only because the positioning classes already own transform.
+            "opacity-100 transition-opacity duration-(--duration-fast) ease-(--ease-out-quick) starting:opacity-0",
             position,
           )}
         >
@@ -89,11 +109,14 @@ export function Menu({
   trigger,
   children,
   align = "end",
+  side = "bottom",
   className,
 }: {
   trigger: (props: { popoverTarget: string; "aria-haspopup": "menu" }) => React.ReactNode;
   children: React.ReactNode;
   align?: "start" | "end";
+  /** `top` opens upward — for a trigger that sits at the foot of the rail. */
+  side?: "bottom" | "top";
   className?: string;
 }) {
   const rawId = React.useId();
@@ -110,9 +133,41 @@ export function Menu({
     const box = trigger.getBoundingClientRect();
     const width = panel.offsetWidth;
     const left = align === "end" ? box.right - width : box.left;
-    panel.style.top = `${Math.round(box.bottom + 4)}px`;
+    const top = side === "top" ? box.top - panel.offsetHeight - 4 : box.bottom + 4;
+    panel.style.top = `${Math.round(Math.max(8, top))}px`;
     panel.style.left = `${Math.round(Math.max(8, Math.min(left, window.innerWidth - width - 8)))}px`;
-  }, [align, id]);
+  }, [align, id, side]);
+
+  // The panel is positioned against a viewport box that scrolling invalidates;
+  // closing on the first scroll is honest — a menu is a momentary choice.
+  React.useEffect(() => {
+    const onScroll = () => {
+      const panel = ref.current;
+      if (panel?.matches(":popover-open")) panel.hidePopover();
+    };
+    window.addEventListener("scroll", onScroll, { capture: true });
+    return () => window.removeEventListener("scroll", onScroll, { capture: true });
+  }, []);
+
+  // role="menu" promises the ARIA keyboard model, so the panel delivers it:
+  // roving focus among menuitems, same pattern as tabs.
+  function onKeyDown(event: React.KeyboardEvent) {
+    const panel = ref.current;
+    if (!panel) return;
+    const items = Array.from(
+      panel.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)'),
+    );
+    if (items.length === 0) return;
+    const index = items.indexOf(document.activeElement as HTMLElement);
+    let next: number;
+    if (event.key === "ArrowDown") next = (index + 1) % items.length;
+    else if (event.key === "ArrowUp") next = (index - 1 + items.length) % items.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = items.length - 1;
+    else return;
+    event.preventDefault();
+    items[next].focus();
+  }
 
   return (
     <>
@@ -122,11 +177,17 @@ export function Menu({
         id={id}
         popover="auto"
         role="menu"
+        onKeyDown={onKeyDown}
         onToggle={(event) => {
-          if ((event as unknown as { newState: string }).newState === "open") place();
+          if ((event as unknown as { newState: string }).newState === "open") {
+            place();
+            ref.current
+              ?.querySelector<HTMLElement>('[role="menuitem"]:not(:disabled)')
+              ?.focus();
+          }
         }}
         className={cn(
-          "fixed m-0 min-w-44 rounded-lg border border-line bg-surface p-1 shadow-popover",
+          "fixed m-0 min-w-48 rounded-lg bg-surface p-1 shadow-popover",
           "[&:not(:popover-open)]:hidden",
           // Same entrance the dialog gets, tuned smaller: menus should arrive,
           // not pop. @starting-style animates from the pre-open frame.
@@ -152,7 +213,7 @@ export function MenuItem({
       type="button"
       role="menuitem"
       className={cn(
-        "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px]",
+        "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-base",
         "transition-colors hover:bg-sunken",
         destructive ? "text-critical hover:bg-critical-soft" : "text-ink",
         "disabled:cursor-not-allowed disabled:text-ink-subtle disabled:hover:bg-transparent",
@@ -169,9 +230,7 @@ export function MenuSeparator() {
 
 export function MenuLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="px-2 py-1 text-[11px] font-medium uppercase tracking-[0.05em] text-ink-subtle">
-      {children}
-    </p>
+    <p className="label-caps px-2 py-1 text-ink-subtle">{children}</p>
   );
 }
 
@@ -223,12 +282,19 @@ export function Popover({
     panel.style.maxHeight = `${Math.round(window.innerHeight - box.bottom - 24)}px`;
   }, [align, id]);
 
+  // Re-placed on resize AND scroll — the anchor's viewport box moves with
+  // both, and a detached panel floats over the wrong content. Scroll is
+  // capture-phase so inner scroll containers report too.
   React.useEffect(() => {
-    const onResize = () => {
+    const onMove = () => {
       if (ref.current?.matches(":popover-open")) place();
     };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    window.addEventListener("resize", onMove);
+    window.addEventListener("scroll", onMove, { capture: true });
+    return () => {
+      window.removeEventListener("resize", onMove);
+      window.removeEventListener("scroll", onMove, { capture: true });
+    };
   }, [place]);
 
   return (

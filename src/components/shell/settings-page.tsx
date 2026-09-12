@@ -1,7 +1,7 @@
 import * as React from "react";
 import { PLAN_CONFIG, ROLE_LABEL, ROLE_PERMISSIONS, type SessionUser } from "@/lib/contracts/auth";
 import { Badge } from "@/components/ui/badge";
-import { Button, LinkButton } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Notice } from "@/components/ui/states";
 import { DataRow } from "@/components/intelligence/stat";
@@ -11,6 +11,19 @@ import { DataRow } from "@/components/intelligence/stat";
  * read-only here on purpose — a user cannot grant themselves a permission from
  * their own settings page.
  */
+/** "influencer:search" rows fold into ["influencer", ["search", …]], in the
+    order the role definition lists them. */
+function groupPermissions(permissions: readonly string[]): [string, string[]][] {
+  const groups = new Map<string, string[]>();
+  for (const permission of permissions) {
+    const [resource, action = permission] = permission.split(":");
+    const actions = groups.get(resource) ?? [];
+    actions.push(action);
+    groups.set(resource, actions);
+  }
+  return [...groups.entries()];
+}
+
 export function SettingsPanels({ user }: { user: SessionUser }) {
   const permissions = ROLE_PERMISSIONS[user.role];
 
@@ -38,7 +51,7 @@ export function SettingsPanels({ user }: { user: SessionUser }) {
             <CardTitle>Security</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="text-[13px] leading-5 text-ink-muted">
+            <p className="text-base text-ink-muted">
               Sessions are signed, httpOnly and expire after seven days. Signing out clears the
               session immediately.
             </p>
@@ -46,13 +59,10 @@ export function SettingsPanels({ user }: { user: SessionUser }) {
               {/* The reset flow is built and works, so the control uses it
                   rather than being a second, unimplemented path. */}
               <LinkButton href="/forgot-password">Change password</LinkButton>
-              <Button variant="ghost" disabled title="Not available yet">
-                Sign out other sessions
-              </Button>
             </div>
             <Notice tone="info" title="Two-factor authentication">
               Not yet available. When it ships it will be enforceable at the organisation level
-              rather than left to each user.
+              rather than left to each user. Remote session revocation ships alongside it.
             </Notice>
           </CardContent>
         </Card>
@@ -64,19 +74,22 @@ export function SettingsPanels({ user }: { user: SessionUser }) {
           <Badge tone="neutral">{permissions.length} permissions</Badge>
         </CardHeader>
         <CardContent className="space-y-3">
-          <p className="text-[13px] text-ink-muted">
+          <p className="text-base text-ink-muted">
             Permissions come from your role and are enforced on the server for every request.
             Ask an administrator if you need a different role.
           </p>
-          <ul className="flex flex-wrap gap-1">
-            {permissions.map((permission) => (
-              <li key={permission}>
-                <code className="rounded bg-sunken px-1.5 py-0.5 font-num text-[11px] text-ink-muted">
-                  {permission}
-                </code>
-              </li>
+          {/* Grouped by resource — every permission is resource:action, and a
+              flat wall of chips hides that structure. */}
+          <dl className="grid gap-x-8 gap-y-2 sm:grid-cols-2">
+            {groupPermissions(permissions).map(([resource, actions]) => (
+              <div key={resource} className="flex items-baseline justify-between gap-3 border-b border-line pb-1.5">
+                <dt className="label-caps-sm text-ink-subtle">{resource.replace(/_/g, " ")}</dt>
+                <dd>
+                  <code className="font-num text-xs text-ink-muted">{actions.join(" · ")}</code>
+                </dd>
+              </div>
             ))}
-          </ul>
+          </dl>
         </CardContent>
       </Card>
     </div>

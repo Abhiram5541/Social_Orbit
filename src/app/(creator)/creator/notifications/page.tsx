@@ -23,7 +23,9 @@ export default async function CreatorNotificationsPage() {
         title: `Reconnect your ${PLATFORM_LABEL[account.platform]} account`,
         detail:
           "The stored token can no longer be refreshed, so your authorized metrics are frozen at the last successful sync.",
-        at: account.lastSyncedAt ?? new Date().toISOString(),
+        // The last sync is the real anchor; with none, the row shows no time
+        // rather than minting a "just now".
+        at: account.lastSyncedAt ?? undefined,
         href: "/creator/connections",
       });
     }
@@ -37,7 +39,6 @@ export default async function CreatorNotificationsPage() {
       title: "Verification is still pending",
       detail:
         "Your account is connected. The identity match has not completed yet — a reviewer will confirm shortly.",
-      at: new Date().toISOString(),
       href: "/creator/verification",
     });
   }
@@ -50,7 +51,7 @@ export default async function CreatorNotificationsPage() {
       title: "Your profile is showing as dormant",
       detail:
         "No qualifying publication in over 90 days. Brands filtering for active creators will not see you.",
-      at: profile.lastActiveAt ?? new Date().toISOString(),
+      at: profile.lastActiveAt ?? undefined,
       href: "/creator/analytics",
     });
   }
@@ -62,7 +63,10 @@ export default async function CreatorNotificationsPage() {
         description="Changes to your profile, connections and verification status."
       />
       <PageBody>
-        <NotificationsList items={items} />
+        <NotificationsList
+          items={items}
+          emptyDescription="We watch your connections, verification and activity. When a token stops refreshing, your profile goes dormant, or your verification changes, it appears here."
+        />
       </PageBody>
     </>
   );

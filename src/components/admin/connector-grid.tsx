@@ -1,18 +1,9 @@
 import * as React from "react";
 import { PLATFORM_LABEL } from "@/lib/contracts/common";
 import { formatCompact, formatRelativeTime } from "@/lib/format";
-import type { ConnectorState, ConnectorStatus } from "@/server/repositories/ops-repository";
-import { Badge, type BadgeTone } from "@/components/ui/badge";
-
-const STATE: Record<ConnectorState, { label: string; tone: BadgeTone }> = {
-  live: { label: "Live", tone: "positive" },
-  // Caution, not neutral: someone has supplied credentials and is entitled to
-  // know they bought nothing yet.
-  not_implemented: { label: "No adapter yet", tone: "caution" },
-  degraded: { label: "Degraded", tone: "caution" },
-  credentials_missing: { label: "Credentials missing", tone: "caution" },
-  not_configured: { label: "Not configured", tone: "neutral" },
-};
+import type { ConnectorStatus } from "@/server/repositories/ops-repository";
+import { Badge } from "@/components/ui/badge";
+import { STATE } from "./status-language";
 
 /**
  * Connector state is reported from what is actually configured. A connector
@@ -33,7 +24,7 @@ export function ConnectorGrid({ connectors }: { connectors: ConnectorStatus[] })
               starting at different heights. Stacking keeps the set aligned and
               never truncates a status, which is the point of this card. */}
           <div className="flex flex-col items-start gap-1.5">
-            <span className="w-full truncate text-[14px] font-semibold text-ink">
+            <span className="w-full truncate font-semibold text-ink">
               {PLATFORM_LABEL[connector.platform]}
             </span>
             <Badge tone={STATE[connector.state].tone} dot>
@@ -41,12 +32,12 @@ export function ConnectorGrid({ connectors }: { connectors: ConnectorStatus[] })
             </Badge>
           </div>
 
-          <p className="mt-1.5 text-[12px] leading-5 text-ink-muted">{connector.notes}</p>
+          <p className="mt-1.5 text-sm leading-5 text-ink-muted">{connector.notes}</p>
 
-          <dl className="mt-2.5 space-y-1 border-t border-line pt-2 text-[12px]">
+          <dl className="mt-2.5 space-y-1 border-t border-line pt-2 text-sm">
             <div className="flex justify-between gap-2">
               <dt className="text-ink-muted">Accounts tracked</dt>
-              <dd className="font-num tabular-nums text-ink">
+              <dd className="font-num text-ink">
                 {formatCompact(connector.accountsTracked)}
               </dd>
             </div>
@@ -58,14 +49,14 @@ export function ConnectorGrid({ connectors }: { connectors: ConnectorStatus[] })
 
           {connector.missing.length > 0 && (
             <div className="mt-2 rounded border border-caution-line bg-caution-soft px-2 py-1.5">
-              <p className="label-caps text-[10px] text-caution">Missing</p>
+              <p className="label-caps-sm text-caution">Missing</p>
               <ul className="mt-1 space-y-0.5">
                 {connector.missing.map((key) => (
                   // `break-all`: these are single unbroken tokens with no space
                   // or hyphen to wrap on, so without it they run past the box.
                   <li
                     key={key}
-                    className="break-all font-num text-[11px] leading-4 text-caution"
+                    className="break-all font-num text-xs leading-4 text-caution"
                   >
                     {key}
                   </li>

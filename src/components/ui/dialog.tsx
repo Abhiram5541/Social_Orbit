@@ -70,7 +70,7 @@ export function Dialog({
         if (event.target === ref.current) onClose();
       }}
       className={cn(
-        "w-[calc(100vw-2rem)] rounded-xl border border-line bg-surface p-0 text-ink shadow-overlay",
+        "w-[calc(100vw-2rem)] rounded-2xl bg-surface p-0 text-ink shadow-overlay",
         "backdrop:bg-ink/40 backdrop:backdrop-blur-[1px]",
         SIZES[size],
         className,
@@ -80,11 +80,11 @@ export function Dialog({
       <div onClick={(event) => event.stopPropagation()}>
         <header className="flex items-start justify-between gap-4 border-b border-line px-4 py-3">
           <div className="min-w-0 space-y-0.5">
-            <h2 id={titleId} className="text-[15px] font-semibold">
+            <h2 id={titleId} className="text-md font-semibold">
               {title}
             </h2>
             {description && (
-              <p id={descId} className="text-[13px] text-ink-muted">
+              <p id={descId} className="text-base text-ink-muted">
                 {description}
               </p>
             )}
@@ -122,12 +122,19 @@ export function Sheet({
   title,
   footer,
   children,
+  tone = "surface",
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   footer?: React.ReactNode;
   children: React.ReactNode;
+  /**
+   * `instrument` renders the sheet in the chrome's graphite. The mobile
+   * navigation drawer *is* the rail, so it must be the same material rather
+   * than a white panel wearing the rail's contents.
+   */
+  tone?: "surface" | "instrument";
 }) {
   const ref = React.useRef<HTMLDialogElement>(null);
   const titleId = React.useId();
@@ -151,21 +158,35 @@ export function Sheet({
         if (event.target === ref.current) onClose();
       }}
       className={cn(
-        "sheet-enter m-0 ml-auto h-dvh max-h-none w-[min(24rem,100vw)] max-w-none",
-        "border-l border-line bg-surface p-0 text-ink shadow-overlay",
-        "backdrop:bg-ink/40",
+        "sheet-enter m-0 ml-auto h-dvh max-h-none w-[min(24rem,100vw)] max-w-none p-0 shadow-overlay",
+        tone === "instrument"
+          ? "bg-instrument text-instrument-ink"
+          : "border-l border-line bg-surface text-ink",
       )}
     >
       <div className="flex h-full flex-col" onClick={(event) => event.stopPropagation()}>
-        <header className="flex items-center justify-between gap-4 border-b border-line px-4 py-3">
-          <h2 id={titleId} className="text-[15px] font-semibold">
+        <header
+          className={cn(
+            "flex items-center justify-between gap-4 px-4 py-3",
+            tone === "instrument" ? "border-b border-instrument-line" : "border-b border-line",
+          )}
+        >
+          <h2
+            id={titleId}
+            className={cn("text-md font-semibold", tone === "instrument" && "sr-only")}
+          >
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close panel"
-            className="-mr-1 grid size-7 place-items-center rounded-md text-ink-muted transition-colors hover:bg-sunken hover:text-ink"
+            className={cn(
+              "press -mr-1 ml-auto grid size-8 place-items-center rounded-md",
+              tone === "instrument"
+                ? "text-instrument-muted hover:bg-instrument-raised hover:text-instrument-ink"
+                : "text-ink-muted hover:bg-sunken hover:text-ink",
+            )}
           >
             <X className="size-4" aria-hidden />
           </button>

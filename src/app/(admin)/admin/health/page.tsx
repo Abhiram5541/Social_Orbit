@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { formatCompact } from "@/lib/format";
 import { requirePagePermission } from "@/server/auth/rbac";
 import {
   aiProviderStatuses,
@@ -20,57 +19,62 @@ export default async function SystemHealthPage() {
   const connectors = connectorStatuses();
   const providers = aiProviderStatuses();
 
+  // The badge states the condition; the note carries only its consequence.
   const dependencies = [
     {
       name: "Application",
       detail: "Next.js route handlers and the shared service layer",
       ok: true,
-      note: "Serving",
+      note: null,
     },
     {
       name: "PostgreSQL",
       detail: "Canonical store for influencers, snapshots, scores and tenant data",
       ok: Boolean(process.env.DATABASE_URL),
-      note: process.env.DATABASE_URL
-        ? "Configured"
-        : "Not configured — running on the development data driver",
+      note: process.env.DATABASE_URL ? null : "running on the development data driver",
     },
     {
       name: "Redis",
       detail: "Queues, rate limiting and hot-profile cache",
       ok: Boolean(process.env.REDIS_URL),
       note: process.env.REDIS_URL
-        ? "Configured"
-        : "Not configured — rate limits are per-process and jobs run inline",
+        ? null
+        : "rate limits are per-process and jobs run inline",
     },
     {
       name: "Object storage",
       detail: "Generated reports and exports",
       ok: Boolean(process.env.STORAGE_BUCKET),
-      note: process.env.STORAGE_BUCKET ? "Configured" : "Not configured",
+      note: null,
     },
     {
       name: "Token encryption key",
       detail: "Encrypts OAuth access and refresh tokens at rest",
       ok: Boolean(process.env.TOKEN_ENCRYPTION_KEY),
       note: process.env.TOKEN_ENCRYPTION_KEY
-        ? "Present"
-        : "Missing — OAuth connections cannot be stored safely",
+        ? null
+        : "OAuth connections cannot be stored safely",
     },
   ];
+  const configured = dependencies.filter((dependency) => dependency.ok).length;
 
   return (
     <>
       <PageHeader
+        eyebrow="Administration"
         title="System health"
         description="What is configured in this environment, and what the platform is currently holding."
       />
       <PageBody className="space-y-4">
+        {/* This page's task is the environment — coverage totals live on the
+            overview. */}
         <StatRow>
-          <StatTile label="Influencers" value={formatCompact(stats.totalInfluencers)} />
-          <StatTile label="Accounts" value={formatCompact(stats.totalAccounts)} />
-          <StatTile label="Snapshots" value={formatCompact(stats.totalSnapshots)} />
-          <StatTile label="Content" value={formatCompact(stats.totalContent)} />
+          <StatTile
+            label="Dependencies configured"
+            value={configured}
+            footnote={`of ${dependencies.length}`}
+            emphasis
+          />
           <StatTile
             label="Live connectors"
             value={connectors.filter((connector) => connector.state === "live").length}
@@ -89,10 +93,12 @@ export default async function SystemHealthPage() {
                 className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5"
               >
                 <span className="min-w-40 flex-1">
-                  <span className="block text-[14px] font-medium text-ink">{dependency.name}</span>
-                  <span className="block text-[12px] text-ink-muted">{dependency.detail}</span>
+                  <span className="block font-medium text-ink">{dependency.name}</span>
+                  <span className="block text-sm text-ink-muted">{dependency.detail}</span>
                 </span>
-                <span className="text-[12px] text-ink-muted">{dependency.note}</span>
+                {dependency.note && (
+                  <span className="text-sm text-ink-muted">{dependency.note}</span>
+                )}
                 <Badge tone={dependency.ok ? "positive" : "caution"} dot>
                   {dependency.ok ? "OK" : "Not configured"}
                 </Badge>
@@ -127,13 +133,13 @@ export default async function SystemHealthPage() {
             <CardContent className="space-y-2">
               {providers.map((provider) => (
                 <div key={provider.id} className="flex items-center justify-between gap-2 border-b border-line py-1.5 last:border-0">
-                  <span className="text-[13px] text-ink">{provider.label}</span>
+                  <span className="text-base text-ink">{provider.label}</span>
                   <Badge tone={provider.configured ? "positive" : "caution"} dot>
                     {provider.configured ? (provider.model ?? "configured") : "not configured"}
                   </Badge>
                 </div>
               ))}
-              <p className="pt-1 text-[12px] text-ink-muted">
+              <p className="pt-1 text-sm text-ink-muted">
                 With no provider configured, profiles still ingest, score and serve. AI
                 classification fields simply stay empty rather than being guessed.
               </p>

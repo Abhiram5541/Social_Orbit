@@ -1,11 +1,34 @@
 # SocialOrbit — implementation status
 
-Last updated: 28 August 2026.
+Last updated: 5 September 2026.
 
 Scope note: the build was directed **frontend-first**, with PostgreSQL and live platform
 credentials deferred to a later phase. Everything below is written against that decision
 (CLAUDE.md D2). "Implemented" means the code path is real and exercised end to end; it does
 not mean a production database is attached yet.
+
+---
+
+## Design system — replaced, 5 September 2026
+
+The frontend was redesigned at product level, not restyled. The thesis is recorded in
+`DESIGN.md` and the decisions behind it in CLAUDE.md D23–D27. What changed:
+
+| Layer | Before | After |
+| --- | --- | --- |
+| Chrome | light rail and topbar on a grey canvas | graphite housing (rail, topbar, drawer, marketing hero and footer) around a warm-paper canvas |
+| Identity | on one card (the score readout) | on every route, in the frame |
+| Type | Montserrat alone, 8 sizes | Space Grotesk (headings + every numeral) and Instrument Sans (interface text) |
+| Radius | 2–6px everywhere | 4 / 6 / 8 / 10 / 14 / 18px, rising with the element |
+| Elevation | border *and* shadow | one or the other; shadows carry their own hairline |
+| Topbar | org chip, search, quota, bell, help, account | search, quota, help, bell — identity and account moved into the rail |
+| Screen opening | a white band with a hero figure | one `Instrument` band per screen carrying the headline reading |
+| Score | cobalt ring | brass-graduated dial, arc sweeping once on mount |
+| Marketing | white hero, fixed display type | graphite hero with live coverage figures, fluid display type, one scroll-reveal recipe |
+| Accent | cobalt | cobalt for intent, brass for measurement only |
+
+Nothing about the data contract moved: no new figure is displayed, no delta was
+manufactured, and every empty region is still drawn as empty.
 
 ---
 

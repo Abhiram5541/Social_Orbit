@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
-import { BadgeCheck } from "lucide-react";
+import { BadgeCheck, Check } from "lucide-react";
+import { PLATFORM_LABEL } from "@/lib/contracts/common";
 import { formatDateTime } from "@/lib/format";
 import { requireOwnProfile } from "@/server/auth/creator";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DataRow } from "@/components/intelligence/stat";
 
 export const metadata: Metadata = { title: "Verification" };
 export const dynamic = "force-dynamic";
@@ -13,6 +15,9 @@ export const dynamic = "force-dynamic";
 export default async function VerificationPage() {
   const { profile } = await requireOwnProfile("/creator/verification");
   const connected = profile.socialAccounts.some((account) => account.isConnected);
+  const matched =
+    profile.socialAccounts.find((account) => account.isConnected) ??
+    profile.socialAccounts.find((account) => account.connectedAt);
 
   const steps = [
     {
@@ -42,6 +47,7 @@ export default async function VerificationPage() {
   return (
     <>
       <PageHeader
+        eyebrow="My presence"
         title="Verification"
         description="SocialOrbit Verified is issued only after an account connection and a successful identity match — never from public data."
         actions={
@@ -74,18 +80,18 @@ export default async function VerificationPage() {
             {steps.map((step, index) => (
               <li key={step.label} className="flex gap-3 px-4 py-3">
                 <span
-                  className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[11px] font-medium ${
+                  className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-xs font-medium ${
                     step.done
                       ? "bg-positive text-white"
                       : "border border-line-strong text-ink-subtle"
                   }`}
                   aria-hidden
                 >
-                  {step.done ? "✓" : index + 1}
+                  {step.done ? <Check className="size-3" strokeWidth={3} aria-hidden /> : index + 1}
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-[14px] font-medium text-ink">{step.label}</span>
-                  <span className="block text-[13px] leading-5 text-ink-muted">
+                  <span className="block font-medium text-ink">{step.label}</span>
+                  <span className="block text-base text-ink-muted">
                     {step.detail}
                   </span>
                 </span>
@@ -94,14 +100,24 @@ export default async function VerificationPage() {
           </ol>
           <CardContent className="border-t border-line">
             {profile.verification === "verified" ? (
-              <p className="text-[13px] text-ink-muted">
-                Verified since{" "}
-                {formatDateTime(
-                  profile.socialAccounts.find((account) => account.connectedAt)?.connectedAt ??
-                    null,
+              // The payoff of the whole journey: the badge at weight, and the
+              // identity-match record itself — verified provenance, on show.
+              <div className="space-y-2">
+                <p className="flex items-center gap-2">
+                  <BadgeCheck className="size-5 text-verified" aria-hidden />
+                  <span className="text-md font-semibold text-ink">SocialOrbit Verified</span>
+                </p>
+                {matched && (
+                  <dl>
+                    <DataRow label="Platform" value={PLATFORM_LABEL[matched.platform]} />
+                    <DataRow label="Account" value={matched.handle} />
+                    {matched.connectedAt && (
+                      <DataRow label="Matched" value={formatDateTime(matched.connectedAt)} />
+                    )}
+                    <DataRow label="Method" value="OAuth account match" />
+                  </dl>
                 )}
-                .
-              </p>
+              </div>
             ) : (
               <LinkButton href="/creator/connections" variant="primary">
                 {connected ? "Review your connections" : "Connect an account"}
@@ -114,7 +130,7 @@ export default async function VerificationPage() {
           <CardHeader>
             <CardTitle>Why this matters</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 text-[13px] leading-5 text-ink-muted">
+          <CardContent className="space-y-2 text-base text-ink-muted">
             <p>
               Brands filter by verification. An unverified profile is built from public data
               alone: the numbers are real, but SocialOrbit cannot confirm you own the account,

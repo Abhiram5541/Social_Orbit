@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/class-names";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger" | "link";
+type Variant = "primary" | "accent" | "secondary" | "ghost" | "danger" | "link";
 type Size = "sm" | "md" | "lg" | "icon";
 
 /*
@@ -15,26 +15,33 @@ type Size = "sm" | "md" | "lg" | "icon";
  */
 const VARIANTS: Record<Variant, string> = {
   primary:
-    "bg-ink text-ink-inverse shadow-raised hover:bg-instrument-raised " +
-    "disabled:bg-ink/35 disabled:shadow-none",
+    "bg-ink text-ink-inverse hover:bg-instrument-raised " +
+    "disabled:bg-ink/30",
+  /*
+   * The one cobalt control. Reserved for the single commitment on a marketing
+   * page or an onboarding step — never for a toolbar, where a blue button on a
+   * blue-accented product spends the accent until it stops meaning anything.
+   */
+  accent:
+    "bg-brand text-white hover:bg-brand-active disabled:bg-brand/35",
   secondary:
-    "bg-surface text-ink border border-line-strong shadow-raised hover:bg-sunken " +
+    "bg-surface text-ink border border-line-strong hover:bg-sunken " +
     "hover:border-ink-subtle active:bg-sunken-strong " +
     "disabled:bg-surface disabled:text-ink-subtle disabled:hover:border-line-strong",
   ghost:
     "text-ink-muted hover:bg-sunken hover:text-ink active:bg-sunken-strong " +
     "disabled:text-ink-subtle disabled:hover:bg-transparent",
   danger:
-    "bg-critical text-white shadow-raised hover:brightness-110 active:brightness-95 " +
+    "bg-critical text-white hover:bg-critical-hover active:bg-critical-active " +
     "disabled:bg-critical/40",
-  link: "text-brand-ink underline underline-offset-4 hover:text-brand-active disabled:text-ink-subtle",
+  link: "text-brand-ink underline hover:text-brand-active disabled:text-ink-subtle",
 };
 
 const SIZES: Record<Size, string> = {
-  sm: "h-8 px-2.5 text-[13px] gap-1.5 rounded-md",
-  md: "h-9 px-3.5 gap-2 rounded-lg",
-  lg: "h-11 px-5 text-[15px] gap-2 rounded-lg",
-  icon: "size-9 rounded-lg",
+  sm: "h-8 px-2.5 text-base gap-1.5 rounded-sm",
+  md: "h-9 px-3.5 gap-2 rounded-md",
+  lg: "h-11 px-5 text-md gap-2 rounded-md",
+  icon: "size-9 rounded-md",
 };
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -53,7 +60,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       aria-busy={loading || undefined}
       className={cn(
         "press relative inline-flex select-none items-center justify-center whitespace-nowrap",
-        "font-semibold tracking-[-0.005em]",
+        "font-semibold tracking-tight",
         "disabled:pointer-events-none",
         VARIANTS[variant],
         SIZES[size],
@@ -102,7 +109,7 @@ export function ButtonGroup({
     <div
       role="group"
       className={cn(
-        "inline-flex items-center rounded-lg border border-line bg-surface p-0.5",
+        "inline-flex items-center rounded-md border border-line bg-surface p-0.5",
         className,
       )}
       {...props}
@@ -120,7 +127,7 @@ export function SegmentButton({
       type="button"
       aria-pressed={active}
       className={cn(
-        "press h-7 rounded-md px-2.5 text-[13px] font-semibold",
+        "press h-7 rounded-sm px-2.5 text-base font-semibold",
         active
           ? "bg-ink text-ink-inverse"
           : "text-ink-muted hover:bg-sunken hover:text-ink",
@@ -150,7 +157,7 @@ export function LinkButton({
     <a
       className={cn(
         "press inline-flex select-none items-center justify-center whitespace-nowrap",
-        "font-semibold tracking-[-0.005em] no-underline",
+        "font-semibold tracking-tight no-underline",
         VARIANTS[variant],
         SIZES[size],
         className,

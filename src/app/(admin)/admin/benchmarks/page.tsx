@@ -7,7 +7,7 @@ import { allSummaries } from "@/server/repositories/influencer-repository";
 import { median } from "@/server/analytics/metrics";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
 import { Card } from "@/components/ui/card";
-import { Notice } from "@/components/ui/states";
+import { EmptyState, Notice } from "@/components/ui/states";
 import { Table, TableWrap, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
 
 export const metadata: Metadata = { title: "Benchmarks" };
@@ -61,8 +61,14 @@ export default async function BenchmarksPage() {
   return (
     <>
       <PageHeader
+        eyebrow="Intelligence"
         title="Category benchmarks"
         description="Cohort medians by category and follower band. These are what engagement and activity scores are normalised against."
+        meta={
+          <span className="font-num text-sm text-ink-muted">
+            {publishable.length} of {rows.length} cohorts meet the publication threshold
+          </span>
+        }
       />
       <PageBody className="space-y-4">
         <Notice tone="info" title={`Cohorts under ${MIN_COHORT} creators are not published`}>
@@ -71,47 +77,51 @@ export default async function BenchmarksPage() {
           are listed below but marked unpublished, and the profiles in them show no rank.
         </Notice>
 
-        <Card>
-          <TableWrap label="Category benchmarks">
-            <Table>
-              <Thead>
-                <Tr>
-                  <Th>Category</Th>
-                  <Th>Follower band</Th>
-                  <Th numeric>Creators</Th>
-                  <Th numeric>Median engagement</Th>
-                  <Th numeric>Median views</Th>
-                  <Th numeric>Median health</Th>
-                  <Th>Published</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {rows.map((row) => (
-                  <Tr key={`${row.category}:${row.band}`}>
-                    <Td className="font-medium">{CATEGORY_LABEL[row.category]}</Td>
-                    <Td className="whitespace-nowrap text-ink-muted">
-                      {FOLLOWER_BANDS[row.band].label}
-                    </Td>
-                    <Td numeric>{row.size}</Td>
-                    <Td numeric>{formatPercent(row.engagementMedian)}</Td>
-                    <Td numeric>{formatCompact(row.viewsMedian)}</Td>
-                    <Td numeric>
-                      {row.healthMedian === null ? NO_VALUE : row.healthMedian.toFixed(1)}
-                    </Td>
-                    <Td className={row.size >= MIN_COHORT ? "text-positive" : "text-ink-subtle"}>
-                      {row.size >= MIN_COHORT ? "Yes" : `Needs ${MIN_COHORT - row.size} more`}
-                    </Td>
+        {rows.length === 0 ? (
+          <Card>
+            <EmptyState
+              title="No cohorts formed yet"
+              description={`Benchmarks publish once a category × follower-band cohort reaches ${MIN_COHORT} scored creators. Ingest channels from the Ingestion page to begin forming cohorts.`}
+            />
+          </Card>
+        ) : (
+          <Card>
+            <TableWrap label="Category benchmarks">
+              <Table>
+                <Thead>
+                  <Tr>
+                    <Th>Category</Th>
+                    <Th>Follower band</Th>
+                    <Th numeric>Creators</Th>
+                    <Th numeric>Median engagement</Th>
+                    <Th numeric>Median views</Th>
+                    <Th numeric>Median health</Th>
+                    <Th>Published</Th>
                   </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </TableWrap>
-        </Card>
-
-        <p className="text-[12px] text-ink-muted">
-          {publishable.length} of {rows.length} cohorts currently meet the publication
-          threshold.
-        </p>
+                </Thead>
+                <Tbody>
+                  {rows.map((row) => (
+                    <Tr key={`${row.category}:${row.band}`}>
+                      <Td className="font-medium">{CATEGORY_LABEL[row.category]}</Td>
+                      <Td className="whitespace-nowrap text-ink-muted">
+                        {FOLLOWER_BANDS[row.band].label}
+                      </Td>
+                      <Td numeric>{row.size}</Td>
+                      <Td numeric>{formatPercent(row.engagementMedian)}</Td>
+                      <Td numeric>{formatCompact(row.viewsMedian)}</Td>
+                      <Td numeric>
+                        {row.healthMedian === null ? NO_VALUE : row.healthMedian.toFixed(1)}
+                      </Td>
+                      <Td className={row.size >= MIN_COHORT ? "text-positive" : "text-ink-subtle"}>
+                        {row.size >= MIN_COHORT ? "Yes" : `Needs ${MIN_COHORT - row.size} more`}
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableWrap>
+          </Card>
+        )}
       </PageBody>
     </>
   );

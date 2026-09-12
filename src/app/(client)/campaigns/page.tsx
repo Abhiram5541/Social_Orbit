@@ -3,7 +3,13 @@ import Link from "next/link";
 import { Megaphone, Plus } from "lucide-react";
 import { CAMPAIGN_STATUS_LABEL } from "@/lib/contracts/campaign";
 import { PLATFORM_LABEL } from "@/lib/contracts/common";
-import { formatCompact, formatCurrency, formatDate, formatRelativeTime } from "@/lib/format";
+import {
+  formatCompact,
+  formatCurrency,
+  formatDate,
+  formatRelativeTime,
+  NO_VALUE,
+} from "@/lib/format";
 import { requirePagePermission } from "@/server/auth/rbac";
 import { listCampaigns } from "@/server/repositories/workspace-repository";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
@@ -13,6 +19,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/states";
 import { Table, TableWrap, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
 import { StatRow, StatTile } from "@/components/intelligence/stat";
+import { CAMPAIGN_STATUS_TONE } from "@/components/campaign/status";
 
 export const metadata: Metadata = { title: "Campaigns" };
 export const dynamic = "force-dynamic";
@@ -25,14 +32,24 @@ export default async function CampaignsPage() {
   const attributed = campaigns.reduce((sum, campaign) => sum + campaign.attributedPosts, 0);
   const reach = campaigns.reduce((sum, campaign) => sum + (campaign.totalReach ?? 0), 0);
   const spend = campaigns.reduce((sum, campaign) => sum + (campaign.spentAmount ?? 0), 0);
+  // A sum across currencies is a figure in no currency at all — publish it
+  // only when every campaign shares one unit.
+  const currencies = new Set(campaigns.map((campaign) => campaign.budgetCurrency));
 
   return (
     <>
       <PageHeader
+        eyebrow="Activate"
         title="Campaigns"
         description="Select talent, set a tracking hashtag, and measure what each creator actually delivered."
         actions={
-          <LinkButton href="/campaigns/new" variant="primary" className="gap-1.5">
+          // On an empty workspace the EmptyState owns creation — one primary
+          // per screen, so the header action steps down to secondary.
+          <LinkButton
+            href="/campaigns/new"
+            variant={campaigns.length === 0 ? "secondary" : "primary"}
+            className="gap-1.5"
+          >
             <Plus className="size-4" aria-hidden />
             New campaign
           </LinkButton>
@@ -47,8 +64,12 @@ export default async function CampaignsPage() {
             <StatTile label="Total reach" value={formatCompact(reach)} />
             <StatTile
               label="Committed spend"
-              value={formatCurrency(spend, campaigns[0]?.budgetCurrency ?? "INR", { compact: true })}
-              footnote="agreed rates"
+              value={
+                currencies.size === 1
+                  ? formatCurrency(spend, [...currencies][0], { compact: true })
+                  : NO_VALUE
+              }
+              footnote={currencies.size === 1 ? "agreed rates" : "mixed currencies"}
             />
           </StatRow>
         )}
@@ -61,7 +82,7 @@ export default async function CampaignsPage() {
               description="A campaign links the creators you selected to a tracking hashtag, so every post they publish can be attributed and scored separately from their general profile."
               action={
                 <LinkButton href="/campaigns/new" variant="primary" size="sm">
-                  Create your first campaign
+                  Create a campaign
                 </LinkButton>
               }
             />
@@ -91,27 +112,21 @@ export default async function CampaignsPage() {
                         >
                           {campaign.name}
                         </Link>
-                        <span className="text-[12px] text-ink-muted">
+                        <span className="text-sm text-ink-muted">
                           {campaign.platforms.map((p) => PLATFORM_LABEL[p]).join(", ")} · updated{" "}
                           {formatRelativeTime(campaign.updatedAt)}
                         </span>
                       </Td>
                       <Td>
                         <Badge
-                          tone={
-                            campaign.status === "live"
-                              ? "positive"
-                              : campaign.status === "completed"
-                                ? "neutral"
-                                : "caution"
-                          }
+                          tone={CAMPAIGN_STATUS_TONE[campaign.status]}
                           dot={campaign.status === "live"}
                         >
                           {CAMPAIGN_STATUS_LABEL[campaign.status]}
                         </Badge>
                       </Td>
-                      <Td className="font-num text-[12px]">#{campaign.hashtag}</Td>
-                      <Td className="whitespace-nowrap text-[12px] text-ink-muted">
+                      <Td className="font-num text-sm">#{campaign.hashtag}</Td>
+                      <Td className="whitespace-nowrap text-sm text-ink-muted">
                         {formatDate(campaign.startsOn)} – {formatDate(campaign.endsOn)}
                       </Td>
                       <Td numeric>

@@ -20,6 +20,7 @@ export default async function UsersPage() {
   return (
     <>
       <PageHeader
+        eyebrow="Administration"
         title="Users"
         description="Every account, its role and the organisation it belongs to. Permissions are derived from the role, never assigned per user."
       />
@@ -48,7 +49,7 @@ export default async function UsersPage() {
                           <Avatar name={user.name} src={user.avatarUrl} size="sm" />
                           <div className="min-w-0">
                             <p className="truncate font-medium text-ink">{user.name}</p>
-                            <p className="truncate font-num text-[12px] text-ink-muted">
+                            <p className="truncate font-num text-sm text-ink-muted">
                               {user.email}
                             </p>
                           </div>
@@ -61,7 +62,7 @@ export default async function UsersPage() {
                       </Td>
                       <Td>
                         {org?.name ?? user.orgId}
-                        <span className="block text-[12px] text-ink-muted">{org?.kind}</span>
+                        <span className="block text-sm text-ink-muted">{org?.kind}</span>
                       </Td>
                       <Td>{org ? PLAN_CONFIG[org.plan].label : "—"}</Td>
                       <Td numeric>{ROLE_PERMISSIONS[user.role].length}</Td>
@@ -84,7 +85,7 @@ export default async function UsersPage() {
         <Card>
           <CardHeader>
             <CardTitle>Role permissions</CardTitle>
-            <span className="text-[12px] text-ink-muted">
+            <span className="text-sm text-ink-muted">
               Enforced server-side on every route. Hiding UI is never the control.
             </span>
           </CardHeader>
@@ -98,24 +99,48 @@ export default async function UsersPage() {
                 </Tr>
               </Thead>
               <Tbody>
-                {(Object.keys(ROLE_PERMISSIONS) as (keyof typeof ROLE_PERMISSIONS)[]).map((role) => (
-                  <Tr key={role}>
-                    <Td className="whitespace-nowrap font-medium">{ROLE_LABEL[role]}</Td>
-                    <Td numeric>{ROLE_PERMISSIONS[role].length}</Td>
-                    <Td>
-                      <div className="flex flex-wrap gap-1">
-                        {ROLE_PERMISSIONS[role].map((permission) => (
-                          <code
-                            key={permission}
-                            className="rounded bg-sunken px-1 py-0.5 font-num text-[11px] text-ink-muted"
-                          >
-                            {permission}
-                          </code>
-                        ))}
-                      </div>
-                    </Td>
-                  </Tr>
-                ))}
+                {(Object.keys(ROLE_PERMISSIONS) as (keyof typeof ROLE_PERMISSIONS)[]).map((role) => {
+                  const grants = ROLE_PERMISSIONS[role];
+                  const rest = grants.slice(4);
+                  return (
+                    <Tr key={role}>
+                      <Td className="whitespace-nowrap font-medium">{ROLE_LABEL[role]}</Td>
+                      <Td numeric>{grants.length}</Td>
+                      <Td>
+                        {/* First four grants stay scannable; the rest fold into
+                            a native disclosure so a super_admin row does not
+                            become a wall of thirty chips. */}
+                        <div className="flex max-w-lg flex-wrap items-center gap-1">
+                          {grants.slice(0, 4).map((permission) => (
+                            <code
+                              key={permission}
+                              className="rounded bg-sunken px-1 py-0.5 font-num text-xs text-ink-muted"
+                            >
+                              {permission}
+                            </code>
+                          ))}
+                          {rest.length > 0 && (
+                            <details className="min-w-0 open:w-full">
+                              <summary className="cursor-pointer list-none rounded px-1 py-0.5 font-num text-xs font-medium text-brand-ink hover:underline [&::-webkit-details-marker]:hidden">
+                                +{rest.length} more
+                              </summary>
+                              <div className="mt-1 flex flex-wrap gap-1">
+                                {rest.map((permission) => (
+                                  <code
+                                    key={permission}
+                                    className="rounded bg-sunken px-1 py-0.5 font-num text-xs text-ink-muted"
+                                  >
+                                    {permission}
+                                  </code>
+                                ))}
+                              </div>
+                            </details>
+                          )}
+                        </div>
+                      </Td>
+                    </Tr>
+                  );
+                })}
               </Tbody>
             </Table>
           </TableWrap>

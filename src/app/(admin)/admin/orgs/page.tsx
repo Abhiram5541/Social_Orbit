@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PLAN_CONFIG } from "@/lib/contracts/auth";
-import { formatDate } from "@/lib/format";
+import { formatDate, NO_VALUE } from "@/lib/format";
 import { requirePagePermission } from "@/server/auth/rbac";
 import { listOrgs, listUsers } from "@/server/repositories/user-repository";
 import { getUsage } from "@/server/repositories/usage-repository";
@@ -19,6 +19,7 @@ export default async function OrgsPage() {
   return (
     <>
       <PageHeader
+        eyebrow="Administration"
         title="Organisations"
         description="Tenants on the platform. Every shortlist, campaign, report and API key belongs to exactly one of these; the influencer database is shared."
       />
@@ -33,8 +34,7 @@ export default async function OrgsPage() {
                   <Th>Plan</Th>
                   <Th numeric>Members</Th>
                   <Th numeric>Seats</Th>
-                  <Th numeric>Searches used</Th>
-                  <Th numeric>Search limit</Th>
+                  <Th numeric>Search usage</Th>
                   <Th>Created</Th>
                 </Tr>
               </Thead>
@@ -42,6 +42,11 @@ export default async function OrgsPage() {
                 {orgs.map((org) => {
                   const plan = PLAN_CONFIG[org.plan];
                   const members = users.filter((user) => user.orgId === org.id).length;
+                  const used = getUsage(org.id, "influencer_search");
+                  const limit = plan.searchesPerMonth;
+                  // The ratio is the fact an operator scans for; the threshold
+                  // is the only reason the column exists.
+                  const nearLimit = typeof limit === "number" && limit > 0 && used / limit >= 0.8;
                   return (
                     <Tr key={org.id}>
                       <Td className="font-medium">{org.name}</Td>
@@ -53,8 +58,11 @@ export default async function OrgsPage() {
                       <Td>{plan.label}</Td>
                       <Td numeric>{members}</Td>
                       <Td numeric>{plan.seats ?? "∞"}</Td>
-                      <Td numeric>{getUsage(org.id, "influencer_search")}</Td>
-                      <Td numeric>{plan.searchesPerMonth ?? "∞"}</Td>
+                      <Td numeric>
+                        <span className={nearLimit ? "text-caution" : undefined}>
+                          {used} / {typeof limit === "number" ? limit.toLocaleString() : NO_VALUE}
+                        </span>
+                      </Td>
                       <Td className="whitespace-nowrap text-ink-muted">
                         {formatDate(org.createdAt)}
                       </Td>

@@ -30,6 +30,11 @@ export function ApiKeyPanel({
 }) {
   const [keys, setKeys] = React.useState(initialKeys);
   const [creating, setCreating] = React.useState(false);
+  // Rotate and revoke are confirmed in the designed dialog, never in browser
+  // chrome — the consequence deserves the same voice as the rest of the panel.
+  const [confirming, setConfirming] = React.useState<
+    { action: "rotate" | "revoke"; key: ApiKeyView } | null
+  >(null);
   const [secret, setSecret] = React.useState<{ name: string; value: string } | null>(null);
   const [scopes, setScopes] = React.useState<ApiScope[]>(["influencers:read"]);
   const [busy, setBusy] = React.useState(false);
@@ -64,13 +69,6 @@ export function ApiKeyPanel({
   }
 
   async function rotate(key: ApiKeyView) {
-    if (
-      !window.confirm(
-        `Rotate “${key.name}”? The current secret stops working immediately and the replacement is shown once.`,
-      )
-    ) {
-      return;
-    }
     setBusy(true);
     try {
       const response = await fetch(`/api/internal/api-keys/${key.id}`, { method: "POST" });
@@ -86,7 +84,6 @@ export function ApiKeyPanel({
   }
 
   async function revoke(key: ApiKeyView) {
-    if (!window.confirm(`Revoke “${key.name}”? This cannot be undone.`)) return;
     setBusy(true);
     try {
       const response = await fetch(`/api/internal/api-keys/${key.id}`, { method: "DELETE" });
@@ -105,21 +102,27 @@ export function ApiKeyPanel({
     <div className="space-y-4">
       {error && <Notice tone="critical">{error}</Notice>}
 
-      {canWrite && (
-        <div className="flex justify-end">
-          <Button variant="primary" onClick={() => setCreating(true)} className="gap-1.5">
-            <KeyRound className="size-4" aria-hidden />
-            Create API key
-          </Button>
-        </div>
-      )}
-
       <Card>
         <CardHeader>
           <CardTitle>API keys</CardTitle>
-          <span className="text-[12px] text-ink-muted">
-            {active.length} active of {keys.length}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-ink-muted">
+              {active.length} active of {keys.length}
+            </span>
+            {/* In the header of the card it acts on; the empty state below
+                keeps the single primary when there is nothing yet. */}
+            {canWrite && keys.length > 0 && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setCreating(true)}
+                className="gap-1.5"
+              >
+                <KeyRound className="size-3.5" aria-hidden />
+                Create API key
+              </Button>
+            )}
+          </div>
         </CardHeader>
         {keys.length === 0 ? (
           <EmptyState
@@ -157,7 +160,7 @@ export function ApiKeyPanel({
                   <Tr key={key.id}>
                     <Td className="font-medium">{key.name}</Td>
                     <Td>
-                      <code className="rounded bg-sunken px-1.5 py-0.5 font-num text-[12px] text-ink-muted">
+                      <code className="rounded bg-sunken px-1.5 py-0.5 font-num text-sm text-ink-muted">
                         {key.prefix}…
                       </code>
                     </Td>
@@ -170,11 +173,11 @@ export function ApiKeyPanel({
                         ))}
                       </div>
                     </Td>
-                    <Td className="whitespace-nowrap text-[12px] text-ink-muted">
+                    <Td className="whitespace-nowrap text-sm text-ink-muted">
                       {formatDateTime(key.createdAt)}
                       <span className="block">by {key.createdByName}</span>
                     </Td>
-                    <Td className="whitespace-nowrap text-[12px] text-ink-muted">
+                    <Td className="whitespace-nowrap text-sm text-ink-muted">
                       {key.lastUsedAt ? <RelativeTime at={key.lastUsedAt} /> : "never"}
                     </Td>
                     <Td>
@@ -190,7 +193,7 @@ export function ApiKeyPanel({
                               size="icon"
                               variant="ghost"
                               disabled={busy}
-                              onClick={() => rotate(key)}
+                              onClick={() => setConfirming({ action: "rotate", key })}
                               aria-label={`Rotate ${key.name}`}
                             >
                               <RotateCw className="size-3.5" aria-hidden />
@@ -199,7 +202,7 @@ export function ApiKeyPanel({
                               size="icon"
                               variant="ghost"
                               disabled={busy}
-                              onClick={() => revoke(key)}
+                              onClick={() => setConfirming({ action: "revoke", key })}
                               aria-label={`Revoke ${key.name}`}
                             >
                               <Trash2 className="size-3.5" aria-hidden />
@@ -217,6 +220,46 @@ export function ApiKeyPanel({
       </Card>
 
       <Dialog
+        open={Boolean(confirming)}
+        onClose={() => setConfirming(null)}
+        title={confirming?.action === "rotate" ? "Rotate this key?" : "Revoke this key?"}
+      >
+        {confirming && (
+          <div className="space-y-4">
+            <p className="text-base">
+              <span className="font-num font-medium text-ink">{confirming.key.name}</span>{" "}
+              <code className="rounded bg-sunken px-1.5 py-0.5 font-num text-sm text-ink-muted">
+                {confirming.key.prefix}…
+              </code>
+            </p>
+            <p className="text-base text-ink-muted">
+              {confirming.action === "rotate"
+                ? "The current secret stops working immediately and the replacement is shown once."
+                : "Requests signed with this key are rejected from this moment. This cannot be undone."}
+            </p>
+            <div className="flex justify-end gap-2">
+              {/* Cancel takes focus: the safe action is the default. */}
+              <Button type="button" autoFocus onClick={() => setConfirming(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                loading={busy}
+                onClick={async () => {
+                  const { action, key } = confirming;
+                  if (action === "rotate") await rotate(key);
+                  else await revoke(key);
+                  setConfirming(null);
+                }}
+              >
+                {confirming.action === "rotate" ? "Rotate key" : "Revoke key"}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Dialog>
+
+      <Dialog
         open={creating}
         onClose={() => setCreating(false)}
         title="Create API key"
@@ -228,7 +271,7 @@ export function ApiKeyPanel({
           </Field>
 
           <fieldset className="space-y-2">
-            <legend className="text-[13px] font-medium text-ink">Scopes</legend>
+            <legend className="text-base font-medium text-ink">Scopes</legend>
             {API_SCOPES.map((scope) => (
               <Checkbox
                 key={scope.id}
@@ -292,9 +335,9 @@ function SecretReveal({ name, value }: { name: string; value: string }) {
       <Notice tone="caution" title="Shown once">
         If you lose this key you cannot recover it — rotate the key to issue a replacement.
       </Notice>
-      <p className="text-[13px] text-ink-muted">{name}</p>
+      <p className="text-base text-ink-muted">{name}</p>
       <div className="flex items-center gap-2 rounded-lg border border-line bg-sunken p-2">
-        <code className="min-w-0 flex-1 break-all font-num text-[12px] text-ink">{value}</code>
+        <code className="min-w-0 flex-1 break-all font-num text-sm text-ink">{value}</code>
         <Button size="sm" onClick={copy} className="shrink-0 gap-1.5">
           {copied ? <Check className="size-3.5" aria-hidden /> : <Copy className="size-3.5" aria-hidden />}
           {copied ? "Copied" : "Copy"}

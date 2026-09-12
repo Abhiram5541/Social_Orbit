@@ -22,10 +22,11 @@ export default async function AdminInfluencersPage() {
   return (
     <div className="flex min-h-[calc(100dvh-var(--spacing-topbar))] flex-col">
       <PageHeader
+        eyebrow="Discover"
         title="Influencer database"
         description="The canonical creator index. Operators are not metered against a client search allowance."
         meta={
-          <span className="text-[12px] text-ink-muted">
+          <span className="text-sm text-ink-muted">
             {stats.published} published · {stats.inReview} in review · {stats.verified} verified
           </span>
         }

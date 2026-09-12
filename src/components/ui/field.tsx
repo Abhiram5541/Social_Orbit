@@ -35,6 +35,7 @@ export function Field({
   className,
   children,
   labelSuffix,
+  inline,
 }: {
   label: string;
   hint?: React.ReactNode;
@@ -44,6 +45,13 @@ export function Field({
   children: React.ReactNode;
   /** Rendered on the label row, right-aligned — e.g. "Forgot password?". */
   labelSuffix?: React.ReactNode;
+  /**
+   * One-line probe forms: children (control plus its submit button) share a
+   * real baseline via items-end, with the first child growing, and the hint
+   * renders below the whole row — so no caller needs a magic bottom-margin
+   * offset that breaks the moment the hint wraps.
+   */
+  inline?: boolean;
 }) {
   const id = React.useId();
   const hintId = `${id}-hint`;
@@ -69,7 +77,7 @@ export function Field({
               the field announces as "Password star" and any name-based query
               for "Password" misses it. */}
           <span className="flex items-baseline gap-0.5">
-            <label htmlFor={id} className="text-[13px] font-medium text-ink">
+            <label htmlFor={id} className="text-base font-medium text-ink">
               {label}
             </label>
             {required && (
@@ -80,13 +88,19 @@ export function Field({
           </span>
           {labelSuffix}
         </div>
-        {children}
+        {inline ? (
+          <div className="flex items-end gap-2 [&>:first-child]:min-w-0 [&>:first-child]:flex-1">
+            {children}
+          </div>
+        ) : (
+          children
+        )}
         {error ? (
-          <p id={errorId} role="alert" className="text-[12px] text-critical">
+          <p id={errorId} role="alert" className="text-sm text-critical">
             {error}
           </p>
         ) : hint ? (
-          <p id={hintId} className="text-[12px] text-ink-muted">
+          <p id={hintId} className="text-sm text-ink-muted">
             {hint}
           </p>
         ) : null}
@@ -95,10 +109,12 @@ export function Field({
   );
 }
 
+// Controls hold the 14px body size by bracket on purpose: they sit inside
+// denser 13px contexts and must not inherit their way smaller.
 const CONTROL_BASE =
-  "w-full rounded-lg border bg-surface px-3 text-[14px] text-ink transition-shadow " +
+  "w-full rounded-sm border bg-surface px-3 text-[14px] text-ink transition-shadow " +
   "placeholder:text-ink-subtle " +
-  "focus:outline-none focus:ring-2 focus:ring-brand/25 " +
+  "focus:outline-none focus:ring-[3px] focus:ring-brand/20 " +
   "disabled:cursor-not-allowed disabled:bg-sunken disabled:text-ink-subtle";
 
 function controlClasses(invalid: boolean, className?: string) {
@@ -205,10 +221,10 @@ export function Checkbox({
         {...props}
       />
       <div className="min-w-0">
-        <label htmlFor={props.id ?? id} className="cursor-pointer text-[13px] text-ink">
+        <label htmlFor={props.id ?? id} className="cursor-pointer text-base text-ink">
           {label}
         </label>
-        {description && <p className="text-[12px] text-ink-muted">{description}</p>}
+        {description && <p className="text-sm text-ink-muted">{description}</p>}
       </div>
     </div>
   );

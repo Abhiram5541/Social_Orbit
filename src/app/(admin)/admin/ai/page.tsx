@@ -18,10 +18,11 @@ export default async function Page() {
   return (
     <>
       <PageHeader
+        eyebrow="Intelligence"
         title="AI enrichment review"
         description="Where two providers disagreed on a high-value fact, SocialOrbit opens a task instead of silently picking one (DPR UC-12)."
         meta={
-          <span className="text-[12px] text-ink-muted">
+          <span className="text-sm text-ink-muted">
             {items.length} {items.length === 1 ? "item" : "items"} waiting
           </span>
         }

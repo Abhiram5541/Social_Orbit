@@ -9,7 +9,7 @@ import type { InfluencerSummary } from "@/lib/contracts/influencer";
 import { formatCompact } from "@/lib/format";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, Eyebrow } from "@/components/ui/card";
 import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/field";
 import { EmptyState, Notice } from "@/components/ui/states";
 import { ScorePill } from "@/components/intelligence/score";
@@ -99,35 +99,42 @@ export function CampaignForm({
 
   return (
     <form onSubmit={onSubmit} noValidate className="grid gap-4 xl:grid-cols-[1.1fr_1fr]">
-      <div className="space-y-4">
-        {formError && (
-          <Notice tone="critical" title="Could not create the campaign">
-            {formError}
-          </Notice>
-        )}
+      {formError && (
+        <Notice tone="critical" title="Could not create the campaign" className="xl:col-span-2">
+          {formError}
+        </Notice>
+      )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Campaign</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Field label="Campaign name" error={errors.name} required>
-              <Input
-                name="name"
-                required
-                autoFocus
-                defaultValue={presetName}
-                placeholder="Orbit Series launch"
-              />
-            </Field>
+      {/* The form is three groups, not one stack: what the campaign is, how it
+          measures, and when it runs. Tracking sits on raised brand ground —
+          the hashtag is the reason the campaign exists (Arch §10), and it must
+          visibly outrank the optional prose above it. */}
+      <Card className="divide-y divide-line self-start">
+        <section className="space-y-4 p-4">
+          <Eyebrow as="h2">Campaign</Eyebrow>
 
-            <Field
-              label="Brief"
-              hint="Optional. What the campaign is for and what creators are being asked to do."
-            >
-              <Textarea name="brief" rows={3} />
-            </Field>
+          <Field label="Campaign name" error={errors.name} required>
+            <Input
+              name="name"
+              required
+              autoFocus
+              defaultValue={presetName}
+              placeholder="Orbit Series launch"
+            />
+          </Field>
 
+          <Field
+            label="Brief"
+            hint="Optional. What the campaign is for and what creators are being asked to do."
+          >
+            <Textarea name="brief" rows={3} />
+          </Field>
+        </section>
+
+        <section className="space-y-3 p-4">
+          <Eyebrow as="h2">Tracking</Eyebrow>
+
+          <div className="space-y-4 rounded-lg border border-brand-line bg-brand-softer/60 p-3">
             <Field
               label="Tracking hashtag"
               required
@@ -150,19 +157,25 @@ export function CampaignForm({
                 />
               </div>
             </Field>
-            {hashtag.trim() && !hashtagCheck && (
-              <p id="hashtag-preview" className="-mt-2 text-[12px] text-ink-muted">
-                Posts containing{" "}
-                <span className="font-num text-ink">
-                  #{hashtag.replace(/^#/, "")}
-                </span>{" "}
-                will be attributed to this campaign.
-              </p>
-            )}
+            {/* Always rendered, so the fields below never shift as the value
+                becomes valid mid-keystroke. */}
+            <p id="hashtag-preview" className="min-h-4 text-sm text-ink-muted">
+              {hashtag.trim() && !hashtagCheck ? (
+                <>
+                  Posts containing{" "}
+                  <span className="font-num text-ink">#{hashtag.replace(/^#/, "")}</span> will
+                  be attributed to this campaign.
+                </>
+              ) : (
+                <span className="text-ink-subtle">
+                  Posts are attributed by exact hashtag match.
+                </span>
+              )}
+            </p>
 
             <fieldset>
-              <legend className="text-[13px] font-medium text-ink">Platforms</legend>
-              <p className="mb-1.5 text-[12px] text-ink-muted">
+              <legend className="text-base font-medium text-ink">Platforms</legend>
+              <p className="mb-1.5 text-sm text-ink-muted">
                 Only platforms with a live connector can be tracked.
               </p>
               <div className="flex flex-wrap gap-4">
@@ -182,104 +195,107 @@ export function CampaignForm({
                 ))}
               </div>
               {platforms.length === 0 && (
-                <p role="alert" className="mt-1 text-[12px] text-critical">
+                <p role="alert" className="mt-1 text-sm text-critical">
                   Select at least one platform
                 </p>
               )}
             </fieldset>
+          </div>
+        </section>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Starts on" error={errors.startsOn} required>
-                <Input type="date" name="startsOn" required defaultValue={today} />
-              </Field>
-              <Field label="Ends on" error={errors.endsOn} required>
-                <Input type="date" name="endsOn" required />
-              </Field>
-            </div>
+        <section className="space-y-4 p-4">
+          <Eyebrow as="h2">Schedule &amp; budget</Eyebrow>
 
-            <div className="grid gap-4 sm:grid-cols-[7rem_1fr]">
-              <Field label="Currency">
-                <Select name="budgetCurrency" defaultValue="INR">
-                  <option value="INR">INR</option>
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                  <option value="GBP">GBP</option>
-                </Select>
-              </Field>
-              <Field label="Budget" hint="Optional. Used to derive cost per engagement.">
-                <Input type="number" name="budgetAmount" min={0} placeholder="e.g. 4500000" />
-              </Field>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Starts on" error={errors.startsOn} required>
+              <Input type="date" name="startsOn" required defaultValue={today} />
+            </Field>
+            <Field label="Ends on" error={errors.endsOn} required>
+              <Input type="date" name="endsOn" required />
+            </Field>
+          </div>
 
-      <div className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Creators</CardTitle>
-            <span className="text-[12px] text-ink-muted">
-              {selected.size} of {candidates.length} selected
-            </span>
-          </CardHeader>
-          {candidates.length === 0 ? (
-            <EmptyState
-              title="No creators pre-selected"
-              description="Create the campaign, then add creators from a shortlist or from discovery."
-            />
-          ) : (
-            <ul className="max-h-96 divide-y divide-line overflow-y-auto">
-              {candidates.map((candidate) => (
-                <li key={candidate.id} className="flex items-center gap-3 px-4 py-2.5">
-                  <input
-                    type="checkbox"
-                    checked={selected.has(candidate.id)}
-                    onChange={() =>
-                      setSelected((previous) => {
-                        const next = new Set(previous);
-                        if (next.has(candidate.id)) next.delete(candidate.id);
-                        else next.add(candidate.id);
-                        return next;
-                      })
-                    }
-                    aria-label={`Include ${candidate.displayName}`}
-                    className="size-3.5 shrink-0 cursor-pointer rounded accent-brand"
-                  />
-                  <Avatar
-                    name={candidate.displayName}
-                    src={candidate.avatarUrl}
-                    size="sm"
-                    verification={candidate.verification}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium text-ink">
-                      {candidate.displayName}
-                    </p>
-                    <p className="truncate text-[12px] text-ink-muted">
-                      {formatCompact(candidate.followers)} followers ·{" "}
-                      {PLATFORM_LABEL[candidate.primaryPlatform]}
-                    </p>
-                  </div>
-                  <ScorePill value={candidate.healthScore} label="Health" />
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
+          <div className="grid gap-4 sm:grid-cols-[7rem_1fr]">
+            <Field label="Currency">
+              <Select name="budgetCurrency" defaultValue="INR">
+                <option value="INR">INR</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+              </Select>
+            </Field>
+            <Field label="Budget" hint="Optional. Used to derive cost per engagement.">
+              <Input type="number" name="budgetAmount" min={0} placeholder="e.g. 4500000" />
+            </Field>
+          </div>
+        </section>
+      </Card>
 
-        <div className="flex items-center justify-end gap-2">
-          <Button type="button" onClick={() => router.back()}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={busy}
-            disabled={platforms.length === 0 || Boolean(hashtagCheck)}
-          >
-            Create campaign
-          </Button>
-        </div>
+      <Card className="self-start">
+        <CardHeader>
+          <CardTitle>Creators</CardTitle>
+          <span className="text-sm text-ink-muted">
+            {selected.size} of {candidates.length} selected
+          </span>
+        </CardHeader>
+        {candidates.length === 0 ? (
+          <EmptyState
+            title="No creators pre-selected"
+            description="Create the campaign, then add creators from a shortlist or from discovery."
+          />
+        ) : (
+          <ul className="max-h-96 divide-y divide-line overflow-y-auto">
+            {candidates.map((candidate) => (
+              <li key={candidate.id} className="flex items-center gap-3 px-4 py-2.5">
+                <Checkbox
+                  label={<span className="sr-only">Include {candidate.displayName}</span>}
+                  className="gap-0"
+                  checked={selected.has(candidate.id)}
+                  onChange={() =>
+                    setSelected((previous) => {
+                      const next = new Set(previous);
+                      if (next.has(candidate.id)) next.delete(candidate.id);
+                      else next.add(candidate.id);
+                      return next;
+                    })
+                  }
+                />
+                <Avatar
+                  name={candidate.displayName}
+                  src={candidate.avatarUrl}
+                  size="sm"
+                  verification={candidate.verification}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-base font-medium text-ink">
+                    {candidate.displayName}
+                  </p>
+                  <p className="truncate text-sm text-ink-muted">
+                    {formatCompact(candidate.followers)} followers ·{" "}
+                    {PLATFORM_LABEL[candidate.primaryPlatform]}
+                  </p>
+                </div>
+                <ScorePill value={candidate.healthScore} label="Health" />
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+
+      {/* A full-width bar after everything, so the primary action's position
+          never depends on how many candidates arrived. */}
+      <div className="flex items-center justify-end gap-2 xl:col-span-2">
+        <Button type="button" onClick={() => router.back()}>
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          variant="primary"
+          loading={busy}
+          disabled={platforms.length === 0 || Boolean(hashtagCheck)}
+        >
+          Create campaign
+        </Button>
       </div>
     </form>
   );

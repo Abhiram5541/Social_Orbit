@@ -17,6 +17,7 @@ export default async function IntegrationsPage() {
   return (
     <>
       <PageHeader
+        eyebrow="Trust & data"
         title="Integrations"
         description="Everything SocialOrbit connects to, graded by what actually works today."
       />

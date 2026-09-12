@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import * as React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BadgeCheck, LineChart, ShieldCheck } from "lucide-react";
 import { ROLE_WORKSPACE } from "@/lib/contracts/auth";
 import { WORKSPACE_HOME } from "@/lib/navigation";
 import { getSession } from "@/server/auth/session";
 import { Wordmark } from "@/components/shell/logo";
+import { ScoreRing } from "@/components/intelligence/score";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Sign in" };
@@ -25,38 +25,66 @@ export default async function LoginPage({
     <div className="grid min-h-dvh lg:grid-cols-[1fr_minmax(26rem,32rem)]">
       {/* The pitch panel is desktop-only: on a phone it would push the form
           below the fold, and someone signing in already knows what this is. */}
-      <section className="hidden flex-col justify-between border-r border-line bg-surface p-10 lg:flex">
-        <Link href="/" className="w-fit rounded">
-          <Wordmark />
+      <section className="relative hidden flex-col justify-between overflow-hidden bg-instrument p-10 text-instrument-ink lg:flex">
+        {/* The orbit, at the scale of the panel. The same geometry the mark is
+            built from and the landing hero opens on, so a returning user meets
+            the product's own material before the workspace loads. */}
+        <svg
+          aria-hidden
+          viewBox="0 0 700 900"
+          preserveAspectRatio="xMidYMid slice"
+          className="pointer-events-none absolute inset-0 size-full"
+        >
+          <ellipse
+            cx="180"
+            cy="700"
+            rx="460"
+            ry="250"
+            transform="rotate(-24 180 700)"
+            fill="none"
+            stroke="var(--color-instrument-line)"
+            strokeWidth="1"
+          />
+          <ellipse
+            cx="180"
+            cy="700"
+            rx="300"
+            ry="160"
+            transform="rotate(-24 180 700)"
+            fill="none"
+            stroke="var(--color-instrument-line)"
+            strokeWidth="1"
+          />
+        </svg>
+
+        <Link href="/" className="relative w-fit rounded">
+          <Wordmark inverse />
         </Link>
 
-        <div className="max-w-md space-y-8">
+        <div className="relative max-w-md space-y-8">
           {/* The most characteristic artifact in this product's world: a score
               with stated uncertainty, sweeping in like the real one does. */}
-          <ScoreFigure />
-          <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em] text-ink">
+          <InstrumentPanel />
+          <h1 className="font-display text-title font-bold tracking-display text-instrument-ink">
             Every number on a SocialOrbit profile can tell you where it came from.
           </h1>
-          <ul className="space-y-5">
+          <ul className="space-y-4">
             <Pitch
-              icon={ShieldCheck}
               title="Provenance on every fact"
-              body="Verified, observed, derived, estimated or AI-inferred — labelled, timestamped and traceable to a source."
+              body="Verified, observed, estimated or AI-inferred — labelled, timestamped and traceable to a source."
             />
             <Pitch
-              icon={LineChart}
               title="Deterministic scoring"
               body="Health, authenticity and risk are computed by versioned formulas in code. AI explains a score; it never sets one."
             />
             <Pitch
-              icon={BadgeCheck}
               title="OAuth-backed verification"
               body="Verified status is issued only after a creator connects their account and the identity match passes."
             />
           </ul>
         </div>
 
-        <p className="text-[12px] text-ink-subtle">
+        <p className="relative text-sm text-instrument-subtle">
           © {new Date().getFullYear()} SocialOrbit. Influencer intelligence platform.
         </p>
       </section>
@@ -68,10 +96,10 @@ export default async function LoginPage({
           </Link>
 
           <div className="space-y-1">
-            <h2 className="text-[22px] font-semibold tracking-[-0.015em] text-ink">
+            <h2 className="font-display text-title font-bold tracking-display text-ink">
               Sign in
             </h2>
-            <p className="text-[13px] text-ink-muted">
+            <p className="text-base text-ink-muted">
               Use your SocialOrbit workspace account.
             </p>
           </div>
@@ -96,7 +124,7 @@ export default async function LoginPage({
             }
           />
 
-          <p className="text-[13px] text-ink-muted">
+          <p className="text-base text-ink-muted">
             New to SocialOrbit?{" "}
             <Link href="/register" className="rounded font-medium text-brand-ink hover:underline">
               Create an account
@@ -109,75 +137,50 @@ export default async function LoginPage({
   );
 }
 
-function Pitch({
-  icon: Icon,
-  title,
-  body,
-}: {
-  icon: typeof ShieldCheck;
-  title: string;
-  body: string;
-}) {
+function Pitch({ title, body }: { title: string; body: string }) {
   return (
-    <li className="flex gap-3">
-      <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg border border-brand-line bg-brand-soft text-brand">
-        <Icon className="size-4" aria-hidden />
-      </span>
-      <span className="space-y-0.5">
-        <span className="block text-[14px] font-medium text-ink">{title}</span>
-        <span className="block text-[13px] leading-5 text-ink-muted">{body}</span>
-      </span>
+    <li className="border-t border-instrument-line pt-4">
+      <p className="font-semibold text-instrument-ink">{title}</p>
+      <p className="mt-1 text-base leading-5.5 text-instrument-muted">{body}</p>
     </li>
   );
 }
 
 /**
- * A decorative score readout — the artifact the whole product exists to
- * produce. Values are illustrative and the figure is aria-hidden; nothing
- * here claims to be a measurement.
+ * The same instrument housing the landing hero mounts, at reduced size — the
+ * product's one dark surface greets a returning user before the light
+ * workspace opens. Values are illustrative and the panel is aria-hidden;
+ * nothing here claims to be a measurement.
  */
-function ScoreFigure() {
-  const radius = 34;
-  const circumference = 2 * Math.PI * radius;
-  const value = 83;
-  const arc = circumference * (value / 100);
-
+function InstrumentPanel() {
   return (
-    <div aria-hidden className="flex items-center gap-5">
-      <svg viewBox="0 0 84 84" className="size-24 shrink-0 -rotate-90">
-        <circle
-          cx="42"
-          cy="42"
-          r={radius}
-          fill="none"
-          strokeWidth="5"
-          className="stroke-sunken-strong"
-        />
-        <circle
-          cx="42"
-          cy="42"
-          r={radius}
-          fill="none"
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeDasharray={`${arc} ${circumference}`}
-          className="animate-sweep stroke-brand"
-          style={
-            {
-              "--sweep-from": `${circumference}`,
-              "--sweep-to": `${circumference - arc}`,
-              strokeDashoffset: circumference - arc,
-            } as React.CSSProperties
-          }
-        />
-      </svg>
-      <div className="space-y-1">
-        <p className="font-num text-[34px] font-semibold leading-none tracking-[-0.02em] text-ink">
-          83<span className="text-[16px] text-ink-subtle">/100</span>
-        </p>
-        <p className="label-caps text-[10px] text-ink-subtle">
-          SocialOrbit health · 89% confidence
-        </p>
+    <div
+      aria-hidden
+      className="animate-rise overflow-hidden rounded-2xl bg-instrument-raised text-instrument-ink shadow-instrument"
+    >
+      <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-instrument-line-strong px-4 py-3">
+        <span className="label-caps text-instrument-muted">SocialOrbit Health</span>
+        <span className="label-caps-sm text-instrument-muted">
+          Specimen — illustrative values
+        </span>
+      </header>
+      <div className="flex items-center gap-5 p-4">
+        <ScoreRing value={83} size={96} tone="instrument" />
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="label-caps text-instrument-muted">Data confidence</span>
+            <span className="font-num text-base font-semibold">89%</span>
+          </div>
+          <div className="h-1 overflow-hidden rounded-full bg-instrument-line-strong">
+            <div
+              className="animate-extend h-full rounded-full bg-brand-lift"
+              style={{ width: "89%", "--stagger": "300ms" } as React.CSSProperties}
+            />
+          </div>
+          <p className="text-xs text-instrument-muted">
+            high confidence — separate from the score
+          </p>
+        </div>
       </div>
     </div>
   );

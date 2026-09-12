@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { SlidersHorizontal, SearchX, Sparkles, TriangleAlert } from "lucide-react";
+import { SlidersHorizontal, SearchX, TriangleAlert } from "lucide-react";
 import {
   CATEGORY_LABEL,
   PLATFORM_LABEL,
@@ -26,14 +26,15 @@ import type { Paged } from "@/lib/contracts/common";
 import { formatCompact, pluralise } from "@/lib/format";
 import { Button, LinkButton } from "@/components/ui/button";
 import { FilterChip } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { Panel } from "@/components/ui/panel";
 import { Popover } from "@/components/ui/overlay";
 import { useMediaQuery } from "@/components/ui/use-media-query";
 import { SearchInput, Select } from "@/components/ui/field";
 import { Sheet } from "@/components/ui/dialog";
-import { EmptyState, ErrorState, Notice, TableSkeleton } from "@/components/ui/states";
+import { EmptyState, ErrorState, TableSkeleton } from "@/components/ui/states";
 import { Pagination } from "@/components/ui/table";
-import { RelativeTime } from "@/components/ui/relative-time";
+import { QuotaMeter } from "@/components/intelligence/quota-meter";
+import { CreatorPreview } from "./creator-preview";
 import { FilterPanel, type Draft } from "./filter-panel";
 import { ResultTable, SelectionBar } from "./result-table";
 
@@ -156,10 +157,46 @@ export function DiscoveryView({
   const activeFilters = countActiveFilters(query);
   // `lg`, matching the Tailwind breakpoint the rest of this view uses.
   const wideEnoughForDropdown = useMediaQuery("(min-width: 1024px)");
+  /*
+   * At `xl` the filters stop being a thing you open and become a thing you
+   * work in: a persistent rail showing every facet and its count. Discovery is
+   * an iterative task — widen the band, drop a market, re-read the count — and
+   * a popover that closes on every change turns one exploration into twenty
+   * round trips through a button.
+   */
+  const railFilters = useMediaQuery("(min-width: 1280px)");
   const chips = describeFilters(query);
+
+  /* The intelligence preview. Everything it renders is already on the search
+     result, so opening it costs no request. */
+  const [previewId, setPreviewId] = React.useState<string | null>(null);
+  const preview =
+    previewId === null
+      ? null
+      : (data?.page.items.find((item) => item.id === previewId) ?? null);
 
   return (
     <div className="flex min-h-0 flex-1">
+      {/* The working rail. Sticky under the topbar and scrolling on its own, so
+          the facet list stays reachable however far down the results the user
+          has read. */}
+      {railFilters && (
+        <aside
+          aria-label="Search filters"
+          className="sticky top-topbar hidden h-[calc(100dvh-var(--spacing-topbar))] w-68 shrink-0 flex-col overflow-y-auto border-r border-line bg-canvas xl:flex"
+        >
+          <FilterPanel
+            draft={draft}
+            facets={data?.facets ?? []}
+            onChange={(next) => {
+              setDraft(next);
+              apply(next);
+            }}
+            onReset={() => apply({ sort: query.sort })}
+          />
+        </aside>
+      )}
+
       {/* Below `lg` the filters open as a sheet: a dropdown holding nine filter
           groups is unusable on a phone. Only one of the two is ever mounted —
           hiding the other with a class would put a second copy of every
@@ -230,7 +267,12 @@ export function DiscoveryView({
             <Button type="submit" variant="primary">
               Search
             </Button>
-            {wideEnoughForDropdown ? (
+            {/* The allowance rides beside the control that spends it — the
+                same film-frame gauge the dashboard and usage page mount. */}
+            {quota.limit !== null && (
+              <QuotaMeter spent={quota.used} limit={quota.limit} className="px-1" />
+            )}
+            {railFilters ? null : wideEnoughForDropdown ? (
               <Popover
                 title="Filters"
                 className="w-[min(56rem,calc(100vw-1rem))]"
@@ -240,7 +282,7 @@ export function DiscoveryView({
                     <SlidersHorizontal className="size-4" aria-hidden />
                     Filters
                     {activeFilters > 0 && (
-                      <span className="rounded bg-brand px-1 font-num text-[11px] text-white">
+                      <span className="rounded bg-brand px-1 font-num text-xs text-ink-inverse">
                         {activeFilters}
                       </span>
                     )}
@@ -271,13 +313,13 @@ export function DiscoveryView({
                 <SlidersHorizontal className="size-4" aria-hidden />
                 Filters
                 {activeFilters > 0 && (
-                  <span className="rounded bg-brand px-1 font-num text-[11px] text-white">
+                  <span className="rounded bg-brand px-1 font-num text-xs text-ink-inverse">
                     {activeFilters}
                   </span>
                 )}
               </Button>
             )}
-            <label className="flex items-center gap-2 text-[13px] text-ink-muted">
+            <label className="flex items-center gap-2 text-base text-ink-muted">
               <span className="hidden sm:inline">Sort</span>
               <Select
                 value={query.sort}
@@ -309,7 +351,7 @@ export function DiscoveryView({
               <button
                 type="button"
                 onClick={() => apply({ sort: query.sort })}
-                className="rounded px-1.5 py-0.5 text-[12px] text-brand-ink hover:underline"
+                className="rounded px-1.5 py-0.5 text-sm text-brand-ink hover:underline"
               >
                 Clear all
               </button>
@@ -317,29 +359,8 @@ export function DiscoveryView({
           )}
         </div>
 
-        <div className="p-4 sm:p-6">
-          {quota.limit !== null && quota.remaining !== null && quota.remaining <= 2 && !blocked && (
-            <Notice
-              tone={quota.remaining === 0 ? "critical" : "caution"}
-              icon={Sparkles}
-              title={
-                quota.remaining === 0
-                  ? "No searches left this month"
-                  : `${quota.remaining} of ${quota.limit} searches remaining`
-              }
-              action={
-                <LinkButton href="/usage" variant="primary" size="sm">
-                  Upgrade
-                </LinkButton>
-              }
-              className="mb-4"
-            >
-              Allowance resets <RelativeTime at={quota.resetsAt} />. Paging and re-sorting the
-              results you already have does not use another search.
-            </Notice>
-          )}
-
-          <Card>
+        <div className="p-4">
+          <Panel>
             {blocked ? (
               <EmptyState
                 icon={TriangleAlert}
@@ -364,7 +385,7 @@ export function DiscoveryView({
                 onRetry={() => router.refresh()}
               />
             ) : loading ? (
-              <TableSkeleton rows={10} columns={7} />
+              <TableSkeleton rows={10} columns={8} />
             ) : !data || data.page.total === 0 ? (
               <EmptyState
                 icon={SearchX}
@@ -385,15 +406,15 @@ export function DiscoveryView({
             ) : (
               <>
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-2.5">
-                  <p className="text-[13px] text-ink-muted">
-                    <span className="font-num tabular-nums text-ink">
+                  <p className="text-base text-ink-muted">
+                    <span className="font-num text-ink">
                       {formatCompact(data.page.total)}
                     </span>{" "}
                     {data.page.total === 1 ? "creator" : "creators"}
                     {activeFilters > 0 && ` matching ${pluralise(activeFilters, "filter")}`}
                   </p>
                   {selected.size > 0 && (
-                    <p className="text-[12px] text-ink-muted">
+                    <p className="text-sm text-ink-muted">
                       {pluralise(selected.size, "creator")} selected for comparison
                     </p>
                   )}
@@ -403,6 +424,8 @@ export function DiscoveryView({
                   items={data.page.items}
                   sort={query.sort}
                   onSortChange={(sort) => apply({ ...query, sort }, { resetPage: false })}
+                  onPreview={setPreviewId}
+                  previewId={previewId}
                   selected={selected}
                   onToggleSelect={(id) =>
                     setSelected((previous) => {
@@ -427,7 +450,33 @@ export function DiscoveryView({
                 />
               </>
             )}
-          </Card>
+          </Panel>
+
+          <Sheet
+            open={preview !== null}
+            onClose={() => setPreviewId(null)}
+            title="Creator intelligence"
+          >
+            {preview && (
+              <CreatorPreview
+                item={preview}
+                selected={selected.has(preview.id)}
+                onShortlist={
+                  canShortlist
+                    ? (item) => router.push(`/shortlists?add=${item.id}`)
+                    : undefined
+                }
+                onCompare={(item) =>
+                  setSelected((previous) => {
+                    const next = new Set(previous);
+                    if (next.has(item.id)) next.delete(item.id);
+                    else next.add(item.id);
+                    return next;
+                  })
+                }
+              />
+            )}
+          </Sheet>
 
           <SelectionBar
             count={selected.size}

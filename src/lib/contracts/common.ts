@@ -121,16 +121,17 @@ export function confidenceBand(score: number): ConfidenceBand {
  * Platforms
  * ------------------------------------------------------------------------ */
 
-export const Platform = z.enum(["youtube", "instagram", "tiktok"]);
+export const Platform = z.enum(["youtube", "instagram", "tiktok", "x"]);
 export type Platform = z.infer<typeof Platform>;
 
 /** Platforms with a working connector today. TikTok is DPR §29 roadmap. */
-export const SUPPORTED_PLATFORMS: Platform[] = ["youtube", "instagram"];
+export const SUPPORTED_PLATFORMS: Platform[] = ["youtube", "instagram", "x"];
 
 export const PLATFORM_LABEL: Record<Platform, string> = {
   youtube: "YouTube",
   instagram: "Instagram",
   tiktok: "TikTok",
+  x: "X",
 };
 
 /* ---------------------------------------------------------------------------

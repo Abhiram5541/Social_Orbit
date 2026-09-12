@@ -3,14 +3,23 @@ import { CATEGORY_LABEL } from "@/lib/contracts/common";
 import { formatDate } from "@/lib/format";
 import { requireOwnProfile } from "@/server/auth/creator";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
+import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Notice } from "@/components/ui/states";
 import { DataRow } from "@/components/intelligence/stat";
+import { ConfidenceMeter } from "@/components/intelligence/provenance";
 import { ProfileHeader } from "@/components/profile/profile-header";
 
 export const metadata: Metadata = { title: "Your profile" };
 export const dynamic = "force-dynamic";
+
+const STATUS: Record<string, { label: string; tone: BadgeTone }> = {
+  draft: { label: "Draft", tone: "neutral" },
+  in_review: { label: "In review", tone: "caution" },
+  published: { label: "Published", tone: "positive" },
+  archived: { label: "Archived", tone: "neutral" },
+};
 
 export default async function CreatorProfilePage() {
   const { profile } = await requireOwnProfile("/creator/profile");
@@ -18,6 +27,7 @@ export default async function CreatorProfilePage() {
   return (
     <>
       <PageHeader
+        eyebrow="My presence"
         title="Your profile"
         description="How brands see you. Platform metrics come from your connected accounts and cannot be edited."
         actions={
@@ -44,7 +54,14 @@ export default async function CreatorProfilePage() {
             <CardContent>
               <dl>
                 <DataRow label="Profile id" value={profile.id} />
-                <DataRow label="Status" value={profile.status} />
+                <DataRow
+                  label="Status"
+                  value={
+                    <Badge tone={STATUS[profile.status]?.tone ?? "neutral"} dot>
+                      {STATUS[profile.status]?.label ?? profile.status}
+                    </Badge>
+                  }
+                />
                 <DataRow label="Country" value={profile.countryName ?? "—"} />
                 <DataRow label="Languages" value={profile.languages.join(", ").toUpperCase()} />
                 <DataRow
@@ -61,33 +78,58 @@ export default async function CreatorProfilePage() {
               <CardTitle>Data confidence</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <p className="text-[13px] leading-5 text-ink-muted">
+              <p className="text-base text-ink-muted">
                 Confidence measures how much SocialOrbit can vouch for your numbers — how
                 complete the record is, how much history exists, and how authoritative the
                 sources are. It is separate from your health score.
               </p>
-              <dl>
-                <DataRow
-                  label="Overall"
-                  value={`${Math.round(profile.confidenceDetail.score)}% (${profile.confidenceDetail.band})`}
-                />
-                <DataRow
-                  label="Data completeness"
-                  value={profile.confidenceDetail.components.dataCompleteness.toFixed(1)}
-                />
-                <DataRow
-                  label="Historical depth"
-                  value={profile.confidenceDetail.components.historicalDepth.toFixed(1)}
-                />
-                <DataRow
-                  label="Source authority"
-                  value={profile.confidenceDetail.components.sourceAuthority.toFixed(1)}
-                />
-                <DataRow
-                  label="Staleness penalty"
-                  value={`−${profile.confidenceDetail.components.staleDataPenalty.toFixed(1)}`}
-                />
-              </dl>
+              <ConfidenceMeter confidence={profile.confidenceDetail} />
+              {/* Components in the hairline-bar grammar, each against its
+                  maximum contribution so the figure carries its own scale. */}
+              <div className="space-y-2.5 border-t border-line pt-3">
+                {(
+                  [
+                    ["Data completeness", profile.confidenceDetail.components.dataCompleteness, 30],
+                    ["Historical depth", profile.confidenceDetail.components.historicalDepth, 25],
+                    ["Source authority", profile.confidenceDetail.components.sourceAuthority, 25],
+                  ] as const
+                ).map(([label, value, max]) => (
+                  <div key={label} className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1">
+                    <span className="flex min-w-0 items-baseline gap-1.5">
+                      <span className="truncate text-sm text-ink-muted">{label}</span>
+                      <span className="shrink-0 font-num text-2xs text-ink-muted">of {max}</span>
+                    </span>
+                    <span className="font-num text-base font-semibold text-ink">
+                      {value.toFixed(1)}
+                    </span>
+                    <div className="col-span-2 h-1 overflow-hidden rounded-sm bg-line">
+                      <div
+                        className="h-full rounded-sm bg-neutral-metric"
+                        style={{ width: `${Math.min(100, (value / max) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+                {/* The penalty subtracts, so it wears caution rather than the
+                    neutral metric tone. */}
+                <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1">
+                  <span className="flex min-w-0 items-baseline gap-1.5">
+                    <span className="truncate text-sm text-ink-muted">Staleness penalty</span>
+                    <span className="shrink-0 font-num text-2xs text-ink-muted">of 25</span>
+                  </span>
+                  <span className="font-num text-base font-semibold text-caution">
+                    −{profile.confidenceDetail.components.staleDataPenalty.toFixed(1)}
+                  </span>
+                  <div className="col-span-2 h-1 overflow-hidden rounded-sm bg-line">
+                    <div
+                      className="h-full rounded-sm bg-caution"
+                      style={{
+                        width: `${Math.min(100, (profile.confidenceDetail.components.staleDataPenalty / 25) * 100)}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>

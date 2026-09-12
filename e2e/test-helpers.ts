@@ -1,4 +1,4 @@
-import { expect, type Page, type APIRequestContext } from "@playwright/test";
+import { expect, type Locator, type Page, type APIRequestContext } from "@playwright/test";
 
 /** Development seed accounts — see src/server/repositories/user-repository.ts. */
 export const ACCOUNTS = {
@@ -55,4 +55,44 @@ export async function creatorIds(request: APIRequestContext, count = 3): Promise
     "the influencer database is empty — run a harvest before the E2E suite",
   ).toBeGreaterThanOrEqual(count);
   return cachedIds!.slice(0, count);
+}
+
+/* ---------------------------------------------------------------------------
+ * Discovery filters
+ *
+ * The filter surface has three shapes, chosen by viewport rather than probed:
+ * `isVisible()` is a one-shot check that can run before hydration and send a
+ * test down the wrong branch.
+ *
+ *   >= 1280  a persistent rail — nothing to open, and applied on change
+ *   >= 1024  a dropdown — opened by the Filters button, applied on change
+ *   <  1024  a sheet — opened by the Filters button, applied on "Show results"
+ * ------------------------------------------------------------------------ */
+
+export type FilterSurface = { scope: Locator; commit: () => Promise<void> };
+
+export async function openFilters(page: Page): Promise<FilterSurface> {
+  const width = page.viewportSize()?.width ?? 1440;
+
+  if (width >= 1280) {
+    // `<aside aria-label>` maps to `complementary`, not `region` — a filter
+    // rail is complementary content, and the role has to match the element
+    // the page actually renders.
+    return {
+      scope: page.getByRole("complementary", { name: "Search filters" }),
+      commit: async () => {},
+    };
+  }
+
+  await page.getByRole("button", { name: /^Filters/ }).click();
+  const scope = page.getByRole("dialog", { name: "Filters" });
+
+  if (width >= 1024) return { scope, commit: async () => {} };
+
+  return {
+    scope,
+    commit: async () => {
+      await page.getByRole("button", { name: "Show results" }).click();
+    },
+  };
 }

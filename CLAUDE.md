@@ -85,7 +85,8 @@ same `src/server` code. Split into services only if a real scaling need appears.
 campaign performance scoring). Deferred with connector/engine slots left open: Consumer
 Intelligence, TikTok, AI rate negotiation, payments, contracts, CRM.
 
-**D5 — Typography deviates from the Stitch spec.** Stitch pairs Geist with Poppins for
+**D5 — Typography deviates from the Stitch spec.** *(Superseded by D23. Kept for the
+reasoning about tabular figures, which still governs.)* Stitch pairs Geist with Poppins for
 numerals. Poppins is a geometric sans with non-tabular figures — columns misalign and
 long metric tables become hard to scan, which defeats the stated "financial terminal"
 thesis. Use **Geist** for interface text and **Geist Mono** for every numeric value,
@@ -94,7 +95,9 @@ properly.
 
 **D6 — No dark mode in v1.** The product is a light, dense analytical surface. Adding a
 second theme doubles the visual QA surface for no stated requirement. Tokens are defined
-so a dark palette can be added by redefining variables only.
+so a dark palette can be added by redefining variables only. *(Still true: D23 makes the
+chrome graphite on every route, but that is one fixed material, not a user-selectable
+theme. There is still exactly one palette to QA.)*
 
 
 **D7 — Development state is anchored on `globalThis`.** Next builds route handlers and
@@ -115,6 +118,174 @@ cannot hand a client component a function, so formatting choices are named value
 is noise wearing the costume of a statistic, and it would be the most quotable number on the
 page. Scoring still normalises against a small cohort's median; only the published rank is
 withheld.
+
+**D17 — Type, caps and radius are law, not folklore.** The full type ramp is `@theme`
+font-size tokens (`text-2xs` … `text-display`; 14px is the body default and has no token) —
+new `text-[Npx]` brackets are allowed only for true one-offs with a comment. Caps micro-labels
+are `.label-caps` / `.label-caps-sm` only. Tiles are `rounded-lg`, panels `rounded-xl`; rows
+tint on hover, clickable cards lift, static cards don't move. Chart series stop at three
+overlaid — comparison renders side-by-side, never a fourth series. Custom size tokens are
+registered with tailwind-merge in `src/lib/class-names.ts`; register any future ambiguous
+token there or `cn` silently drops it.
+
+**D18 — Composition is the design system, not the components.**
+The product's failure mode was never its tokens; it was that every grouping on every
+screen was drawn as its own bordered card floating on grey, so nothing could be more
+important than anything else. Three composition primitives replace that
+(`src/components/ui/panel.tsx`), in increasing weight:
+
+- `Section` — a full-bleed band on the work canvas, separated by a rule. Structure
+  without a box. This is the default; most groupings are a band, not an object.
+- `Split` — two or three columns sharing one hairline instead of a gutter between
+  separate cards.
+- `Panel` — a genuine object: a chart, a queue, a dossier block. Bordered but flat.
+
+Inside any container, rows and columns separate with `--color-rule`, which is lighter
+than the container's own edge: structure inside a container must never compete with the
+container. `Card` is now the same treatment as `Panel` under its older name, so the
+forty screens that already import it inherited the change without edits.
+
+**D19 — One hero signal, one strip, then supporting panels.**
+Screens open on `HeroSignal` (`src/components/intelligence/signal.tsx`): one oversized
+light numeral, the scale it was drawn from, its band, and a plain sentence saying *why*.
+Under it, `MetricStrip` — one continuous strip divided by rules, never a tray of
+separate tiles. `StatRow`/`StatTile` render as that strip too, which is how the nine
+screens still importing them were upgraded in one edit. A strip must divide evenly, and
+`React.Children.toArray` is what counts its cells: `Children.count` counts the `false`
+that a conditional child leaves behind and silently picked the wrong column count.
+
+Deliberately not built: a "vs previous period" delta on any org-level figure. The real
+database holds four snapshot days for 627 of 631 creators, so a period comparison would
+be a manufactured number, and manufacturing one on the dashboard of a provenance product
+is the single most self-defeating thing this codebase could do. Charts render the
+"building history" state instead — DPR §10.2 behaviour, not a placeholder.
+
+**D20 — Provenance is a click-through, not a tooltip.**
+`TrackedValue` renders a figure with a dotted rule under it; clicking opens a panel
+naming the method, the source tier and its rank, the collection time, the derivation
+formula, the model and prompt version where AI was involved, and the field confidence.
+A tooltip cannot be reached on touch, cannot be read at leisure and cannot hold a source
+link — which is where the product's strongest differentiator had been living. The
+profile's metric strip is wired through it; extend it to any figure a user might have to
+defend in a meeting.
+
+**D23 — The chrome is the instrument; the work is printed on paper set inside it.**
+This replaces D21's tonal scheme and reverses it. The rail, the topbar, the mobile
+drawer, the marketing hero and the marketing footer are one graphite housing
+(`--color-instrument`); the workspace inside them is warm paper (`--color-canvas`,
+#f6f4f1), and white is reserved for panels where measurement happens.
+
+The reason is not taste. The product's strongest idea — a measurement rendered as an
+instrument readout — existed on exactly one card, and every other pixel was grey-on-grey
+admin chrome. A light rail against a light canvas cannot state an identity no matter how
+carefully its greys are tuned; it can only recede politely. Inverting it puts the
+identity on every route at zero content cost, and the paper reads brighter for sitting
+in a dark bezel.
+
+What follows from it, and is intended:
+
+- **Elevation on graphite is light, not shadow.** A raised surface inside the housing
+  takes an inset white hairline (`--shadow-chrome-raised`). A shadow on near-black is
+  invisible; a border on near-black reads as a crack.
+- **Cobalt gets a second step.** `--color-brand` cannot clear 4.5:1 against #17181c, so
+  the chrome uses `--color-brand-lift`. Every semantic hue has the same lifted variant,
+  and `BAR_TONE_INSTRUMENT` in `distribution-bars.tsx` is where the mapping lives.
+- **Identity and account moved into the rail.** The topbar now carries only what every
+  route shares — the palette, the search allowance, help, notifications — which is what
+  makes it able to belong to the page instead of being a second row of chrome.
+- **`Instrument` is capped at one per screen** (`src/components/ui/panel.tsx`). It
+  carries the screen's single headline reading. Two of them and neither is the headline.
+- **Brass (`--color-brass`) enters, and is spent only on measurement**: the score dial's
+  tick ring and the verification seal. Never a control, never a link, never a fill. Its
+  scarcity is the whole mechanism — a gold mark can then only mean "this was read".
+
+**D24 — Two typefaces, split by what a thing *is* rather than by size.**
+Space Grotesk sets every heading and every numeral; Instrument Sans sets interface text.
+Montserrat is dropped.
+
+The numeral half is the load-bearing decision. Space Grotesk descends from Space Mono, so
+its digits are uniform width by construction — the property D5 chose Montserrat for — but
+it also has drawn character, which Montserrat does not: a geometric grotesque that is on
+every second SaaS site cannot make a score read as a reading. Instrument Sans takes the
+interface text because a display face at 11px in a dense table is a legibility bill paid
+on every row.
+
+Consequences: `--font-display` and `--font-num` are the same family by design, and
+`.font-num` still carries `tnum` and `zero 0` so a fallback face behaves. Only weights
+500/600/700 (display) and 400–700 (text) are loaded — `font-light` and `font-extrabold`
+were removed from the codebase rather than left to synthesise. Chart axis labels are set
+in the numeric voice too: an axis in the interface face beside a metric strip in the
+numeric one is a seam nobody names and everybody feels.
+
+**D25 — Radius rises with the size of the element, and elevation is declared once.**
+The ladder is 4 / 6 / 8 / 10 / 14 / 18px — micro-tag, input, button, tile, panel,
+housing. A single radius everywhere is the tell of a system that picked a number instead
+of making a decision, and a panel that curves less than the chip inside it stops reading
+as a container. Pills are for small controls only.
+
+Elevation is a border **or** a shadow, never both: a 1px border under a wide soft shadow
+is the ghost card. The shadow tokens therefore carry their own hairline as their first
+layer, so an overlay stays defined against white without a second declaration.
+
+**D26 — Motion is one recipe, and scroll is left alone.**
+The marketing site has exactly one entrance — rise 14px, unblur 6px, settle over 700ms,
+once — driven by an IntersectionObserver in `src/components/marketing/reveal.tsx`. No
+Framer Motion, no GSAP, no Lenis. Two reasons, and the second is the real one:
+
+- A scroll-animation dependency would be the largest thing on a page whose entire
+  argument is that the product is measured rather than decorated.
+- Smooth-scroll hijacking on an enterprise page is an accessibility liability, not a
+  flourish. The browser's own scrolling is already smooth, already interruptible, already
+  correct with a keyboard and a screen reader, and already respects the platform's
+  reduced-motion setting.
+
+Inside the application, motion stays where it was: one authored moment per screen (the
+score arc drawing itself), plus press, lift and the dialog entrance. `prefers-reduced-motion`
+neutralises all of it, and `.reveal` resolves to its *shown* state under that query — a
+reveal that hides content when its transition is disabled is a broken page, not a quiet one.
+
+**D27 — A kicker above a heading is wayfinding or it is nothing.**
+`PageHeader`'s `eyebrow` prop still exists and still names the section, but it renders as
+the leading step of the breadcrumb trail rather than as a caps label stacked over the
+title. Same words, same information, no decorative row — and with the section already
+visible in the rail's active item, a second copy of it above the title was pure
+duplication. Caps micro-labels remain correct where they name a *group of data*
+("Content themes", "Audience risk"); they are wrong as a label on a heading.
+
+**D21 — The chrome is the ground, the work is the figure.** *(Superseded by D23, which
+keeps this conclusion and reverses its materials: navigation still recedes behind the
+analysis, but it does so by being graphite rather than by being a lighter grey. The
+grouping rule below still stands.)*
+
+Navigation is grouped by user intent (`Discover` / `Activate` / `Intelligence` /
+`Trust & data` / `Administration`), not by which backend module owns the route, and every
+`PageHeader` carries the section name as an eyebrow so a screen states where it stands.
+
+**D22 — The marketing site renders the product, and says which numbers are chosen.**
+`src/components/marketing/product-surfaces.tsx` composes the application's own
+components — the score instrument, the confidence track, the provenance panel, the
+risk vocabulary — so the landing page shows the product rather than a picture of it
+and cannot drift when the product changes. Two rules follow:
+
+- **Every fabricated value lives in `specimen.ts`.** One module, so a reader can
+  check in one place exactly which figures on the marketing site were chosen rather
+  than measured. Coverage figures come from `databaseStats()` and are live. The page
+  carries one disclosure under the hero and one in the footer — not a stamp on each
+  of eight surfaces, which reads as defensiveness rather than candour.
+- **Nothing there imports Recharts.** `distribution.tsx` was split: the token-only
+  bars moved to `distribution-bars.tsx`, the plots stayed. Importing a labelled bar
+  row used to ship a charting library with it, which two admin screens were paying
+  for while rendering no chart at all. The landing page's one plot is hand-rolled SVG.
+
+The page is ordered by the buyer's journey — discover, evaluate, verify, activate,
+measure — not by the system's architecture, and no two of its eleven bands share a
+composition. The Developer API lives on `/pricing`, beside the plan that grants it:
+a terminal on a page written for a marketing director is an audience mismatch.
+
+Capabilities that do not exist are not depicted. There is no natural-language query,
+no ROI model and almost no audience-demographic data, so none of the three appear —
+on a product whose entire pitch is that its numbers are checkable, a homepage
+promising features it does not have is the most expensive possible lie.
 
 **D12 — The influencer database is real, and there is no generator.**
 The seeded creator generator is deleted. `src/server/data/` now holds record shapes and a
@@ -321,6 +492,9 @@ should read like a financial terminal. Authoritative, quiet, precise.
 
 - Depth comes from 1px borders and tonal layering, not shadows. Shadows only for
   overlays that genuinely float.
+- Compose with bands and splits before objects (D18). A screen that is a grid of
+  identical bordered cards has no hierarchy, and adding a hierarchy afterwards by
+  changing type sizes does not create one.
 - Intelligence Blue is for intent — actions, active state, focus. Never large fills,
   never decoration.
 - Colour on data means something: emerald = growth, amber = caution, rose = risk. A chart

@@ -43,7 +43,7 @@ export function Wordmark({
         <span className="flex flex-col leading-none">
           <span
             className={cn(
-              "text-[15px] font-semibold tracking-[-0.01em]",
+              "font-display text-md font-bold",
               inverse ? "text-instrument-ink" : "text-ink",
             )}
           >
@@ -51,7 +51,7 @@ export function Wordmark({
           </span>
           <span
             className={cn(
-              "mt-0.5 text-[10px] font-medium uppercase tracking-[0.08em]",
+              "label-caps-sm mt-0.5",
               inverse ? "text-instrument-muted" : "text-ink-subtle",
             )}
           >

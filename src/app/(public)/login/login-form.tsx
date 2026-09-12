@@ -95,7 +95,7 @@ export function LoginForm({
         labelSuffix={
           <Link
             href="/forgot-password"
-            className="rounded text-[12px] text-brand-ink hover:underline"
+            className="rounded text-sm text-brand-ink hover:underline"
           >
             Forgot password?
           </Link>

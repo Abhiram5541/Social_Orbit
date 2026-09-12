@@ -38,7 +38,12 @@ export interface NotificationItem {
     | "verification";
   title: string;
   detail: string;
-  at: string;
+  /**
+   * A real event anchor — lastRefreshedAt, lastActiveAt. Optional on purpose:
+   * when no anchor exists the row shows no time rather than a render-minted
+   * "just now", which would be a manufactured observation.
+   */
+  at?: string;
   href?: string;
   severity: "info" | "warning" | "critical";
 }
@@ -62,18 +67,40 @@ const SEVERITY: Record<NotificationItem["severity"], string> = {
   critical: "text-critical",
 };
 
-export function NotificationsList({ items }: { items: NotificationItem[] }) {
+/* Triage hierarchy is structural, not just an icon tint: warning and critical
+   rows carry a 2px severity rule and a caps kind tag, and critical sorts to
+   the top — a brand-safety escalation must not queue behind info notes. */
+const SEVERITY_RULE: Record<NotificationItem["severity"], string | undefined> = {
+  info: undefined,
+  warning: "border-l-2 border-l-caution",
+  critical: "border-l-2 border-l-critical",
+};
+
+const SEVERITY_RANK: Record<NotificationItem["severity"], number> = {
+  critical: 0,
+  warning: 1,
+  info: 2,
+};
+
+export function NotificationsList({
+  items,
+  emptyDescription = "SocialOrbit watches the creators you track for dormancy, growth anomalies, engagement decline, stale data, brand-safety signals and expiring connections. You will hear from us when one of those fires.",
+}: {
+  items: NotificationItem[];
+  /** The creator route re-voices this; the default speaks to clients. */
+  emptyDescription?: React.ReactNode;
+}) {
   if (items.length === 0) {
     return (
       <Card>
-        <EmptyState
-          icon={Bell}
-          title="Nothing to report"
-          description="SocialOrbit watches the creators you track for dormancy, growth anomalies, engagement decline, stale data, brand-safety signals and expiring connections. You will hear from us when one of those fires."
-        />
+        <EmptyState icon={Bell} title="Nothing to report" description={emptyDescription} />
       </Card>
     );
   }
+
+  const ordered = [...items].sort(
+    (a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity],
+  );
 
   return (
     <Card>
@@ -82,25 +109,34 @@ export function NotificationsList({ items }: { items: NotificationItem[] }) {
         <Badge tone="neutral">{items.length}</Badge>
       </CardHeader>
       <ul className="divide-y divide-line">
-        {items.map((item) => {
+        {ordered.map((item) => {
           const Icon = ICONS[item.kind];
           const content = (
             <span className="flex items-start gap-3 px-4 py-3">
               <Icon className={cn("mt-0.5 size-4 shrink-0", SEVERITY[item.severity])} aria-hidden />
               <span className="min-w-0 flex-1">
-                <span className="block text-[14px] font-medium text-ink">{item.title}</span>
-                <span className="block text-[13px] leading-5 text-ink-muted">{item.detail}</span>
+                <span className="block font-medium text-ink">{item.title}</span>
+                <span className="block text-base text-ink-muted">{item.detail}</span>
               </span>
-              <span className="shrink-0 whitespace-nowrap text-[12px] text-ink-muted">
-                {formatRelativeTime(item.at)}
+              <span className="flex shrink-0 items-center gap-2">
+                {item.severity !== "info" && (
+                  <span className={cn("label-caps-sm", SEVERITY[item.severity])}>
+                    {item.kind.replace(/_/g, " ")}
+                  </span>
+                )}
+                {item.at && (
+                  <span className="whitespace-nowrap text-sm text-ink-muted">
+                    {formatRelativeTime(item.at)}
+                  </span>
+                )}
               </span>
             </span>
           );
 
           return (
-            <li key={item.id}>
+            <li key={item.id} className={SEVERITY_RULE[item.severity]}>
               {item.href ? (
-                <Link href={item.href} className="block transition-colors hover:bg-brand-softer">
+                <Link href={item.href} className="block transition-colors hover:bg-sunken/70">
                   {content}
                 </Link>
               ) : (

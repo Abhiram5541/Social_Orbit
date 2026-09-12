@@ -36,6 +36,7 @@ export default async function NewCampaignPage({
   return (
     <>
       <PageHeader
+        eyebrow="Activate"
         title="New campaign"
         description="A campaign needs a tracking hashtag before it can measure anything. Everything else can be filled in later."
         breadcrumbs={[{ label: "Campaigns", href: "/campaigns" }, { label: "New" }]}

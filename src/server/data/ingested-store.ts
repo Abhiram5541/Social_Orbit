@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { gunzipSync } from "node:zlib";
 import { shared } from "./process-store";
 import type {
   RawAccount,
@@ -28,6 +29,22 @@ import type {
  * ------------------------------------------------------------------------ */
 
 const DATA_FILE = join(process.cwd(), ".data", "ingested.json");
+
+/**
+ * The same records, gzipped, for a deployment target that cannot carry the
+ * plain file.
+ *
+ * A serverless bundle is copied per function, and 41MB of JSON copied that
+ * many times is a deployment that either fails or costs a fortune to move.
+ * Gzipped it is 6.7MB, and inflating it costs 62ms once per cold start
+ * against the 105ms the parse costs anyway — so the packed copy is what ships
+ * and the plain file is what a developer works against.
+ *
+ * Written by `npm run data:pack`, never by the app: the app writing its own
+ * archive would put a second, staler copy of the database on disk with nothing
+ * saying which one is current.
+ */
+const PACKED_FILE = `${DATA_FILE}.gz`;
 
 export interface IngestedRecords {
   influencers: RawInfluencer[];
@@ -64,10 +81,20 @@ function empty(): IngestedRecords {
   };
 }
 
+/** The plain file wins when both exist: on a developer's machine it is live. */
+function readStored(): { text: string; from: string } | null {
+  if (existsSync(DATA_FILE)) return { text: readFileSync(DATA_FILE, "utf8"), from: DATA_FILE };
+  if (existsSync(PACKED_FILE)) {
+    return { text: gunzipSync(readFileSync(PACKED_FILE)).toString("utf8"), from: PACKED_FILE };
+  }
+  return null;
+}
+
 function load(): IngestedRecords {
-  if (!existsSync(DATA_FILE)) return empty();
+  const stored = readStored();
+  if (!stored) return empty();
   try {
-    const parsed: unknown = JSON.parse(readFileSync(DATA_FILE, "utf8"));
+    const parsed: unknown = JSON.parse(stored.text);
     if (!parsed || typeof parsed !== "object") return empty();
     const records = parsed as Partial<IngestedRecords>;
     return {
@@ -85,7 +112,7 @@ function load(): IngestedRecords {
   } catch (error) {
     // Starting empty would silently discard a database. Refuse instead: the
     // file is either readable or something is wrong that a human should see.
-    throw new Error(`Ingested data at ${DATA_FILE} could not be read: ${String(error)}`);
+    throw new Error(`Ingested data at ${stored.from} could not be read: ${String(error)}`);
   }
 }
 

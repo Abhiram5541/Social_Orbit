@@ -49,7 +49,7 @@ export function HealthPanel({
   const measured = health.sufficient;
 
   return (
-    <section className="animate-rise overflow-hidden rounded-xl bg-instrument text-instrument-ink shadow-instrument">
+    <section className="animate-rise relative overflow-hidden rounded-2xl bg-instrument text-instrument-ink shadow-instrument before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/8">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-instrument-line px-4 py-2.5">
         <div className="flex items-center gap-2">
           <h2 className="label-caps text-instrument-muted">SocialOrbit Health</h2>
@@ -58,7 +58,7 @@ export function HealthPanel({
             {health.formulaVersion}. AI classifies some inputs; it never sets the score.
           </InfoHint>
         </div>
-        <span className="font-num text-[11px] tracking-[0.04em] text-instrument-muted">
+        <span className="font-num text-xs text-instrument-muted">
           {health.formulaVersion}
         </span>
       </header>
@@ -67,22 +67,22 @@ export function HealthPanel({
         <div className="flex items-center gap-5">
           <ScoreRing value={measured ? health.value : null} size={124} tone="instrument" />
           <div className="min-w-0 space-y-2">
-            <p className="text-[19px] font-semibold leading-tight tracking-[-0.02em]">
+            <p className="font-display text-stat font-bold leading-tight">
               {measured ? HEALTH_BAND_LABEL[health.band] : "Not scored"}
             </p>
             {!measured ? (
-              <p className="max-w-56 text-[12px] leading-5 text-instrument-muted">
+              <p className="max-w-56 text-sm leading-5 text-instrument-muted">
                 Only {Math.round(health.weightCovered * 100)}% of the formula could be
                 measured for this creator — too little to publish a score. Withheld rather
                 than rounded up from one component.
               </p>
             ) : benchmarks && percentile !== undefined ? (
-              <p className="max-w-56 text-[12px] leading-5 text-instrument-muted">
+              <p className="max-w-56 text-sm leading-5 text-instrument-muted">
                 {ordinal(percentile)} percentile of {benchmarks.cohortSize} creators in{" "}
                 {benchmarks.category} · {benchmarks.followerBand}
               </p>
             ) : (
-              <p className="max-w-56 text-[12px] leading-5 text-instrument-muted">
+              <p className="max-w-56 text-sm leading-5 text-instrument-muted">
                 Not enough indexed creators in this category and size band to rank against
                 yet.
               </p>
@@ -136,13 +136,13 @@ export function HealthPanel({
           bar={health.weightCovered * 100}
           barTone="bg-instrument-muted"
         />
-        <span className="text-[11px] text-instrument-muted">
+        <span className="text-xs text-instrument-muted">
           Computed {formatRelativeTime(health.computedAt)}
         </span>
       </div>
 
       {unavailable.length > 0 && (
-        <p className="border-t border-instrument-line px-5 py-2.5 text-[12px] leading-5 text-instrument-muted">
+        <p className="border-t border-instrument-line px-5 py-2.5 text-sm leading-5 text-instrument-muted">
           {unavailable.length === 1 ? "One component is" : `${unavailable.length} components are`}{" "}
           not measurable yet (
           {unavailable
@@ -163,10 +163,10 @@ export function HealthPanel({
             </span>
             <Badge tone="inferred" onInstrument>AI interpretation</Badge>
           </div>
-          <p className="mt-2.5 max-w-3xl text-[13px] leading-6 text-instrument-ink">
+          <p className="mt-2.5 max-w-3xl text-base leading-6 text-instrument-ink">
             {ai.signalReading}
           </p>
-          <p className="mt-2 text-[11px] leading-5 text-instrument-muted">
+          <p className="mt-2 text-xs leading-5 text-instrument-muted">
             {ai.provider} {ai.model} · prompt {ai.promptVersion} ·{" "}
             {formatRelativeTime(ai.generatedAt)}. An explanation of stored measurements, not a
             source of them.
@@ -195,7 +195,7 @@ function InstrumentReadout({
     <div className="min-w-40 flex-1 space-y-1">
       <div className="flex items-baseline justify-between gap-3">
         <span className="label-caps text-instrument-muted">{label}</span>
-        <span className="font-num text-[13px] font-semibold tabular-nums">{value}</span>
+        <span className="font-num text-base font-semibold">{value}</span>
       </div>
       <div className="h-1 overflow-hidden rounded-sm bg-instrument-line">
         <div
@@ -203,7 +203,7 @@ function InstrumentReadout({
           style={{ width: `${Math.min(100, bar)}%`, "--stagger": "260ms" } as React.CSSProperties}
         />
       </div>
-      <p className="text-[11px] text-instrument-muted">{note}</p>
+      <p className="text-xs text-instrument-muted">{note}</p>
     </div>
   );
 }

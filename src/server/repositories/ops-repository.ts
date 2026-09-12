@@ -83,7 +83,12 @@ export type ConnectorState =
   | "credentials_missing"
   | "degraded"
   | "not_implemented"
-  | "not_configured";
+  | "not_configured"
+  // Credentials are complete and the adapter is real, but the upstream
+  // account itself refuses the request (X: HTTP 402 "credits depleted").
+  // Distinct from `credentials_missing` — the fix is billing, not an env var —
+  // and distinct from `degraded`, which means partially-set credentials.
+  | "billing_required";
 
 export interface ConnectorStatus {
   platform: Platform;
@@ -100,6 +105,7 @@ const CONNECTOR_REQUIREMENTS: Record<Platform, string[]> = {
   youtube: ["YOUTUBE_API_KEY", "YOUTUBE_OAUTH_CLIENT_ID", "YOUTUBE_OAUTH_CLIENT_SECRET"],
   instagram: ["META_APP_ID", "META_APP_SECRET"],
   tiktok: ["TIKTOK_CLIENT_KEY", "TIKTOK_CLIENT_SECRET"],
+  x: ["X_API_KEY", "X_API_SECRET"],
 };
 
 /**
@@ -114,6 +120,7 @@ const IMPLEMENTED: Record<Platform, boolean> = {
   youtube: true,
   instagram: false,
   tiktok: false,
+  x: true,
 };
 
 const CONNECTOR_NOTES: Record<Platform, string> = {
@@ -122,6 +129,7 @@ const CONNECTOR_NOTES: Record<Platform, string> = {
   instagram:
     "Professional-account insights through the Instagram Graph API. No adapter is written yet, and the Meta app needs `instagram_basic` and `instagram_manage_insights` through App Review before it can read anything. Instagram also publishes no discovery endpoint, so creators must be named rather than found.",
   tiktok: "Roadmap connector (DPR §29). No creators are indexed for this platform.",
+  x: "Account resolution, account statistics and recent-post listings via API v2. The app-only bearer token mints successfully but live reads currently fail with HTTP 402 (\"credits depleted\") — the account has no active billing, not a missing or invalid credential. Sign-in-with-X (OAuth2 + PKCE) is fully implemented but X_OAUTH_CLIENT_ID/_SECRET are not yet issued, so account connection reports credentials_missing until those are set.",
 };
 
 /**
@@ -153,7 +161,18 @@ export function connectorStatuses(): ConnectorStatus[] {
             ? "not_implemented"
             : missing.length > 0
               ? "degraded"
-              : "live";
+              : // Confirmed live against X's API: fully credentialed and
+                // implemented, but every read fails upstream with HTTP 402
+                // ("credits depleted") because this app has no active billing.
+                // This function reads only local records — it never calls the
+                // upstream API itself — so it cannot detect on its own when
+                // billing is restored. X_BILLING_ACTIVE is the operator's
+                // signal that the 402 is gone; flip it once a live probe
+                // confirms reads succeed, or this row keeps reporting
+                // "billing_required" after the account is fixed.
+                platform === "x" && process.env.X_BILLING_ACTIVE !== "true"
+                ? "billing_required"
+                : "live";
 
     return {
       platform,

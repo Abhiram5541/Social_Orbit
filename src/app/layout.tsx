@@ -1,24 +1,33 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat } from "next/font/google";
+import { Instrument_Sans, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/query-provider";
 
 /**
- * One family, the full weight range.
+ * Two voices with non-overlapping jobs.
  *
- * Montserrat is a geometric sans whose digits are all exactly the same width
- * with no feature flags needed, so metric columns align without a companion
- * monospace — and its zero is a clean oval with no slash through it. That makes
- * a single family viable for interface text and data alike, which is why the
- * earlier Geist/Geist Mono pairing was dropped.
+ * Space Grotesk sets every heading and — the decision that matters — every
+ * numeral. It descends from Space Mono, so its digits are uniform width by
+ * construction: a metric column aligns without a companion monospace and
+ * without a feature flag, and its figures carry an engineered character that
+ * makes a score read as a reading rather than as a label. It replaces
+ * Montserrat, which was doing both jobs and was distinctive at neither.
  *
- * The wide weight range is the point: hierarchy here comes from weight contrast
- * (300 against 800) rather than from stacking more type sizes.
+ * Instrument Sans carries interface text, where the job is to disappear: a
+ * humanist grotesque that stays legible at 11px in a dense table and never
+ * competes with the display voice above it.
  */
-const montserrat = Montserrat({
-  variable: "--font-montserrat",
+const display = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+});
+
+const sans = Instrument_Sans({
+  variable: "--font-instrument-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -36,7 +45,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#16161a",
+  // Duplicates --color-instrument in globals.css by value — Next metadata
+  // cannot read a CSS custom property. Change both together. The chrome, not
+  // the canvas: the browser furniture continues the housing.
+  themeColor: "#17181c",
 };
 
 export default function RootLayout({
@@ -45,7 +57,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${montserrat.variable} h-full`}>
+    <html lang="en" className={`${display.variable} ${sans.variable} h-full`}>
       <body className="min-h-full antialiased">
         <QueryProvider>{children}</QueryProvider>
       </body>

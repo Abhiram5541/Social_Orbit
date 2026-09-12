@@ -2,7 +2,14 @@ import * as React from "react";
 import { Sparkles } from "lucide-react";
 import type { InfluencerProfile } from "@/lib/contracts/influencer";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, Eyebrow } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Eyebrow,
+} from "@/components/ui/card";
 import { Notice } from "@/components/ui/states";
 
 /**
@@ -85,7 +92,7 @@ export function BrandSafetyPanel({ profile }: { profile: InfluencerProfile }) {
         </Badge>
       </CardHeader>
       <CardContent className="space-y-3">
-        <p className="text-[12px] leading-5 text-ink-muted">
+        <p className="text-sm leading-5 text-ink-muted">
           Graded from a sample of recent uploads and their top comments.{" "}
           <strong className="font-medium text-ink">Not observed</strong> means nothing of that
           kind appeared in the material read — evidence of absence in a sample, not a
@@ -106,11 +113,24 @@ export function BrandSafetyPanel({ profile }: { profile: InfluencerProfile }) {
 
             return (
               <li key={key} className="grid gap-1 px-3 py-2 sm:grid-cols-[13rem_auto_1fr] sm:items-baseline sm:gap-3">
-                <span className="text-[13px] text-ink">{LABEL[key]}</span>
-                <Badge tone={level.tone} dot>
-                  {level.label}
-                </Badge>
-                <span className="text-[12px] leading-5 text-ink-muted">
+                <span className="text-base text-ink">{LABEL[key]}</span>
+                {/* "Not observed" is the usual answer on ten of thirteen rows.
+                    Rendered quiet — a hollow dot, no badge — so the flagged
+                    rows the advertiser came for are the only colour here. */}
+                {level === LEVEL.none ? (
+                  <span className="inline-flex items-center gap-1.5 text-sm text-ink-subtle">
+                    <span
+                      className="size-1.5 shrink-0 rounded-full border border-line-strong"
+                      aria-hidden
+                    />
+                    {level.label}
+                  </span>
+                ) : (
+                  <Badge tone={level.tone} dot>
+                    {level.label}
+                  </Badge>
+                )}
+                <span className="text-sm leading-5 text-ink-muted">
                   {check.note || "Nothing observed in the sampled material."}
                 </span>
               </li>
@@ -118,7 +138,7 @@ export function BrandSafetyPanel({ profile }: { profile: InfluencerProfile }) {
           })}
         </ul>
 
-        <p className="text-[11px] leading-5 text-ink-muted">
+        <p className="text-xs leading-5 text-ink-muted">
           {ai.provider} {ai.model} · prompt {ai.promptVersion} · schema {ai.schemaVersion}
         </p>
       </CardContent>
@@ -131,6 +151,10 @@ export function BrandSignalsPanel({ profile }: { profile: InfluencerProfile }) {
   const ai = profile.ai;
   if (!ai) return null;
 
+  const absent = POPULATED.filter(({ key }) => ai[key].length === 0).map(
+    ({ title }) => title.toLowerCase(),
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -140,29 +164,49 @@ export function BrandSignalsPanel({ profile }: { profile: InfluencerProfile }) {
           AI classified
         </Badge>
       </CardHeader>
-      <CardContent className="grid gap-4 lg:grid-cols-2">
+      <CardContent className="space-y-3">
         <ChipBlock title="Previously collaborated with" empty="No stated collaborations found">
           {ai.previousCollaborations.map((item) => (
-            <li key={item.brand} className="text-[13px] text-ink">
+            <li key={item.brand} className="text-base text-ink">
               <span className="font-medium">{item.brand}</span>
-              <span className="ml-1.5 text-[12px] text-ink-muted">— {item.evidence}</span>
+              <span className="ml-1.5 text-sm text-ink-muted">— {item.evidence}</span>
             </li>
           ))}
         </ChipBlock>
 
-        <div className="space-y-3">
-          <Chips title="Brands mentioned" items={ai.mentionedBrands} />
-          <Chips title="Products mentioned" items={ai.mentionedProducts} />
-        </div>
-
-        <Chips title="Brand affinity" items={ai.brandAffinity} />
-        <Chips title="Competitor affinity" items={ai.competitorAffinity} />
-
-        <Chips title="Creator interests" items={ai.creatorInterests} />
-        <Chips title="Search keywords" items={ai.creatorKeywords} />
+        {/* Only the blocks that found something. Six headings reading "None
+            identified" in a two-column grid spent half a screen telling the
+            reader nothing, and made an honestly sparse profile look broken.
+            The absent ones are named once, in a line, at the end. */}
+        {POPULATED.map(({ title, key }) => {
+          const items = ai[key];
+          return items.length > 0 ? (
+            <Chips key={title} title={title} items={items} />
+          ) : null;
+        })}
       </CardContent>
+      {absent.length > 0 && (
+        <CardFooter>
+          Nothing was extracted for {listPhrase(absent)} — the model reports only
+          what it found in the creator&apos;s own material, and never fills a gap.
+        </CardFooter>
+      )}
     </Card>
   );
+}
+
+const POPULATED = [
+  { title: "Brands mentioned", key: "mentionedBrands" },
+  { title: "Products mentioned", key: "mentionedProducts" },
+  { title: "Brand affinity", key: "brandAffinity" },
+  { title: "Competitor affinity", key: "competitorAffinity" },
+  { title: "Creator interests", key: "creatorInterests" },
+  { title: "Search keywords", key: "creatorKeywords" },
+] as const;
+
+function listPhrase(items: string[]): string {
+  if (items.length === 1) return items[0];
+  return `${items.slice(0, -1).join(", ")} or ${items[items.length - 1]}`;
 }
 
 function ChipBlock({
@@ -179,7 +223,7 @@ function ChipBlock({
     <div>
       <Eyebrow>{title}</Eyebrow>
       {items.length === 0 ? (
-        <p className="mt-1 text-[13px] text-ink-muted">{empty}</p>
+        <p className="mt-1 text-base text-ink-muted">{empty}</p>
       ) : (
         <ul className="mt-1.5 space-y-1.5">{items}</ul>
       )}
@@ -187,21 +231,20 @@ function ChipBlock({
   );
 }
 
-function Chips({ title, items }: { title: string; items: string[] }) {
+/** Only called with a non-empty list — see the filter in BrandSignalsPanel. */
+function Chips({ title, items }: { title: string; items: readonly string[] }) {
   return (
     <div>
       <Eyebrow>{title}</Eyebrow>
-      {items.length === 0 ? (
-        <p className="mt-1 text-[13px] text-ink-muted">None identified</p>
-      ) : (
-        <ul className="mt-1.5 flex flex-wrap gap-1.5">
-          {items.map((item) => (
-            <li key={item}>
-              <Badge tone="neutral">{item}</Badge>
-            </li>
-          ))}
-        </ul>
-      )}
+      <ul className="mt-1.5 flex flex-wrap gap-1.5">
+        {items.map((item) => (
+          <li key={item} className="min-w-0 max-w-full">
+            <Badge tone="neutral" className="whitespace-normal text-left">
+              {item}
+            </Badge>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

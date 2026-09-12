@@ -37,7 +37,7 @@ export function TableWrap({
 export function Table({ className, ...props }: React.TableHTMLAttributes<HTMLTableElement>) {
   return (
     <table
-      className={cn("w-full min-w-max border-collapse text-[13px]", className)}
+      className={cn("w-full min-w-max border-collapse text-base", className)}
       {...props}
     />
   );
@@ -46,14 +46,14 @@ export function Table({ className, ...props }: React.TableHTMLAttributes<HTMLTab
 export function Thead({ className, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {
   return (
     <thead
-      className={cn("border-b border-line bg-sunken/60 text-ink-muted", className)}
+      className={cn("border-b border-line bg-transparent text-ink-subtle", className)}
       {...props}
     />
   );
 }
 
 export function Tbody({ className, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {
-  return <tbody className={cn("divide-y divide-line", className)} {...props} />;
+  return <tbody className={cn("divide-y divide-rule", className)} {...props} />;
 }
 
 export function Tr({
@@ -70,8 +70,8 @@ export function Tr({
       aria-selected={selected || undefined}
       className={cn(
         "transition-colors",
-        interactive && "cursor-pointer hover:bg-brand-softer",
-        selected && "bg-brand-soft",
+        interactive && "cursor-pointer hover:bg-sunken/70",
+        selected && "bg-brand-softer",
         className,
       )}
       {...props}
@@ -88,8 +88,7 @@ export function Th({
     <th
       scope="col"
       className={cn(
-        "whitespace-nowrap px-2.5 py-2 text-left align-middle",
-        "text-[11px] font-medium uppercase tracking-[0.05em]",
+        "label-caps whitespace-nowrap px-3 py-2.5 text-left align-middle",
         numeric && "text-right",
         className,
       )}
@@ -106,8 +105,8 @@ export function Td({
   return (
     <td
       className={cn(
-        "px-2.5 py-2 align-middle text-ink",
-        numeric && "text-right font-num tabular-nums",
+        "px-3 py-2.5 align-middle text-ink",
+        numeric && "text-right font-num",
         className,
       )}
       {...props}
@@ -147,7 +146,7 @@ export function SortableTh({
         type="button"
         onClick={onSort}
         className={cn(
-          "flex w-full items-center gap-1 px-2.5 py-2 text-[11px] font-medium uppercase tracking-[0.05em]",
+          "label-caps flex w-full items-center gap-1 px-2.5 py-2",
           "press hover:text-ink",
           numeric && "justify-end",
           active && "text-ink",
@@ -182,24 +181,30 @@ export function Pagination({
     <nav
       aria-label="Pagination"
       className={cn(
-        "flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-2.5",
+        "flex flex-wrap items-center justify-between gap-3 border-t border-rule px-4 py-2.5",
         className,
       )}
     >
-      <p className="text-[12px] text-ink-muted">
-        <span className="font-num tabular-nums text-ink">{from.toLocaleString()}</span>–
-        <span className="font-num tabular-nums text-ink">{to.toLocaleString()}</span> of{" "}
-        <span className="font-num tabular-nums text-ink">{total.toLocaleString()}</span>
+      <p className="text-sm text-ink-muted">
+        <span className="font-num text-ink">{from.toLocaleString()}</span>–
+        <span className="font-num text-ink">{to.toLocaleString()}</span> of{" "}
+        <span className="font-num text-ink">{total.toLocaleString()}</span>
       </p>
+      {/* The range statement above is the single source; the page count lives
+          in the buttons' accessible names rather than being printed twice. */}
       <div className="flex items-center gap-1">
-        <PageButton onClick={() => onPageChange(page - 1)} disabled={page <= 1}>
+        <PageButton
+          onClick={() => onPageChange(page - 1)}
+          disabled={page <= 1}
+          aria-label={`Previous page, ${page - 1} of ${totalPages}`}
+        >
           Previous
         </PageButton>
-        <span className="px-2 text-[12px] text-ink-muted">
-          Page <span className="font-num tabular-nums text-ink">{page}</span> of{" "}
-          <span className="font-num tabular-nums text-ink">{totalPages}</span>
-        </span>
-        <PageButton onClick={() => onPageChange(page + 1)} disabled={page >= totalPages}>
+        <PageButton
+          onClick={() => onPageChange(page + 1)}
+          disabled={page >= totalPages}
+          aria-label={`Next page, ${page + 1} of ${totalPages}`}
+        >
           Next
         </PageButton>
       </div>
@@ -215,7 +220,7 @@ function PageButton({
     <button
       type="button"
       className={cn(
-        "h-7 rounded-md border border-line bg-surface px-2.5 text-[12px] font-medium text-ink",
+        "h-7 rounded-md border border-line bg-surface px-2.5 text-sm font-medium text-ink",
         "press hover:bg-sunken",
         "disabled:cursor-not-allowed disabled:text-ink-subtle disabled:hover:bg-surface",
       )}

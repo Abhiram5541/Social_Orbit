@@ -176,6 +176,15 @@ export function initials(name: string): string {
 }
 
 /** "n item" / "n items", with the count included. */
+/**
+ * The noun alone, agreeing with a count. For sentences that place the figure
+ * themselves — usually because the figure is set in the numeric face and the
+ * word is not.
+ */
+export function plural(count: number, singular: string, many = `${singular}s`): string {
+  return count === 1 ? singular : many;
+}
+
 export function pluralise(count: number, singular: string, plural = `${singular}s`): string {
   return `${formatNumber(count)} ${count === 1 ? singular : plural}`;
 }

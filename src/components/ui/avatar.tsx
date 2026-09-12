@@ -5,26 +5,27 @@ import { initials } from "@/lib/format";
 import type { VerificationStatus } from "@/lib/contracts/common";
 
 const SIZES = {
-  xs: "size-6 text-[10px]",
-  sm: "size-8 text-[11px]",
-  md: "size-10 text-[13px]",
-  lg: "size-14 text-[16px]",
-  xl: "size-20 text-[22px]",
+  xs: "size-6 text-2xs",
+  sm: "size-8 text-xs",
+  md: "size-10 text-base",
+  lg: "size-14 text-md",
+  xl: "size-20 text-stat-lg",
 } as const;
 
 /*
  * Initials fallbacks take a quiet tint derived from the name, so a screen of
  * imageless creators reads as a set of distinct people rather than a column
- * of identical grey coins. Tints come from the existing soft tokens only —
- * the same four hues the rest of the system already speaks — and the pale
- * grey original stays in the rotation.
+ * of identical grey coins. Tints carry no status meaning: the dedicated
+ * decorative tokens plus brand and inferred — never the amber or green the
+ * system reserves for measured caution and growth, one cell from genuine
+ * badges in the same row.
  */
 const TINTS = [
   "bg-sunken text-ink-muted",
   "bg-brand-soft text-brand-ink",
-  "bg-positive-soft text-positive",
   "bg-inferred-soft text-inferred",
-  "bg-caution-soft text-caution",
+  "bg-tint-slate-soft text-tint-slate",
+  "bg-tint-teal-soft text-tint-teal",
 ] as const;
 
 const MARK_SIZES: Record<keyof typeof SIZES, string> = {
@@ -78,11 +79,9 @@ export function Avatar({
       ) : (
         <span
           aria-hidden
-          className={cn(
-            "grid place-items-center rounded-full border border-line font-semibold",
-            tintOf(name),
-            SIZES[size],
-          )}
+          // Joined rather than cn(): tailwind-merge reads the non-t-shirt size
+          // classes (text-stat-lg) as colours and would drop the tint.
+          className={`grid place-items-center rounded-full border border-line font-semibold ${tintOf(name)} ${SIZES[size]}`}
         >
           {initials(name)}
         </span>

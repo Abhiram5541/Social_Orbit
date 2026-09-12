@@ -10,7 +10,11 @@ export default async function SettingsPage() {
   const user = await requirePageSession("/admin/settings");
   return (
     <>
-      <PageHeader title="Settings" description="Your account, security and permissions." />
+      <PageHeader
+        eyebrow="Administration"
+        title="Settings"
+        description="Your account, security and permissions."
+      />
       <PageBody>
         <SettingsPanels user={user} />
       </PageBody>

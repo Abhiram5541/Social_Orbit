@@ -20,17 +20,40 @@ export function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivEl
   );
 }
 
-/** Skeleton rows sized to a real table so the layout does not jump on load. */
-export function TableSkeleton({ rows = 8, columns = 6 }: { rows?: number; columns?: number }) {
+/**
+ * Skeleton rows sized to a real table so the layout does not jump on load.
+ * `widths` mirrors the table's columns (Tailwind width classes, in column
+ * order) and `numeric` right-aligns the bars where figures will land, so the
+ * shimmer is a true preview of the grid rather than a generic strip.
+ */
+export function TableSkeleton({
+  rows = 8,
+  columns = 6,
+  widths,
+  numeric,
+}: {
+  rows?: number;
+  columns?: number;
+  /** One width class per column, e.g. ["w-48", "w-16", …]. Overrides `columns`. */
+  widths?: string[];
+  /** Column indexes whose bars right-align, matching numeric cells. */
+  numeric?: number[];
+}) {
+  const cols = widths ?? Array.from({ length: columns }, (_, c) => (c === 0 ? "w-48" : "w-16"));
   return (
     <div role="status" aria-label="Loading results" className="divide-y divide-line">
       {Array.from({ length: rows }, (_, r) => (
-        <div key={r} className="flex items-center gap-4 px-4 py-3">
-          {Array.from({ length: columns }, (_, c) => (
-            <Skeleton
+        <div key={r} className="flex items-center gap-4 px-2.5 py-2.5">
+          {cols.map((width, c) => (
+            <div
               key={c}
-              className={cn("h-4", c === 0 ? "w-48" : "w-16", c === 0 && "shrink-0")}
-            />
+              className={cn(
+                c === 0 ? "shrink-0" : "flex-1",
+                numeric?.includes(c) && "flex justify-end",
+              )}
+            >
+              <Skeleton className={cn("h-4", width)} />
+            </div>
           ))}
         </div>
       ))}
@@ -52,19 +75,53 @@ export function CardSkeleton({ className }: { className?: string }) {
   );
 }
 
+/**
+ * An empty database is a stated feature of this product, so its empty states
+ * follow BuildingHistory's model of designed absence: say what will exist,
+ * preview its shape. The centered-stack `page` variant is for full-page
+ * empties only; in-panel absences take `panel` — a dashed keyline with no
+ * icon coin, optionally previewing ghost rows of the data to come.
+ */
 export function EmptyState({
   icon: Icon,
   title,
   description,
   action,
+  variant = "page",
+  preview,
   className,
 }: {
   icon?: LucideIcon;
   title: string;
   description?: React.ReactNode;
   action?: React.ReactNode;
+  variant?: "page" | "panel";
+  /** Panel variant: render ghost rows shaped like the data that will appear. */
+  preview?: boolean;
   className?: string;
 }) {
+  if (variant === "panel") {
+    return (
+      <div
+        className={cn(
+          "flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-line-strong bg-sunken/50 px-4 py-10 text-center",
+          className,
+        )}
+      >
+        <p className="text-base font-medium text-ink">{title}</p>
+        {description && <p className="max-w-sm text-sm text-ink-muted">{description}</p>}
+        {preview && (
+          <div aria-hidden className="mt-2 w-full max-w-xs space-y-2 opacity-60">
+            <div className="h-3 rounded bg-sunken-strong/60" />
+            <div className="h-3 w-4/5 rounded bg-sunken-strong/50" />
+            <div className="h-3 w-3/5 rounded bg-sunken-strong/40" />
+          </div>
+        )}
+        {action}
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -73,22 +130,28 @@ export function EmptyState({
       )}
     >
       {Icon && (
-        <div className="grid size-10 place-items-center rounded-lg border border-line bg-sunken text-ink-subtle">
+        <div className="grid size-11 place-items-center rounded-xl border border-line bg-surface text-ink-subtle">
           <Icon className="size-5" aria-hidden />
         </div>
       )}
       <div className="max-w-sm space-y-1">
-        <p className="text-[15px] font-semibold text-ink">{title}</p>
-        {description && <p className="text-[13px] text-ink-muted">{description}</p>}
+        <p className="text-md font-semibold text-ink">{title}</p>
+        {description && <p className="text-base text-ink-muted">{description}</p>}
       </div>
       {action}
     </div>
   );
 }
 
+/**
+ * Callers should say what failed and what to do about it — "Score history
+ * could not be fetched — retry or check the connector status page" — rather
+ * than lean on the defaults. No claim is made about logging: nothing here can
+ * verify one happened.
+ */
 export function ErrorState({
-  title = "Something went wrong",
-  description = "We could not load this. The problem has been logged.",
+  title = "This panel failed to load",
+  description = "The request did not complete. Retry, or come back shortly.",
   onRetry,
   className,
 }: {
@@ -105,12 +168,12 @@ export function ErrorState({
         className,
       )}
     >
-      <div className="grid size-10 place-items-center rounded-lg border border-critical-line bg-critical-soft text-critical">
+      <div className="grid size-11 place-items-center rounded-xl border border-critical-line bg-critical-soft text-critical">
         <AlertTriangle className="size-5" aria-hidden />
       </div>
       <div className="max-w-sm space-y-1">
-        <p className="text-[15px] font-semibold text-ink">{title}</p>
-        <p className="text-[13px] text-ink-muted">{description}</p>
+        <p className="text-md font-semibold text-ink">{title}</p>
+        <p className="text-base text-ink-muted">{description}</p>
       </div>
       {onRetry && (
         <Button size="sm" onClick={onRetry}>
@@ -157,7 +220,7 @@ export function Notice({
     <div
       role={tone === "critical" ? "alert" : "status"}
       className={cn(
-        "flex flex-wrap items-start gap-3 rounded-lg border px-3 py-2.5 text-[13px]",
+        "flex flex-wrap items-start gap-3 rounded-lg border px-3.5 py-3 text-base",
         NOTICE_TONES[tone],
         className,
       )}
@@ -189,14 +252,15 @@ export function BuildingHistory({
   return (
     <div
       className={cn(
-        "flex h-full min-h-32 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-line bg-sunken/40 px-4 py-6 text-center",
+        "flex h-full min-h-32 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-line-strong bg-sunken/50 px-4 py-6 text-center",
         className,
       )}
     >
-      <p className="text-[13px] font-medium text-ink">Growth history still building</p>
-      <p className="max-w-xs text-[12px] text-ink-muted">
-        {observed} of {required} snapshots collected. A trend is shown once there is enough
-        history to read one honestly.
+      <p className="text-base font-medium text-ink">Growth history still building</p>
+      <p className="max-w-xs text-sm text-ink-muted">
+        <span className="font-num">{observed}</span> of{" "}
+        <span className="font-num">{required}</span> snapshots collected. A trend is shown once
+        there is enough history to read one honestly.
       </p>
       <div className="h-1 w-32 overflow-hidden rounded-full bg-line">
         <div className="animate-extend h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />

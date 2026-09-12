@@ -60,10 +60,10 @@ export function AiEnrichment({ disabled, pending }: { disabled?: boolean; pendin
     <Card>
       <CardHeader>
         <CardTitle>Run enrichment</CardTitle>
-        <span className="font-num text-[12px] text-ink-muted">spends OpenAI tokens</span>
+        <span className="font-num text-sm text-ink-muted">spends OpenAI tokens</span>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-[13px] leading-5 text-ink-muted">
+        <p className="text-base leading-5 text-ink-muted">
           Classifies category, creator type, commercial intent, brand safety and comment
           quality from stored observations and real comments read from the platform. Comment
           quality and brand safety are two of the nine health components — until this runs
@@ -71,11 +71,12 @@ export function AiEnrichment({ disabled, pending }: { disabled?: boolean; pendin
           a follower count, an engagement figure or an audience breakdown.
         </p>
 
-        <form onSubmit={run} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <form onSubmit={run}>
           <Field
             label="Creators per run"
             hint={`${pending} still unclassified. Runs in id order, skipping those already done.`}
-            className="sm:w-56"
+            className="sm:max-w-sm"
+            inline
           >
             <Input
               type="number"
@@ -85,21 +86,20 @@ export function AiEnrichment({ disabled, pending }: { disabled?: boolean; pendin
               onChange={(event) => setLimit(event.target.value)}
               disabled={disabled}
             />
+            <Button
+              type="submit"
+              variant="primary"
+              loading={state.status === "loading"}
+              disabled={disabled || pending === 0}
+            >
+              Enrich
+            </Button>
           </Field>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={state.status === "loading"}
-            disabled={disabled || pending === 0}
-            className="sm:mb-[26px]"
-          >
-            Enrich
-          </Button>
         </form>
 
         {disabled && (
-          <p className="text-[13px] text-ink-muted">
-            <code className="font-num text-[12px]">OPENAI_API_KEY</code> is not set, so
+          <p className="text-base text-ink-muted">
+            <code className="font-num text-sm">OPENAI_API_KEY</code> is not set, so
             enrichment cannot run.
           </p>
         )}
@@ -128,15 +128,15 @@ export function AiEnrichment({ disabled, pending }: { disabled?: boolean; pendin
                   />
                   <a
                     href={`/influencers/${result.influencerId}`}
-                    className="shrink-0 text-[13px] text-brand-ink underline underline-offset-4"
+                    className="shrink-0 text-base text-brand-ink underline underline-offset-4"
                   >
                     {result.displayName}
                   </a>
-                  <span className="min-w-0 flex-1 text-[13px] text-ink-muted">
+                  <span className="min-w-0 flex-1 text-base text-ink-muted">
                     {result.detail}
                   </span>
                   {result.commentsRead !== undefined && (
-                    <span className="shrink-0 font-num text-[11px] text-ink-subtle">
+                    <span className="shrink-0 font-num text-xs text-ink-subtle">
                       {result.commentsRead} comments
                     </span>
                   )}

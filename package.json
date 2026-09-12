@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "e2e": "playwright test",
-    "audit": "playwright test e2e/audit --project=desktop --workers=1"
+    "audit": "playwright test e2e/audit --project=desktop --workers=1",
+    "data:pack": "node scripts/pack-data.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.102.5",

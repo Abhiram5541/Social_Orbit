@@ -42,7 +42,14 @@ async function worstOverflow(page: Page, containerSelector: string) {
   }, containerSelector);
 }
 
-const CONNECTOR_CARD = "li:has(> div > span):has(dl)";
+/*
+ * A stable hook rather than a markup shape. The previous selector described
+ * one particular arrangement of divs, so the assertion broke the first time
+ * the connector block was redesigned — while the thing it was actually
+ * protecting (a status block must contain its own contents at every width)
+ * still held.
+ */
+const CONNECTOR_CARD = "[data-connector]";
 
 test.describe("connector cards contain their contents", () => {
   for (const width of [390, 768, 1024, 1280, 1440, 1920]) {

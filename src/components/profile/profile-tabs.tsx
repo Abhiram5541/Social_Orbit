@@ -19,7 +19,8 @@ import { BuildingHistory, EmptyState, Notice } from "@/components/ui/states";
 import { Tabs, TabPanel } from "@/components/ui/tabs";
 import { Table, TableWrap, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
 import { DataRow, StatRow, StatTile } from "@/components/intelligence/stat";
-import { ProvenanceMark } from "@/components/intelligence/provenance";
+import { Metric, MetricStrip } from "@/components/intelligence/signal";
+import { ProvenanceMark, TrackedValue } from "@/components/intelligence/provenance";
 import { BrandSafetyPanel, BrandSignalsPanel } from "@/components/profile/brand-safety-panel";
 import { LookalikePanel, CostEfficiencyPanel } from "@/components/profile/lookalike-panel";
 import { ScoreBar } from "@/components/intelligence/score";
@@ -82,58 +83,114 @@ export function ProfileTabs({
       <Tabs items={[...TABS]} value={tab} onValueChange={setTab} label="Profile sections" />
 
       <TabPanel value="overview" active={tab === "overview"} className="space-y-4">
-        <StatRow>
-          <StatTile
-            label="Followers"
-            value={formatCompact(profile.glance.followers)}
-            provenance={observed}
-            emphasis
-          />
-          <StatTile
-            label="Total views"
-            value={formatCompact(profile.glance.totalViews)}
-            provenance={observed}
-          />
-          <StatTile
-            label="Median views"
-            value={formatCompact(profile.glance.medianViews)}
-            provenance={derived}
-            hint="Median of recent content. Preferred over the mean because view counts are heavily skewed by outliers."
-          />
-          <StatTile
-            label="Engagement"
-            value={formatPercent(profile.glance.engagementRate)}
-            provenance={derived}
-            hint={
-              profile.primaryPlatform === "youtube"
-                ? "Interactions over views, the denominator YouTube reports."
-                : "Interactions over followers. Instagram reach is only available on connected professional accounts."
-            }
-          />
-          <StatTile
-            label="Content indexed"
-            value={formatCompact(profile.glance.contentCount)}
-            provenance={observed}
-          />
-          <StatTile
-            label="Upload freq."
-            value={formatFrequency(profile.glance.uploadFrequency)}
-            provenance={derived}
-          />
-          <StatTile
-            label="Avg. length"
-            value={formatDuration(profile.glance.averageContentLength)}
-            provenance={observed}
-          />
-          <StatTile
-            label="Est. reach/mo"
-            value={formatCompact(profile.glance.estimatedMonthlyReach)}
-            provenance={estimated}
-            hint="A model estimate from median views and publishing cadence — not a measurement."
-          />
-        </StatRow>
+        {/* One continuous instrument strip, and every figure on it can explain
+            itself: the click-through names the source tier, the collection
+            time, the method, the derivation and the field confidence. This is
+            the product's differentiator, so it is a first-class interaction
+            rather than a tooltip nobody on a touch device can reach. */}
+        <div className="-mx-4 border-y border-line bg-surface sm:-mx-6">
+          <MetricStrip>
+            <Metric
+              label="Followers"
+              tone="lead"
+              value={
+                <TrackedValue
+                  label="Followers"
+                  value={formatCompact(profile.glance.followers)}
+                  provenance={observed}
+                  valueClassName="text-metric font-medium"
+                />
+              }
+            />
+            <Metric
+              label="Total views"
+              value={
+                <TrackedValue
+                  label="Total views"
+                  value={formatCompact(profile.glance.totalViews)}
+                  provenance={observed}
+                  valueClassName="text-stat font-medium"
+                />
+              }
+            />
+            <Metric
+              label="Median views"
+              value={
+                <TrackedValue
+                  label="Median views"
+                  value={formatCompact(profile.glance.medianViews)}
+                  provenance={derived}
+                  derivation="Median of observed view counts across indexed content. Median rather than mean because view counts are heavily skewed by outliers."
+                  valueClassName="text-stat font-medium"
+                />
+              }
+            />
+            <Metric
+              label="Engagement"
+              value={
+                <TrackedValue
+                  label="Engagement rate"
+                  value={formatPercent(profile.glance.engagementRate)}
+                  provenance={derived}
+                  derivation={
+                    profile.primaryPlatform === "youtube"
+                      ? "Observed interactions ÷ observed views — the denominator YouTube reports. Posts that hide likes or disable comments contribute no interactions and are not counted as zero."
+                      : "Observed interactions ÷ followers. Reach is available only on creator-connected professional accounts."
+                  }
+                  valueClassName="text-stat font-medium"
+                />
+              }
+            />
+            <Metric
+              label="Content indexed"
+              value={
+                <TrackedValue
+                  label="Content indexed"
+                  value={formatCompact(profile.glance.contentCount)}
+                  provenance={observed}
+                  valueClassName="text-stat font-medium"
+                />
+              }
+            />
+            <Metric
+              label="Upload freq."
+              value={
+                <TrackedValue
+                  label="Upload frequency"
+                  value={formatFrequency(profile.glance.uploadFrequency)}
+                  provenance={derived}
+                  derivation="Publications per week across the indexed window."
+                  valueClassName="text-stat font-medium"
+                />
+              }
+            />
+            <Metric
+              label="Avg. length"
+              value={
+                <TrackedValue
+                  label="Average content length"
+                  value={formatDuration(profile.glance.averageContentLength)}
+                  provenance={observed}
+                  valueClassName="text-stat font-medium"
+                />
+              }
+            />
+            <Metric
+              label="Est. reach/mo"
+              value={
+                <TrackedValue
+                  label="Estimated monthly reach"
+                  value={formatCompact(profile.glance.estimatedMonthlyReach)}
+                  provenance={estimated}
+                  derivation="Modelled from median views and publishing cadence. An estimate, not a measurement — treat it as a range."
+                  valueClassName="text-stat font-medium"
+                />
+              }
+            />
+          </MetricStrip>
+        </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid items-start gap-4 lg:grid-cols-2">
           <HistoryCard
             title="Follower history"
             series={profile.followerHistory}
@@ -149,7 +206,7 @@ export function ProfileTabs({
         </div>
 
         {profile.ai && (
-          <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+          <div className="grid items-start gap-4 lg:grid-cols-[1.3fr_1fr]">
             <Card>
               <CardHeader>
                 <CardTitle>Profile intelligence</CardTitle>
@@ -159,14 +216,14 @@ export function ProfileTabs({
                 </Badge>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p className="text-[13px] leading-5 text-ink">{profile.ai.summary}</p>
+                <p className="text-base text-ink">{profile.ai.summary}</p>
                 <AiPanel className="space-y-2">
                   <Eyebrow className="text-inferred">Creator type</Eyebrow>
-                  <p className="text-[13px] leading-5 text-ink">{profile.ai.creatorType}</p>
+                  <p className="text-base text-ink">{profile.ai.creatorType}</p>
                   {profile.ai.audienceIntent && (
                     <>
                       <Eyebrow className="text-inferred">Audience intent</Eyebrow>
-                      <p className="text-[13px] leading-5 text-ink">{profile.ai.audienceIntent}</p>
+                      <p className="text-base text-ink">{profile.ai.audienceIntent}</p>
                     </>
                   )}
                 </AiPanel>
@@ -188,8 +245,13 @@ export function ProfileTabs({
                   <Eyebrow>Content themes</Eyebrow>
                   <ul className="mt-1.5 flex flex-wrap gap-1.5">
                     {profile.ai.contentThemes.map((theme) => (
-                      <li key={theme}>
-                        <Badge tone="inferred">{theme}</Badge>
+                      <li key={theme} className="min-w-0 max-w-full">
+                        {/* A model can return a whole clause as a "theme". The
+                            badge default is nowrap, which sent those straight
+                            through the panel's right edge. */}
+                        <Badge tone="inferred" className="whitespace-normal text-left">
+                          {theme}
+                        </Badge>
                       </li>
                     ))}
                   </ul>
@@ -198,8 +260,10 @@ export function ProfileTabs({
                   <Eyebrow>Recommended industries</Eyebrow>
                   <ul className="mt-1.5 flex flex-wrap gap-1.5">
                     {profile.ai.recommendedIndustries.map((industry) => (
-                      <li key={industry}>
-                        <Badge tone="neutral">{industry}</Badge>
+                      <li key={industry} className="min-w-0 max-w-full">
+                        <Badge tone="neutral" className="whitespace-normal text-left">
+                          {industry}
+                        </Badge>
                       </li>
                     ))}
                   </ul>
@@ -208,7 +272,7 @@ export function ProfileTabs({
                   <Eyebrow>Sponsorship signals</Eyebrow>
                   <ul className="mt-1.5 space-y-1">
                     {profile.ai.sponsorshipSignals.map((signal) => (
-                      <li key={signal} className="text-[12px] text-ink-muted">
+                      <li key={signal} className="text-sm text-ink-muted">
                         {signal}
                       </li>
                     ))}
@@ -220,14 +284,14 @@ export function ProfileTabs({
                       <Eyebrow>Est. monthly earnings</Eyebrow>
                       <ProvenanceMark provenance={estimated} />
                     </div>
-                    <p className="mt-1 font-num text-[15px] tabular-nums text-ink">
+                    <p className="mt-1 font-num text-md text-ink">
                       {formatCurrencyRange(
                         profile.glance.estimatedMonthlyEarnings.low,
                         profile.glance.estimatedMonthlyEarnings.high,
                         profile.glance.estimatedMonthlyEarnings.currency,
                       )}
                     </p>
-                    <p className="mt-0.5 text-[11px] text-ink-muted">
+                    <p className="mt-0.5 text-xs text-ink-muted">
                       Modelled range, not a rate card. SocialOrbit does not hold this
                       creator&apos;s asking rate.
                     </p>
@@ -240,7 +304,7 @@ export function ProfileTabs({
 
         {profile.ai && <BrandSignalsPanel profile={profile} />}
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid items-start gap-4 lg:grid-cols-2">
           <CostEfficiencyPanel profile={profile} />
           <LookalikePanel profile={profile} linkToProfiles={linkToProfiles} />
         </div>
@@ -329,7 +393,7 @@ export function ProfileTabs({
         <Card>
           <CardHeader>
             <CardTitle>Top performing content</CardTitle>
-            <span className="text-[12px] text-ink-muted">
+            <span className="text-sm text-ink-muted">
               Performance index is views as a multiple of this creator&apos;s own median
             </span>
           </CardHeader>
@@ -367,17 +431,18 @@ export function ProfileTabs({
       <TabPanel value="authenticity" active={tab === "authenticity"} className="space-y-4">
         <BrandSafetyPanel profile={profile} />
 
-        <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
+        <div className="grid items-start gap-4 lg:grid-cols-[1fr_1.2fr]">
           <Card>
             <CardHeader>
               <CardTitle>Audience quality signals</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <ScoreBar label="Estimated bot risk (lower is safer)" value={profile.riskSignals.botRisk} />
-              <ScoreBar label="Inactive audience (lower is safer)" value={profile.riskSignals.inactiveAudience} />
-              <ScoreBar label="View anomaly score" value={profile.riskSignals.viewAnomaly} />
-              <p className="border-t border-line pt-3 text-[12px] text-ink-muted">
-                These are 0–100 risk <em>signals</em> derived from measurable indicators.
+              <ScoreBar label="Estimated bot risk" value={profile.riskSignals.botRisk} invert />
+              <ScoreBar label="Inactive audience" value={profile.riskSignals.inactiveAudience} invert />
+              <ScoreBar label="View anomaly score" value={profile.riskSignals.viewAnomaly} invert />
+              <p className="border-t border-line pt-3 text-sm text-ink-muted">
+                Lower is safer on every bar. These are 0–100 risk <em>signals</em> derived
+                from measurable indicators.
                 SocialOrbit deliberately does not publish a &ldquo;% fake followers&rdquo;
                 figure — no available data source supports that claim.
               </p>
@@ -393,7 +458,7 @@ export function ProfileTabs({
             </CardHeader>
             {profile.riskSignals.evidence.length === 0 && (
               <CardContent>
-                <p className="text-[13px] leading-5 text-ink-muted">
+                <p className="text-base text-ink-muted">
                   No audience-quality evidence has been gathered for this creator. Bot risk
                   and inactive-audience signals are not observable from a public API and are
                   not inferred, so there is nothing here to justify — which is why the risk
@@ -405,12 +470,12 @@ export function ProfileTabs({
               {profile.riskSignals.evidence.map((item) => (
                 <li key={item.signal} className="px-4 py-2.5">
                   <div className="flex items-center gap-2">
-                    <p className="text-[13px] font-medium text-ink">{item.signal}</p>
+                    <p className="text-base font-medium text-ink">{item.signal}</p>
                     <Badge tone={item.weight === "primary" ? "brand" : "neutral"}>
                       {item.weight}
                     </Badge>
                   </div>
-                  <p className="mt-0.5 text-[12px] leading-5 text-ink-muted">
+                  <p className="mt-0.5 text-sm leading-5 text-ink-muted">
                     {item.observation}
                   </p>
                 </li>
@@ -479,7 +544,7 @@ export function ProfileTabs({
               <CardTitle>
                 {profile.benchmarks.category} · {profile.benchmarks.followerBand}
               </CardTitle>
-              <span className="text-[12px] text-ink-muted">
+              <span className="text-sm text-ink-muted">
                 Cohort of {profile.benchmarks.cohortSize} creators
               </span>
             </CardHeader>
@@ -553,7 +618,7 @@ function HistoryCard({
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         {series.sufficient && measurable.length > 1 && (
-          <span className="font-num text-[12px] tabular-nums text-ink-muted">
+          <span className="font-num text-sm text-ink-muted">
             {formatCompact(measurable[0].value)} → {formatCompact(measurable[measurable.length - 1].value)}
           </span>
         )}
@@ -660,20 +725,23 @@ function ShareCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-[14px]">{title}</CardTitle>
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         {rows.map((row) => (
           <div key={row.label} className="space-y-1">
             <div className="flex items-baseline justify-between gap-2">
-              <span className="truncate text-[12px] text-ink">{row.label}</span>
-              <span className="shrink-0 font-num text-[12px] tabular-nums text-ink-muted">
+              <span className="truncate text-sm text-ink">{row.label}</span>
+              <span className="shrink-0 font-num text-sm text-ink-muted">
                 {row.share.toFixed(1)}%
               </span>
             </div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-line">
+            {/* Same bar grammar as every score bar: hairline, square-cornered,
+                neutral. Series colours belong to multi-series charts, cobalt
+                to intent — a demographic share is neither. */}
+            <div className="h-1 overflow-hidden rounded-sm bg-line">
               <div
-                className="h-full rounded-full bg-series-1"
+                className="h-full rounded-sm bg-neutral-metric"
                 style={{ width: `${Math.min(100, row.share)}%` }}
               />
             </div>
@@ -698,7 +766,7 @@ function ListBlock({
       <Eyebrow>{title}</Eyebrow>
       <ul className="mt-1.5 space-y-1.5">
         {items.map((item) => (
-          <li key={item} className="flex gap-2 text-[12px] leading-5 text-ink-muted">
+          <li key={item} className="flex gap-2 text-sm leading-5 text-ink-muted">
             <span
               className={`mt-1.5 size-1 shrink-0 rounded-full ${
                 tone === "caution" ? "bg-caution" : "bg-positive"
@@ -716,7 +784,7 @@ function ListBlock({
 /** Rendered under the profile: the composition of what the reader just read. */
 export function ProvenanceFooter({ profile }: { profile: InfluencerProfile }) {
   return (
-    <dl className="grid gap-2 border-t border-line pt-3 text-[12px] text-ink-muted sm:grid-cols-2">
+    <dl className="grid gap-2 border-t border-line pt-3 text-sm text-ink-muted sm:grid-cols-2">
       <DataRow label="Score version" value={profile.health.scoreVersion} />
       <DataRow label="Formula version" value={profile.health.formulaVersion} />
       <DataRow

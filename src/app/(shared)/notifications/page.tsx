@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { formatDate } from "@/lib/format";
 import { requirePageSession } from "@/server/auth/rbac";
 import { quotaFor } from "@/server/repositories/usage-repository";
 import { getShortlist, listShortlists } from "@/server/repositories/workspace-repository";
@@ -38,7 +39,9 @@ export default async function NotificationsPage() {
         severity: "warning",
         title: `${summary.displayName} has gone dormant`,
         detail: "No qualifying publication in over 90 days. Recent figures should be read as historical.",
-        at: summary.lastActiveAt ?? new Date().toISOString(),
+        // The last observed publication is the event; when even that is
+        // unknown, the row carries no time rather than a minted one.
+        at: summary.lastActiveAt ?? undefined,
         href: `/influencers/${summary.id}`,
       });
     }
@@ -48,8 +51,9 @@ export default async function NotificationsPage() {
         kind: "brand_safety",
         severity: "critical",
         title: `${summary.displayName} is flagged high risk`,
+        // Current state, not a dated detection — no timestamp is honest;
+        // "just now" on every visit would be a manufactured observation.
         detail: "Audience-quality or brand-safety signals crossed the escalation threshold.",
-        at: new Date().toISOString(),
         href: `/influencers/${summary.id}`,
       });
     }
@@ -60,7 +64,6 @@ export default async function NotificationsPage() {
         severity: "info",
         title: `Preliminary confidence on ${summary.displayName}`,
         detail: `Confidence is ${Math.round(summary.confidence)}%. There is not enough history or source authority to rely on these numbers yet.`,
-        at: new Date().toISOString(),
         href: `/influencers/${summary.id}`,
       });
     }
@@ -75,13 +78,14 @@ export default async function NotificationsPage() {
         quota.remaining === 0
           ? "Monthly search allowance used"
           : `${quota.remaining} searches remaining`,
-      detail: `Your allowance resets on ${new Date(quota.resetsAt).toDateString()}.`,
-      at: new Date().toISOString(),
+      detail: `Your allowance resets on ${formatDate(quota.resetsAt)}.`,
       href: "/usage",
     });
   }
 
-  items.sort((a, b) => b.at.localeCompare(a.at));
+  // Dated events newest first; state-derived rows carry no time and sort
+  // after them. The list itself pulls critical severities to the top.
+  items.sort((a, b) => (b.at ?? "").localeCompare(a.at ?? ""));
 
   return (
     <>

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ACCOUNTS, apiSignIn, signIn } from "./test-helpers";
+import { ACCOUNTS, apiSignIn, signIn, openFilters } from "./test-helpers";
 
 test.describe("discovery", () => {
   test.beforeEach(async ({ page }) => {
@@ -46,24 +46,15 @@ test.describe("discovery", () => {
   });
 
   test("the filter surface writes into the URL", async ({ page }) => {
-    // Filters sit behind a control at every width: a dropdown on a wide screen,
-    // a sheet on a narrow one. Which one follows from the viewport rather than
-    // from probing visibility — `isVisible()` is a one-shot check that can run
-    // before hydration and silently send the test down the wrong branch.
-    const width = page.viewportSize()?.width ?? 1440;
-    const usesSheet = width < 1024;
-    const showResults = page.getByRole("button", { name: "Show results" });
+    // Three shapes — rail, dropdown, sheet — resolved from the viewport by
+    // `openFilters`, which also knows which of them defers until a commit.
+    const { scope, commit } = await openFilters(page);
 
-    await page.getByRole("button", { name: /^Filters/ }).click();
-
-    // Scope to the open surface and name the control: only one filter surface
-    // is ever mounted, but naming it keeps the assertion about a specific
-    // filter rather than "whichever checkbox came first".
-    const surface = page.getByRole("dialog", { name: "Filters" });
-    await surface.getByLabel("YouTube").check();
-
-    // The sheet defers until "Show results"; the dropdown applies as you go.
-    if (usesSheet) await showResults.click();
+    // Scope to the surface and name the control: only one filter surface is
+    // ever mounted, but naming it keeps the assertion about a specific filter
+    // rather than "whichever checkbox came first".
+    await scope.getByLabel("YouTube").check();
+    await commit();
 
     await expect(page).toHaveURL(/platform=youtube/);
   });

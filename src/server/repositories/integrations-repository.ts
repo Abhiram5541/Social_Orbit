@@ -55,6 +55,7 @@ export function integrationCatalog(): Integration[] {
   const youtube = connectors.get("youtube");
   const instagram = connectors.get("instagram");
   const tiktok = connectors.get("tiktok");
+  const x = connectors.get("x");
 
   const storageRequires = [
     "STORAGE_BUCKET",
@@ -142,13 +143,18 @@ export function integrationCatalog(): Integration[] {
       id: "x",
       name: "X",
       category: "social_platforms",
-      state: "planned",
-      purpose: "Post and audience metrics for creators whose reach is conversation-led.",
+      state: x?.state ?? "credentials_missing",
+      purpose:
+        "Account resolution, account and post statistics through API v2; verification and first-party analytics over its OAuth2 (PKCE) flow.",
       statusDetail:
-        "No adapter and no environment slot yet. API pricing tiers make per-creator polling expensive, so this waits on a clear client need.",
-      requires: [],
-      missing: [],
-      manageHref: null,
+        x?.state === "billing_required"
+          ? `Adapter is written and credentials are set, but the app-only token's account has no active API billing (HTTP 402 "credits depleted") — a billing fix, not a code or credentials fix. ${x.accountsTracked} accounts tracked.`
+          : x?.state === "live"
+            ? `${x.accountsTracked} accounts tracked.`
+            : "Adapter is written; supply the environment credentials to activate it.",
+      requires: x?.requires ?? ["X_API_KEY", "X_API_SECRET"],
+      missing: x?.missing ?? [],
+      manageHref: "/admin/connectors",
     },
     {
       id: "snapchat",

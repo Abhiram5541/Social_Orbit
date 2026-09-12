@@ -98,16 +98,27 @@ test.describe("campaigns", () => {
 
     await page.waitForURL(/\/campaigns\/cmp_/);
     await expect(page.getByText(hashtag).first()).toBeVisible();
-    await expect(page.getByText("How these figures are attributed")).toBeVisible();
+    // The attribution rule is carried by the delivery instrument's hint rather
+    // than by a banner above it, so assert on the control that holds it.
+    await expect(
+      page.getByRole("button", { name: "How these figures are attributed" }),
+    ).toBeVisible();
   });
 
   test("keeps campaign performance separate from the health score", async ({ page }) => {
     await signIn(page, ACCOUNTS.clientOwner);
     await page.goto("/campaigns/cmp_orbit_launch");
 
+    // Two separate columns, named exactly: the point of the test is that the
+    // campaign score and the health score are never merged, so a substring
+    // match that could resolve both to one header would not prove it.
     const table = page.getByRole("region", { name: "Campaign participants" });
-    await expect(table.getByRole("columnheader", { name: "Campaign score" })).toBeVisible();
-    await expect(table.getByRole("columnheader", { name: "Health" })).toBeVisible();
+    await expect(
+      table.getByRole("columnheader", { name: "Campaign score", exact: true }),
+    ).toBeVisible();
+    await expect(
+      table.getByRole("columnheader", { name: "Health", exact: true }),
+    ).toBeVisible();
   });
 
   test("a campaign with no attributed posts says so", async ({ page, request }) => {

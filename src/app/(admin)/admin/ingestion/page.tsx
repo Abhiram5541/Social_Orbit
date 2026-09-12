@@ -8,12 +8,15 @@ import {
   reauthQueue,
 } from "@/server/repositories/ops-repository";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Notice } from "@/components/ui/states";
 import { Table, TableWrap, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
 import { StatRow, StatTile } from "@/components/intelligence/stat";
 import { ReviewTable } from "@/components/admin/review-table";
 import { ChannelIngest } from "@/components/admin/channel-ingest";
+import { XIngest } from "@/components/admin/x-ingest";
+import { STATE } from "@/components/admin/status-language";
 
 export const metadata: Metadata = { title: "Ingestion" };
 export const dynamic = "force-dynamic";
@@ -38,6 +41,7 @@ export default async function IngestionPage() {
   return (
     <>
       <PageHeader
+        eyebrow="Trust & data"
         title="Ingestion"
         description="How observations reach the database, and what is currently blocking a refresh."
       />
@@ -49,13 +53,25 @@ export default async function IngestionPage() {
         </Notice>
 
         <ChannelIngest disabled={!process.env.YOUTUBE_API_KEY} />
+        <XIngest disabled={!process.env.X_API_KEY || !process.env.X_API_SECRET} />
 
+        {/* Freshness is this page's task, so staleness leads. Coverage totals
+            live on the overview. */}
         <StatRow>
+          <StatTile
+            label="Stale profiles"
+            value={formatCompact(stats.staleProfiles)}
+            footnote={<span className="text-caution">over 48h since refresh</span>}
+            emphasis
+          />
+          <StatTile
+            label="Reauth required"
+            value={reauth.length}
+            footnote={<span className="text-caution">tokens cannot refresh</span>}
+          />
           <StatTile label="Accounts tracked" value={formatCompact(stats.totalAccounts)} />
           <StatTile label="Content records" value={formatCompact(stats.totalContent)} />
           <StatTile label="Snapshots" value={formatCompact(stats.totalSnapshots)} footnote="append-only" />
-          <StatTile label="Stale profiles" value={formatCompact(stats.staleProfiles)} footnote="over 48h" />
-          <StatTile label="Reauth required" value={reauth.length} footnote="tokens cannot refresh" />
         </StatRow>
 
         <Card>
@@ -77,12 +93,16 @@ export default async function IngestionPage() {
                 {connectors.map((connector) => (
                   <Tr key={connector.platform}>
                     <Td className="font-medium">{PLATFORM_LABEL[connector.platform]}</Td>
-                    <Td>{connector.state.replace(/_/g, " ")}</Td>
+                    <Td>
+                      <Badge tone={STATE[connector.state].tone} dot>
+                        {STATE[connector.state].label}
+                      </Badge>
+                    </Td>
                     <Td numeric>{formatCompact(connector.accountsTracked)}</Td>
                     <Td className="text-ink-muted">
                       {formatRelativeTime(connector.lastSuccessfulSync)}
                     </Td>
-                    <Td className="font-num text-[12px] text-ink-muted">
+                    <Td className="font-num text-sm text-ink-muted">
                       {connector.missing.length > 0 ? connector.missing.join(", ") : "—"}
                     </Td>
                   </Tr>
@@ -100,12 +120,12 @@ export default async function IngestionPage() {
             <ol className="space-y-2">
               {PIPELINE.map((step, index) => (
                 <li key={step.stage} className="flex gap-3">
-                  <span className="mt-0.5 font-num text-[11px] tabular-nums text-ink-subtle">
+                  <span className="mt-0.5 font-num text-xs text-ink-subtle">
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <span>
-                    <span className="block text-[13px] font-medium text-ink">{step.stage}</span>
-                    <span className="block text-[12px] leading-5 text-ink-muted">
+                    <span className="block text-base font-medium text-ink">{step.stage}</span>
+                    <span className="block text-sm leading-5 text-ink-muted">
                       {step.detail}
                     </span>
                   </span>
@@ -116,7 +136,7 @@ export default async function IngestionPage() {
         </Card>
 
         <div>
-          <h2 className="mb-2 text-[15px] font-semibold text-ink">
+          <h2 className="mb-2 text-md font-semibold text-ink">
             Accounts needing reauthorisation
           </h2>
           <ReviewTable

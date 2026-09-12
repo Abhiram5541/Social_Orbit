@@ -92,9 +92,14 @@ export function FilterPanel({
 
   return (
     <div className={cn("flex flex-col", className)}>
-      <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-2.5">
-        <Eyebrow>Filters</Eyebrow>
-        <Button variant="ghost" size="sm" onClick={onReset} className="gap-1.5">
+      {/* Sticky, because the rail scrolls on its own: Reset has to stay
+          reachable from the bottom of a nine-group filter list. */}
+      <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-line bg-surface px-4 py-2.5">
+        <div className="min-w-0">
+          <Eyebrow>Filters</Eyebrow>
+          <p className="text-sm text-ink-subtle">Combine with AND</p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={onReset} className="shrink-0 gap-1.5">
           <RotateCcw className="size-3.5" aria-hidden />
           Reset
         </Button>
@@ -106,7 +111,11 @@ export function FilterPanel({
           columns
             ? // `divide-*` draws borders between siblings in source order, which
               // in a multi-column grid lands them in the wrong places entirely.
-              "grid grid-cols-2 gap-x-6 px-2 py-1 xl:grid-cols-3 [&>*]:border-b [&>*]:border-line"
+              // Row-major placement means the last N children are exactly the
+              // per-column last items, so their borders are suppressed — a
+              // hairline only ever separates two groups.
+              "grid grid-cols-2 gap-x-6 px-2 py-1 xl:grid-cols-3 [&>*]:border-b [&>*]:border-line " +
+              "[&>*:nth-last-child(-n+2)]:border-b-0 xl:[&>*:nth-last-child(-n+3)]:border-b-0"
             : "divide-y divide-line",
         )}
       >
@@ -122,7 +131,7 @@ export function FilterPanel({
                 onChange={() => toggle("platform", platform)}
               />
             ))}
-          <p className="px-1 pt-1 text-[11px] text-ink-subtle">
+          <p className="px-1 pt-1 text-xs text-ink-subtle">
             TikTok is not yet connected — no creators are indexed for it.
           </p>
         </Group>
@@ -282,7 +291,7 @@ function Group({
 }) {
   return (
     <details open={defaultOpen} className="group px-4 py-2.5">
-      <summary className="flex cursor-pointer list-none items-center justify-between rounded py-1 text-[13px] font-medium text-ink transition-colors marker:hidden hover:text-brand-ink">
+      <summary className="flex cursor-pointer list-none items-center justify-between rounded py-1 text-base font-medium text-ink transition-colors marker:hidden hover:text-brand-ink">
         {title}
         <svg viewBox="0 0 12 12" className="size-3 text-ink-subtle transition-transform group-open:rotate-180" aria-hidden>
           <path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
@@ -320,9 +329,9 @@ function CheckRow({
         onChange={onChange}
         className="size-4 shrink-0 cursor-pointer rounded-sm accent-brand"
       />
-      <span className="min-w-0 flex-1 truncate text-[13px] text-ink">{label}</span>
+      <span className="min-w-0 flex-1 truncate text-base text-ink">{label}</span>
       {count !== undefined && (
-        <span className="shrink-0 font-num text-[11px] tabular-nums text-ink-subtle">
+        <span className="shrink-0 font-num text-xs text-ink-subtle">
           {formatCompact(count)}
         </span>
       )}
@@ -343,10 +352,10 @@ function RangeRow({
   return (
     <div className="py-1.5">
       <div className="flex items-baseline justify-between gap-2">
-        <label htmlFor={id} className="text-[12px] text-ink-muted">
+        <label htmlFor={id} className="text-sm text-ink-muted">
           {label}
         </label>
-        <span className="font-num text-[12px] tabular-nums text-ink">
+        <span className="font-num text-sm text-ink">
           {value === undefined ? "Any" : value}
         </span>
       </div>

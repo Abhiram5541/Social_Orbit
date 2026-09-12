@@ -37,54 +37,89 @@ export function StatTile({
   emphasis?: boolean;
   className?: string;
 }) {
+  // A cell of the strip, not an object of its own. Emphasis is structural —
+  // the lead figure is set larger and lighter — never a brand tint: cobalt on
+  // a static metric would read as interactive or verified.
   return (
-    <div
-      className={cn(
-        "flex min-w-0 flex-col gap-1 rounded-lg border p-3",
-        emphasis ? "border-brand-line bg-brand-softer" : "border-line bg-surface",
-        className,
-      )}
-    >
+    <div className={cn("min-w-0 px-4 py-4", className)}>
       <div className="flex items-center gap-1">
-        <span className="truncate text-[11px] font-medium uppercase tracking-[0.05em] text-ink-muted">
-          {label}
-        </span>
+        <span className="label-caps-sm truncate text-ink-subtle">{label}</span>
         {hint && <InfoHint label={`About ${label}`}>{hint}</InfoHint>}
         {provenance && <ProvenanceMark provenance={provenance} className="ml-auto" />}
       </div>
       <span
         className={cn(
-          "font-num font-semibold tabular-nums leading-tight text-ink",
-          emphasis ? "text-[22px]" : "text-[19px]",
+          "font-num mt-1.5 block leading-none text-ink",
+          emphasis ? "text-metric font-medium" : "text-stat font-medium",
         )}
       >
         {value ?? NO_VALUE}
       </span>
       {(delta !== undefined || footnote) && (
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+        <div className="mt-1.5 flex min-h-5 flex-wrap items-center gap-x-2 gap-y-0.5">
           {delta !== undefined && (
-            <Delta value={delta} suffix={deltaSuffix} invert={invertDelta} />
+            <Delta
+              value={delta}
+              suffix={deltaSuffix}
+              invert={invertDelta}
+              className="text-xs"
+            />
           )}
-          {footnote && <span className="text-[11px] text-ink-muted">{footnote}</span>}
+          {footnote && <span className="text-xs text-ink-subtle">{footnote}</span>}
         </div>
       )}
     </div>
   );
 }
 
-/** A responsive row of tiles that keeps them readable rather than shrinking them. */
+/**
+ * One continuous strip divided by rules, not a tray of separate boxes.
+ *
+ * Every dashboard in the product used to open on a row of identical bordered
+ * tiles floating on grey. That reads as a template because it *is* one: six
+ * objects at six equal weights, none of which can be more important than any
+ * other. A strip is one instrument, which is also what lets it stay dense.
+ */
 export function StatRow({
   className,
+  children,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
+  // `count` drops null, undefined and the `false` a conditional child
+  // leaves behind — counting those pushed the strip to the wrong
+  // column count whenever a tile was rendered conditionally.
+  const count = React.Children.toArray(children).length;
   return (
     <div
       className={cn(
-        "rise-stagger grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr))]",
+        "grid overflow-hidden rounded-xl border border-line bg-surface",
+        // A one-metric strip must not be forced into two columns, and a
+        // two-metric strip must not leave a third cell empty — both were
+        // leaving a visible hole in the band.
+        count === 1 ? "grid-cols-1" : "grid-cols-2",
+        "divide-x divide-y divide-rule",
+        // The strip must divide evenly: a stranded row of two reads as a
+        // mistake rather than a grid.
+        count >= 7
+          ? "sm:grid-cols-4"
+          : count === 6
+            ? "sm:grid-cols-3 lg:grid-cols-6"
+            : count === 5
+              ? "sm:grid-cols-3 lg:grid-cols-5"
+              : count === 4
+                ? "sm:grid-cols-4"
+                : count === 3
+                  ? "sm:grid-cols-3"
+                  : count === 2
+                    ? "sm:grid-cols-2"
+                    : "sm:grid-cols-1",
+        count <= 6 && "sm:divide-y-0",
         className,
       )}
       {...props}
-    />
+    >
+      {children}
+    </div>
   );
 }
 
@@ -107,10 +142,10 @@ export function DataRow({
         className,
       )}
     >
-      <dt className="shrink-0 text-[12px] text-ink-muted">{label}</dt>
+      <dt className="shrink-0 text-sm text-ink-muted">{label}</dt>
       <dd className="flex min-w-0 items-center gap-1.5">
         {provenance && <ProvenanceMark provenance={provenance} />}
-        <span className="truncate font-num text-[13px] tabular-nums text-ink">{value}</span>
+        <span className="truncate font-num text-base text-ink">{value}</span>
       </dd>
     </div>
   );

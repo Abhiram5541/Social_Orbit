@@ -1,6 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import { ExternalLink, Globe, Languages, Tag } from "lucide-react";
+import { Globe, Languages, Tag, TriangleAlert } from "lucide-react";
 import {
   CATEGORY_LABEL,
   PLATFORM_LABEL,
@@ -60,10 +60,13 @@ export function ProfileHeader({
 
         <div className="min-w-56 flex-1 space-y-2">
           <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
-            <h1 className="text-[24px] font-semibold leading-tight tracking-[-0.02em] text-ink">
+            {/* The dossier's masthead: the display voice at the page-title
+                step, with the handle set as a chip beside it rather than as a
+                second line — a name and its address are one identity. */}
+            <h1 className="font-display text-title font-bold leading-tight tracking-display text-ink">
               {profile.displayName}
             </h1>
-            <span className="rounded-sm border border-line bg-sunken px-1.5 py-0.5 font-num text-[12px] text-ink-muted">
+            <span className="rounded-full border border-line bg-sunken px-2 py-0.5 font-num text-sm text-ink-muted">
               @{profile.primaryHandle}
             </span>
             <Badge tone={verification.tone} title={verification.note}>
@@ -79,7 +82,7 @@ export function ProfileHeader({
             )}
           </div>
 
-          <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-ink-muted">
+          <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 text-base text-ink-muted">
             {profile.countryName && (
               <Meta icon={Globe} label="Country">
                 {profile.countryName}
@@ -102,19 +105,16 @@ export function ProfileHeader({
                   href={account.url}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2 py-1 text-[12px] transition-colors hover:bg-sunken"
+                  className="press inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 text-sm hover:border-line-strong hover:bg-sunken"
                 >
+                  {/* Platform, count, one status glyph. The primary platform is
+                      already the @handle chip beside the name. */}
                   <span className="font-medium text-ink">
                     {PLATFORM_LABEL[account.platform]}
                   </span>
-                  <span className="font-num tabular-nums text-ink-muted">
+                  <span className="font-num text-ink-muted">
                     {formatCompact(account.followers)}
                   </span>
-                  {account.isPrimary && (
-                    <span className="rounded bg-sunken px-1 text-[10px] uppercase tracking-wide text-ink-muted">
-                      Primary
-                    </span>
-                  )}
                   {account.isConnected && (
                     <span
                       className="size-1.5 rounded-full bg-verified"
@@ -123,11 +123,11 @@ export function ProfileHeader({
                     />
                   )}
                   {account.needsReauth && (
-                    <span className="text-caution" title="Re-authorisation required">
-                      ⚠
+                    <span title="Re-authorisation required">
+                      <TriangleAlert className="size-3 text-caution" aria-hidden />
+                      <span className="sr-only">Re-authorisation required</span>
                     </span>
                   )}
-                  <ExternalLink className="size-3 text-ink-subtle" aria-hidden />
                 </a>
               </li>
             ))}
@@ -142,13 +142,13 @@ export function ProfileHeader({
       </div>
 
       {profile.bio && (
-        <p className="border-t border-line px-4 py-2.5 text-[13px] text-ink-muted">
+        <p className="border-t border-line px-4 py-2.5 text-base text-ink-muted">
           {profile.bio}
         </p>
       )}
 
       {profile.verification !== "verified" && (
-        <p className="border-t border-line bg-sunken/50 px-4 py-2 text-[12px] text-ink-muted">
+        <p className="border-t border-line bg-sunken/50 px-4 py-2 text-sm text-ink-muted">
           {verification.note}{" "}
           <Link href="/help/verification" className="rounded font-medium text-brand-ink underline underline-offset-2">
             How verification works

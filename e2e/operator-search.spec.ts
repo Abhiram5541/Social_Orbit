@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { creatorIds, ACCOUNTS, signIn } from "./test-helpers";
+import { creatorIds, ACCOUNTS, signIn, openFilters } from "./test-helpers";
 
 /* ---------------------------------------------------------------------------
  * The search view is mounted twice: at /discovery for clients and at
@@ -38,19 +38,14 @@ for (const surface of SURFACES) {
     test("a filter stays on this page and narrows the results", async ({ page }) => {
       const before = await totalResults(page);
 
-      const width = page.viewportSize()?.width ?? 1440;
-      const usesSheet = width < 1024;
-      const showResults = page.getByRole("button", { name: "Show results" });
-
-      // A dropdown on a wide screen, a sheet on a narrow one — either way the
-      // surface has to be opened before a filter can be reached.
-      await page.getByRole("button", { name: /^Filters/ }).click();
-      const scope = page.getByRole("dialog", { name: "Filters" });
+      // A rail on a wide screen, a dropdown at lg, a sheet below it —
+      // `openFilters` resolves the shape and the commit step from the viewport.
+      const { scope, commit } = await openFilters(page);
       // An audience-size band, not a platform: the database is harvested from
       // YouTube, so every creator matches a YouTube filter and it narrows
       // nothing. A filter that cannot exclude anything cannot test narrowing.
       await scope.getByLabel("Mega · 1M+").check();
-      if (usesSheet) await showResults.click();
+      await commit();
 
       // The critical assertion: it stayed here rather than bouncing.
       await expect(page).toHaveURL(new RegExp(`${surface.path}\\?.*followerBand=mega`));

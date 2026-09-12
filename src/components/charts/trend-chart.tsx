@@ -47,9 +47,15 @@ const FORMATTERS: Record<ValueFormat, (value: number) => string> = {
 const GRID = "var(--color-grid)";
 const AXIS_TEXT = "var(--color-ink-subtle)";
 
+/* Axis labels are figures, so they are set in the numeric voice like every
+   other figure in the product. An axis in the interface face beside a metric
+   strip in the numeric one is the kind of seam nobody names and everybody
+   feels. */
+const AXIS_FONT = "var(--font-num)";
+
 const axisProps = {
   stroke: "transparent",
-  tick: { fill: AXIS_TEXT, fontSize: 11 },
+  tick: { fill: AXIS_TEXT, fontSize: 11, fontFamily: AXIS_FONT },
   tickLine: false,
   axisLine: false,
 } as const;
@@ -62,18 +68,21 @@ function ChartTooltip({
   format,
 }: {
   active?: boolean;
-  payload?: { value: number; dataKey?: string | number }[];
+  payload?: { value: number | null; dataKey?: string | number }[];
   label?: string | number;
   valueLabel: string;
   format: ValueFormat;
 }) {
-  if (!active || !payload?.length) return null;
+  // An unobserved date has a payload entry with a null value — showing it
+  // would print a manufactured figure over a deliberate gap.
+  const value = payload?.[0]?.value;
+  if (!active || typeof value !== "number" || !Number.isFinite(value)) return null;
   const render = FORMATTERS[format];
   return (
-    <div className="rounded-md bg-ink px-2 py-1.5 text-[12px] leading-4 text-ink-inverse shadow-popover">
+    <div className="rounded-md bg-ink px-2 py-1.5 text-sm text-ink-inverse shadow-popover">
       <p className="text-ink-inverse/60">{formatAxisDate(String(label))}</p>
-      <p className="font-num tabular-nums">
-        {render(payload[0].value)}{" "}
+      <p className="font-num">
+        {render(value)}{" "}
         <span className="font-sans text-ink-inverse/60">{valueLabel}</span>
       </p>
     </div>
@@ -103,29 +112,55 @@ export function TrendChart({
   className?: string;
   ariaLabel: string;
 }) {
-  const points = data.filter((point): point is { date: string; value: number } =>
+  // Nulls stay in the array: Recharts' default (connectNulls false) breaks the
+  // line at unobserved dates, so a viewer can tell a dense series from one
+  // with holes. Filtering them out drew a bridge over missing data — absent is
+  // not zero (CLAUDE.md D13).
+  const observed = data.filter((point): point is { date: string; value: number } =>
     point.value !== null,
   );
+  const gaps = data.length - observed.length;
+
+  const gradientId = React.useId().replace(/:/g, "");
+
+  // Below two observations there is no trend to draw — Math.min of an empty
+  // list is Infinity and the axis renders broken. The primitive guards it so
+  // no call site can ship that state.
+  if (observed.length < 2) {
+    return (
+      <div
+        className={cn(
+          "flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-line bg-sunken/40 px-4 text-center",
+          className,
+        )}
+        style={{ minHeight: height }}
+        role="status"
+      >
+        <p className="text-base font-medium text-ink">No observations yet in this window</p>
+        <p className="max-w-xs text-sm text-ink-muted">
+          A trend is drawn once at least two observations of {valueLabel} exist.
+        </p>
+      </div>
+    );
+  }
 
   // A y-axis anchored at zero flattens a 3% follower change into a straight
   // line. These series are about *change*, so the domain hugs the data and the
   // axis labels say what the absolute level is.
-  const values = points.map((point) => point.value);
+  const values = observed.map((point) => point.value);
   const min = Math.min(...values);
   const max = Math.max(...values);
   const pad = (max - min) * 0.15 || Math.max(1, max * 0.05);
 
-  const gradientId = React.useId().replace(/:/g, "");
-
   return (
     <figure
-      className={cn("m-0", className)}
+      className={cn("animate-rise m-0", className)}
       role="img"
-      aria-label={`${ariaLabel}. ${points.length} observations from ${points[0]?.date ?? "—"} to ${points[points.length - 1]?.date ?? "—"}.`}
+      aria-label={`${ariaLabel}. ${observed.length} observations from ${observed[0].date} to ${observed[observed.length - 1].date}${gaps > 0 ? `, ${gaps} unobserved ${gaps === 1 ? "day" : "days"}` : ""}.`}
     >
       <ResponsiveContainer width="100%" height={height}>
         {variant === "area" ? (
-          <AreaChart data={points} margin={{ top: 6, right: 6, bottom: 0, left: 0 }}>
+          <AreaChart data={data} margin={{ top: 6, right: 6, bottom: 0, left: 0 }}>
             <defs>
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="var(--color-series-1)" stopOpacity={0.18} />
@@ -147,6 +182,10 @@ export function TrendChart({
             <Area
               type="monotone"
               dataKey="value"
+              // Recharts' JS easing sits outside the motion vocabulary and
+              // ignores prefers-reduced-motion; the figure's animate-rise is
+              // the entrance instead.
+              isAnimationActive={false}
               stroke="var(--color-series-1)"
               strokeWidth={2}
               fill={`url(#${gradientId})`}
@@ -155,7 +194,7 @@ export function TrendChart({
             />
           </AreaChart>
         ) : (
-          <LineChart data={points} margin={{ top: 6, right: 6, bottom: 0, left: 0 }}>
+          <LineChart data={data} margin={{ top: 6, right: 6, bottom: 0, left: 0 }}>
             <CartesianGrid stroke={GRID} vertical={false} />
             <XAxis dataKey="date" tickFormatter={formatAxisDate} minTickGap={32} {...axisProps} />
             <YAxis
@@ -171,6 +210,7 @@ export function TrendChart({
             <Line
               type="monotone"
               dataKey="value"
+              isAnimationActive={false}
               stroke="var(--color-series-1)"
               strokeWidth={2}
               dot={false}
@@ -195,6 +235,7 @@ export function CategoryBars({
   valueLabel,
   height = 180,
   format = "compact",
+  domain,
   className,
   ariaLabel,
 }: {
@@ -202,23 +243,34 @@ export function CategoryBars({
   valueLabel: string;
   height?: number;
   format?: ValueFormat;
+  /**
+   * Overrides the data-hugging default. Scores always pass the full scale —
+   * domain={[0, 100]} — so a 0–100 chart cannot exaggerate small differences.
+   */
+  domain?: [number, number];
   className?: string;
   ariaLabel: string;
 }) {
   const render = FORMATTERS[format];
   return (
-    <figure className={cn("m-0", className)} role="img" aria-label={ariaLabel}>
+    <figure className={cn("animate-rise m-0", className)} role="img" aria-label={ariaLabel}>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} margin={{ top: 6, right: 6, bottom: 0, left: 0 }} barCategoryGap="22%">
           <CartesianGrid stroke={GRID} vertical={false} />
           <XAxis dataKey="label" {...axisProps} />
-          <YAxis tickFormatter={(value: number) => render(value)} width={48} {...axisProps} />
+          <YAxis
+            domain={domain}
+            tickFormatter={(value: number) => render(value)}
+            width={48}
+            {...axisProps}
+          />
           <Tooltip
             cursor={{ fill: "var(--color-sunken)" }}
             content={<ChartTooltip valueLabel={valueLabel} format={format} />}
           />
           <Bar
             dataKey="value"
+            isAnimationActive={false}
             radius={[4, 4, 0, 0]}
             fill="var(--color-series-1)"
             maxBarSize={44}
@@ -233,15 +285,24 @@ export function CategoryBars({
  * A sparkline for table cells and tiles. No axes, no tooltip — it shows shape,
  * and the number beside it carries the value.
  */
+export type SparkPolarity = "higher-better" | "lower-better" | "neutral";
+
 export function Sparkline({
   values,
   width = 72,
   height = 20,
+  polarity = "higher-better",
   className,
 }: {
   values: number[];
   width?: number;
   height?: number;
+  /**
+   * What a rising line means. Risk metrics — bot risk, inactive audience,
+   * view anomaly — pass "lower-better" so a worsening trend never colours
+   * green; "neutral" renders without a judgement.
+   */
+  polarity?: SparkPolarity;
   className?: string;
 }) {
   if (values.length < 2) {
@@ -262,6 +323,12 @@ export function Sparkline({
     .join(" ");
 
   const rising = values[values.length - 1] >= values[0];
+  const stroke =
+    polarity === "neutral"
+      ? "stroke-neutral-metric"
+      : rising === (polarity === "higher-better")
+        ? "stroke-positive"
+        : "stroke-critical";
 
   return (
     <svg
@@ -280,7 +347,7 @@ export function Sparkline({
         strokeWidth={1.5}
         strokeLinecap="round"
         strokeLinejoin="round"
-        className={cn("animate-draw", rising ? "stroke-positive" : "stroke-critical")}
+        className={cn("animate-draw", stroke)}
       />
     </svg>
   );

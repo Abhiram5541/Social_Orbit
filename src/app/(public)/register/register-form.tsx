@@ -4,8 +4,8 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { RegisterInput } from "@/lib/contracts/auth";
-import { Button } from "@/components/ui/button";
-import { Checkbox, Field, Input, Select } from "@/components/ui/field";
+import { Button, ButtonGroup, SegmentButton } from "@/components/ui/button";
+import { Checkbox, Field, Input } from "@/components/ui/field";
 import { Notice } from "@/components/ui/states";
 
 export function RegisterForm() {
@@ -59,7 +59,8 @@ export function RegisterForm() {
         }
         return;
       }
-      router.replace(body.redirectTo);
+      // The submitted page echoes the address the approval will be sent to.
+      router.replace(`${body.redirectTo}?email=${encodeURIComponent(parsed.data.email)}`);
       router.refresh();
     } catch {
       setFormError("Could not reach the server. Check your connection and try again.");
@@ -69,54 +70,81 @@ export function RegisterForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="space-y-4">
+    <form onSubmit={onSubmit} noValidate className="space-y-5">
       {formError && (
         <Notice tone="critical" title="Could not create your account">
           {formError}
         </Notice>
       )}
 
-      <Field label="I am signing up as" required>
-        <Select
-          name="accountType"
-          value={accountType}
-          onChange={(event) =>
-            setAccountType(event.currentTarget.value as "client" | "influencer")
-          }
-        >
-          <option value="client">A brand or agency looking for creators</option>
-          <option value="influencer">A creator claiming my own profile</option>
-        </Select>
-      </Field>
+      <fieldset>
+        <legend className="label-caps text-ink-muted">Who you are</legend>
+        <div className="mt-3 space-y-4">
+          {/* The fork that changes the rest of the form is a visible choice,
+              not an option buried in a select. */}
+          <div className="flex flex-col gap-1.5">
+            <span id="account-type-label" className="text-base font-medium text-ink">
+              I am signing up as
+            </span>
+            <ButtonGroup aria-labelledby="account-type-label" className="grid w-full grid-cols-2">
+              <SegmentButton
+                active={accountType === "client"}
+                onClick={() => setAccountType("client")}
+              >
+                Brand or agency
+              </SegmentButton>
+              <SegmentButton
+                active={accountType === "influencer"}
+                onClick={() => setAccountType("influencer")}
+              >
+                Creator
+              </SegmentButton>
+            </ButtonGroup>
+            <input type="hidden" name="accountType" value={accountType} />
+          </div>
 
-      <Field label="Full name" error={errors.name} required>
-        <Input name="name" autoComplete="name" required />
-      </Field>
+          <Field label="Full name" error={errors.name} required>
+            <Input name="name" autoComplete="name" required />
+          </Field>
 
-      <Field label="Work email" error={errors.email} required>
-        <Input name="email" type="email" autoComplete="username" required />
-      </Field>
+          <Field label="Work email" error={errors.email} required>
+            <Input name="email" type="email" autoComplete="username" required />
+          </Field>
 
-      <Field
-        label={accountType === "client" ? "Organisation" : "Creator or channel name"}
-        error={errors.organisation}
-        required
-      >
-        <Input name="organisation" autoComplete="organization" required />
-      </Field>
+          <Field
+            label={accountType === "client" ? "Organisation" : "Creator or channel name"}
+            error={errors.organisation}
+            required
+          >
+            <Input name="organisation" autoComplete="organization" required />
+          </Field>
+        </div>
+      </fieldset>
 
-      <Field
-        label="Password"
-        error={errors.password}
-        hint="At least 12 characters, with upper and lower case letters and a number."
-        required
-      >
-        <Input name="password" type="password" autoComplete="new-password" required />
-      </Field>
+      <div className="border-t border-line pt-5">
+        <fieldset>
+          <legend className="label-caps text-ink-muted">Credentials</legend>
+          <div className="mt-3 space-y-4">
+            <Field
+              label="Password"
+              error={errors.password}
+              hint="At least 12 characters, with upper and lower case letters and a number."
+              required
+            >
+              <Input name="password" type="password" autoComplete="new-password" required />
+            </Field>
 
-      <Field label="Confirm password" error={errors.confirmPassword} required>
-        <Input name="confirmPassword" type="password" autoComplete="new-password" required />
-      </Field>
+            <Field label="Confirm password" error={errors.confirmPassword} required>
+              <Input
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                required
+              />
+            </Field>
+          </div>
+        </fieldset>
+      </div>
 
       <div>
         <Checkbox
@@ -136,7 +164,7 @@ export function RegisterForm() {
           }
         />
         {errors.acceptTerms && (
-          <p role="alert" className="mt-1 text-[12px] text-critical">
+          <p role="alert" className="mt-1 text-sm text-critical">
             {errors.acceptTerms}
           </p>
         )}

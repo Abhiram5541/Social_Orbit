@@ -29,9 +29,13 @@ export const HEALTH_BAND_LABEL: Record<ReturnType<typeof healthBand>, string> = 
 export type ScoreTone = "light" | "instrument";
 
 /** Sub-50 is a real problem; sub-70 is worth noticing; above that stays quiet. */
-function componentTone(value: number, tone: ScoreTone): string {
-  if (value < 50) return "bg-critical";
-  if (value < 70) return "bg-caution";
+function componentTone(value: number, tone: ScoreTone, invert: boolean): string {
+  // Inverted for risk signals, where a high value is the problem. Feeding a
+  // bot risk of 85 through the quality scale would render the disqualifying
+  // number in the calmest colour on the panel — the exact failure D11 exists
+  // to prevent.
+  if (invert ? value >= 70 : value < 50) return "bg-critical";
+  if (invert ? value >= 50 : value < 70) return "bg-caution";
   return tone === "instrument" ? "bg-instrument-muted" : "bg-neutral-metric";
 }
 
@@ -51,16 +55,19 @@ export function ScoreRing({
   animate?: boolean;
   className?: string;
 }) {
-  const stroke = size >= 120 ? 7 : size >= 80 ? 6 : 5;
+  const stroke = size >= 120 ? 8 : size >= 80 ? 6 : 5;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const pct = value === null ? 0 : Math.max(0, Math.min(100, value));
   const offset = circumference * (1 - pct / 100);
+  // Below this the ticks collapse into a grey smudge and read as noise.
+  const dialed = size >= 80;
 
   const track = tone === "instrument" ? "stroke-instrument-line" : "stroke-line";
   const arc = tone === "instrument" ? "stroke-brand-glow" : "stroke-brand";
   const numeral = tone === "instrument" ? "text-instrument-ink" : "text-ink";
   const unit = tone === "instrument" ? "text-instrument-muted" : "text-ink-subtle";
+  const ticks = tone === "instrument" ? "text-brass-lift/55" : "text-brass/40";
 
   return (
     <div
@@ -73,11 +80,27 @@ export function ScoreRing({
           : `${label}: ${Math.round(value)} out of 100`
       }
     >
-      <svg viewBox={`0 0 ${size} ${size}`} className="size-full -rotate-90" aria-hidden>
+      {/* The tick ring. Brass is spent on measurement and on nothing else in
+          this product, so the graduations around a reading are the one place
+          it appears at all — the same reason a dial is engraved rather than
+          printed. Drawn as a masked conic gradient: sixty hairlines, one
+          element, no layout cost. */}
+      {dialed && (
+        <div
+          aria-hidden
+          className={cn("dial-ticks absolute inset-0 rounded-full", ticks)}
+        />
+      )}
+      <svg
+        viewBox={`0 0 ${size} ${size}`}
+        className="size-full -rotate-90"
+        style={{ padding: dialed ? 0 : undefined }}
+        aria-hidden
+      >
         <circle
           cx={size / 2}
           cy={size / 2}
-          r={radius}
+          r={dialed ? radius - 7 : radius}
           fill="none"
           strokeWidth={stroke}
           className={track}
@@ -86,21 +109,25 @@ export function ScoreRing({
           <circle
             cx={size / 2}
             cy={size / 2}
-            r={radius}
+            r={dialed ? radius - 7 : radius}
             fill="none"
             strokeWidth={stroke}
             strokeLinecap="round"
-            strokeDasharray={circumference}
+            strokeDasharray={dialed ? 2 * Math.PI * (radius - 7) : circumference}
             // The arc sweeps from empty to its value once on mount. Under
             // reduced motion the animation is neutralised and the inline
             // dashoffset below is what renders, so the value is never lost.
-            strokeDashoffset={offset}
+            strokeDashoffset={
+              dialed ? 2 * Math.PI * (radius - 7) * (1 - pct / 100) : offset
+            }
             className={cn(arc, animate && "animate-sweep")}
             style={
               animate
                 ? ({
-                    "--sweep-from": circumference,
-                    "--sweep-to": offset,
+                    "--sweep-from": dialed ? 2 * Math.PI * (radius - 7) : circumference,
+                    "--sweep-to": dialed
+                      ? 2 * Math.PI * (radius - 7) * (1 - pct / 100)
+                      : offset,
                   } as React.CSSProperties)
                 : undefined
             }
@@ -109,13 +136,13 @@ export function ScoreRing({
       </svg>
       <div className="absolute inset-0 grid place-content-center text-center leading-none">
         <span
-          className={cn("font-num font-light tabular-nums", numeral)}
-          style={{ fontSize: size * 0.34, letterSpacing: "-0.04em" }}
+          className={cn("font-num font-medium", numeral)}
+          style={{ fontSize: size * 0.33, letterSpacing: "-0.045em" }}
         >
           {value === null ? NO_VALUE : Math.round(value)}
         </span>
         {value !== null && (
-          <span className={cn("mt-1 label-caps text-[9px]", unit)}>/100</span>
+          <span className={cn("mt-1.5 label-caps-sm", unit)}>/100</span>
         )}
       </div>
     </div>
@@ -129,6 +156,7 @@ export function ScoreBar({
   weight,
   available = true,
   tone = "light",
+  invert = false,
   index = 0,
   className,
 }: {
@@ -137,6 +165,8 @@ export function ScoreBar({
   weight?: number;
   available?: boolean;
   tone?: ScoreTone;
+  /** For risk signals, where high is the problem: >=70 critical, >=50 caution. */
+  invert?: boolean;
   /** Position in the group, used to stagger the growth animation. */
   index?: number;
   className?: string;
@@ -156,12 +186,12 @@ export function ScoreBar({
   return (
     <div className={cn("grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1", className)}>
       <div className="flex min-w-0 items-baseline gap-1.5">
-        <span className={cn("truncate text-[12px]", labelColour)}>{label}</span>
+        <span className={cn("truncate text-sm", labelColour)}>{label}</span>
         {weight !== undefined && (
           // Named, because it sits beside a value and is not one. A bare "15%"
           // next to an empty bar reads as the number the bar failed to draw.
           <span
-            className={cn("shrink-0 font-num text-[10px] tabular-nums", labelColour)}
+            className={cn("shrink-0 font-num text-2xs", labelColour)}
             title={`Weight in the formula: ${Math.round(weight * 100)}%`}
           >
             <span className="sr-only">weight </span>
@@ -169,7 +199,7 @@ export function ScoreBar({
           </span>
         )}
       </div>
-      <span className={cn("font-num text-[13px] font-semibold tabular-nums", valueColour)}>
+      <span className={cn("font-num text-base font-semibold", valueColour)}>
         {measured ? Math.round(value) : NO_VALUE}
       </span>
       <div
@@ -188,7 +218,7 @@ export function ScoreBar({
       >
         {measured && (
           <div
-            className={cn("animate-extend h-full rounded-sm", componentTone(raw, tone))}
+            className={cn("animate-extend h-full rounded-sm", componentTone(raw, tone, invert))}
             style={
               {
                 width: `${pct}%`,
@@ -206,10 +236,13 @@ export function ScoreBar({
 export function ScorePill({
   value,
   label,
+  size = "md",
   className,
 }: {
   value: number | null;
   label?: string;
+  /** `lg` marks the one score a screen is sorted and decided around. */
+  size?: "md" | "lg";
   className?: string;
 }) {
   if (value === null) {
@@ -224,11 +257,17 @@ export function ScorePill({
       <span
         aria-hidden
         className={cn(
-          "size-1 shrink-0 self-center rounded-full",
+          "shrink-0 self-center rounded-full",
+          size === "lg" ? "size-1.5" : "size-1",
           value < 50 ? "bg-critical" : value < 70 ? "bg-caution" : "bg-brand",
         )}
       />
-      <span className="font-num text-[13px] font-semibold tabular-nums text-ink">
+      <span
+        className={cn(
+          "font-num font-semibold text-ink",
+          size === "lg" ? "text-stat" : "text-base",
+        )}
+      >
         {Math.round(value)}
       </span>
     </span>
@@ -263,5 +302,30 @@ export function RiskBadge({
     <Badge tone={RISK_TONE[level]} dot onInstrument={onInstrument} className={className}>
       {RISK_LABEL[level]}
     </Badge>
+  );
+}
+
+
+/**
+ * The risk signal as a single dot. For dense tables, where a full badge per
+ * row costs more width than the reading is worth — the tooltip and the screen
+ * reader text carry the same words the badge would have.
+ */
+export function RiskDot({ level, className }: { level: RiskLevel; className?: string }) {
+  const fill: Record<RiskLevel, string> = {
+    unknown: "bg-line-strong",
+    low: "bg-positive",
+    medium: "bg-caution",
+    high: "bg-critical",
+  };
+  return (
+    <>
+      <span
+        aria-hidden
+        title={RISK_LABEL[level]}
+        className={cn("size-1.5 shrink-0 rounded-full", fill[level], className)}
+      />
+      <span className="sr-only">{RISK_LABEL[level]}.</span>
+    </>
   );
 }

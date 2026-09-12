@@ -11,7 +11,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
-import { Field, Textarea } from "@/components/ui/field";
+import { Checkbox, Field, Textarea } from "@/components/ui/field";
 import { EmptyState, Notice } from "@/components/ui/states";
 import { Table, TableWrap, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
 import { ScorePill } from "@/components/intelligence/score";
@@ -21,10 +21,25 @@ export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailD
   const router = useRouter();
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   const [noteFor, setNoteFor] = React.useState<string | null>(null);
+  const [removeFor, setRemoveFor] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
   const editing = shortlist.items.find((item) => item.influencerId === noteFor);
+  const removing = shortlist.items.find((item) => item.influencerId === removeFor);
+
+  // Comparison is defined as two to five creators, so the hand-off enforces
+  // its own bound rather than sending twelve ids to a page that will refuse.
+  const effective =
+    selected.size > 0 ? [...selected] : shortlist.items.map((i) => i.influencerId);
+  const compareIds = effective.slice(0, 5);
+  const canCompare = effective.length >= 2;
+  const compareLabel =
+    compareIds.length < effective.length
+      ? "Compare first 5"
+      : selected.size > 0
+        ? `Compare ${selected.size} selected`
+        : "Compare all";
 
   async function call(path: string, init: RequestInit) {
     setBusy(true);
@@ -45,12 +60,13 @@ export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailD
     }
   }
 
-  async function remove(influencerId: string, name: string) {
-    if (!window.confirm(`Remove ${name} from “${shortlist.name}”?`)) return;
-    await call(
-      `/api/internal/shortlists/${shortlist.id}/items?influencerId=${encodeURIComponent(influencerId)}`,
+  async function remove() {
+    if (!removing) return;
+    const ok = await call(
+      `/api/internal/shortlists/${shortlist.id}/items?influencerId=${encodeURIComponent(removing.influencerId)}`,
       { method: "DELETE" },
     );
+    if (ok) setRemoveFor(null);
   }
 
   async function saveNote(event: React.FormEvent<HTMLFormElement>) {
@@ -87,14 +103,26 @@ export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailD
       {error && <Notice tone="critical">{error}</Notice>}
 
       <div className="flex flex-wrap items-center gap-2">
-        <LinkButton
-          href={`/compare?ids=${[...(selected.size > 0 ? selected : shortlist.items.map((i) => i.influencerId))].join(",")}`}
-          variant="primary"
-          className="gap-1.5"
-        >
-          <Scale className="size-4" aria-hidden />
-          Compare {selected.size > 0 ? `${selected.size} selected` : "all"}
-        </LinkButton>
+        {canCompare ? (
+          <LinkButton
+            href={`/compare?ids=${compareIds.join(",")}`}
+            variant="primary"
+            className="gap-1.5"
+          >
+            <Scale className="size-4" aria-hidden />
+            {compareLabel}
+          </LinkButton>
+        ) : (
+          <>
+            <Button variant="primary" disabled className="gap-1.5">
+              <Scale className="size-4" aria-hidden />
+              Compare
+            </Button>
+            <span className="text-sm text-ink-subtle">
+              Comparison takes two to five creators.
+            </span>
+          </>
+        )}
         <LinkButton href={`/campaigns/new?shortlist=${shortlist.id}`} className="gap-1.5">
           Start a campaign from this list
         </LinkButton>
@@ -130,8 +158,9 @@ export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailD
               {shortlist.items.map((item) => (
                 <Tr key={item.id} selected={selected.has(item.influencerId)}>
                   <Td className="pr-0">
-                    <input
-                      type="checkbox"
+                    <Checkbox
+                      label={<span className="sr-only">Select {item.displayName}</span>}
+                      className="gap-0"
                       checked={selected.has(item.influencerId)}
                       onChange={() =>
                         setSelected((previous) => {
@@ -141,8 +170,6 @@ export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailD
                           return next;
                         })
                       }
-                      aria-label={`Select ${item.displayName}`}
-                      className="size-3.5 cursor-pointer rounded accent-brand"
                     />
                   </Td>
                   <Td>
@@ -155,7 +182,7 @@ export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailD
                         >
                           {item.displayName}
                         </Link>
-                        <p className="truncate text-[12px] text-ink-muted">
+                        <p className="truncate text-sm text-ink-muted">
                           <span className="font-num">@{item.primaryHandle}</span> ·{" "}
                           {PLATFORM_LABEL[item.primaryPlatform]}
                         </p>
@@ -174,7 +201,7 @@ export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailD
                     <button
                       type="button"
                       onClick={() => setNoteFor(item.influencerId)}
-                      className="press flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-left text-[12px] hover:bg-sunken"
+                      className="press flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-left text-sm hover:bg-sunken"
                     >
                       <MessageSquare className="size-3 shrink-0 text-ink-subtle" aria-hidden />
                       <span className={item.note ? "truncate text-ink" : "text-ink-subtle"}>
@@ -182,7 +209,7 @@ export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailD
                       </span>
                     </button>
                   </Td>
-                  <Td className="whitespace-nowrap text-[12px] text-ink-muted">
+                  <Td className="whitespace-nowrap text-sm text-ink-muted">
                     <RelativeTime at={item.addedAt} />
                     <span className="block text-ink-subtle">by {item.addedByName}</span>
                   </Td>
@@ -191,7 +218,7 @@ export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailD
                       variant="ghost"
                       size="icon"
                       disabled={busy}
-                      onClick={() => remove(item.influencerId, item.displayName)}
+                      onClick={() => setRemoveFor(item.influencerId)}
                       aria-label={`Remove ${item.displayName} from this shortlist`}
                     >
                       <Trash2 className="size-3.5" aria-hidden />
@@ -229,6 +256,27 @@ export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailD
             </Button>
           </div>
         </form>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(removing)}
+        onClose={() => setRemoveFor(null)}
+        title={removing ? `Remove ${removing.displayName}?` : "Remove"}
+      >
+        <div className="space-y-4">
+          <p className="text-base text-ink-muted">
+            {removing?.displayName} will be taken off &ldquo;{shortlist.name}&rdquo; along
+            with their note. The creator record itself is untouched.
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button type="button" onClick={() => setRemoveFor(null)}>
+              Cancel
+            </Button>
+            <Button variant="danger" loading={busy} onClick={remove}>
+              Remove
+            </Button>
+          </div>
+        </div>
       </Dialog>
     </div>
   );

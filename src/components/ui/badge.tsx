@@ -52,8 +52,8 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-sm border px-1.5 py-0.5",
-        "text-[11px] font-semibold leading-4 tracking-[0.01em] whitespace-nowrap",
+        "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5",
+        "text-xs font-semibold whitespace-nowrap",
         onInstrument ? ON_INSTRUMENT[tone] : TONES[tone],
         className,
       )}
@@ -84,14 +84,14 @@ export function FilterChip({
   onRemove: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-sm border border-line bg-surface py-0.5 pl-2 pr-1 text-[12px]">
+    <span className="inline-flex items-center gap-1 rounded-full border border-line bg-surface py-1 pl-2.5 pr-1 text-sm">
       <span className="text-ink-muted">{label}</span>
       <span className="font-medium text-ink">{value}</span>
       <button
         type="button"
         onClick={onRemove}
         aria-label={`Remove filter ${label} ${value}`}
-        className="ml-0.5 grid size-4 place-items-center rounded text-ink-subtle transition-colors hover:bg-sunken hover:text-ink"
+        className="ml-0.5 grid size-4.5 place-items-center rounded-full text-ink-subtle transition-colors hover:bg-sunken-strong hover:text-ink"
       >
         <svg viewBox="0 0 12 12" className="size-3" aria-hidden>
           <path

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PLAN_CONFIG } from "@/lib/contracts/auth";
-import { formatDateTime, formatRelativeTime } from "@/lib/format";
+import { formatCompact, formatDateTime, formatRelativeTime } from "@/lib/format";
 import { requirePagePermission } from "@/server/auth/rbac";
 import { listApiKeys } from "@/server/repositories/api-key-repository";
 import { listOrgs } from "@/server/repositories/user-repository";
@@ -9,6 +9,7 @@ import { PageBody, PageHeader } from "@/components/shell/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableWrap, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
+import { EmptyState } from "@/components/ui/states";
 import { StatRow, StatTile } from "@/components/intelligence/stat";
 import { ApiReference } from "@/components/api/api-reference";
 
@@ -26,6 +27,7 @@ export default async function AdminApiPage() {
   return (
     <>
       <PageHeader
+        eyebrow="Administration"
         title="API management"
         description="Every issued key across all tenants, and the plan limits applied to each."
       />
@@ -33,55 +35,65 @@ export default async function AdminApiPage() {
         <StatRow>
           <StatTile label="Active keys" value={active.length} footnote={`${keys.length} issued`} />
           <StatTile label="Revoked" value={keys.length - active.length} />
-          <StatTile label="Requests this month" value={totalRequests} />
-          <StatTile label="Burst limit" value="120 / min" footnote="per key" />
+          <StatTile label="Requests this month" value={formatCompact(totalRequests)} />
+          {/* A constant, not telemetry — the footnote says so. */}
+          <StatTile label="Burst limit" value="120 / min" footnote="policy, per key" />
         </StatRow>
 
         <Card>
           <CardHeader>
             <CardTitle>Issued keys</CardTitle>
-            <span className="text-[12px] text-ink-muted">
+            <span className="text-sm text-ink-muted">
               Only hashes are stored; secrets cannot be recovered from here either.
             </span>
           </CardHeader>
-          <TableWrap label="All API keys">
-            <Table>
-              <Thead>
-                <Tr>
-                  <Th>Name</Th>
-                  <Th>Prefix</Th>
-                  <Th>Scopes</Th>
-                  <Th>Created</Th>
-                  <Th>Last used</Th>
-                  <Th>Status</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {keys.map((key) => (
-                  <Tr key={key.id}>
-                    <Td className="font-medium">{key.name}</Td>
-                    <Td>
-                      <code className="font-num text-[12px] text-ink-muted">{key.prefix}…</code>
-                    </Td>
-                    <Td className="font-num text-[11px] text-ink-muted">
-                      {key.scopes.join(", ")}
-                    </Td>
-                    <Td className="whitespace-nowrap text-[12px] text-ink-muted">
-                      {formatDateTime(key.createdAt)}
-                    </Td>
-                    <Td className="whitespace-nowrap text-[12px] text-ink-muted">
-                      {key.lastUsedAt ? formatRelativeTime(key.lastUsedAt) : "never"}
-                    </Td>
-                    <Td>
-                      <Badge tone={key.revokedAt ? "critical" : "positive"} dot>
-                        {key.revokedAt ? "Revoked" : "Active"}
-                      </Badge>
-                    </Td>
+          {keys.length === 0 ? (
+            <EmptyState
+              variant="panel"
+              className="m-3"
+              title="No keys issued yet"
+              description="Keys are created from a client organisation's workspace. Only their hashes ever reach this table."
+            />
+          ) : (
+            <TableWrap label="All API keys">
+              <Table>
+                <Thead>
+                  <Tr>
+                    <Th>Name</Th>
+                    <Th>Prefix</Th>
+                    <Th>Scopes</Th>
+                    <Th>Created</Th>
+                    <Th>Last used</Th>
+                    <Th>Status</Th>
                   </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </TableWrap>
+                </Thead>
+                <Tbody>
+                  {keys.map((key) => (
+                    <Tr key={key.id}>
+                      <Td className="font-medium">{key.name}</Td>
+                      <Td>
+                        <code className="font-num text-sm text-ink-muted">{key.prefix}…</code>
+                      </Td>
+                      <Td className="font-num text-xs text-ink-muted">
+                        {key.scopes.join(", ")}
+                      </Td>
+                      <Td className="whitespace-nowrap text-sm text-ink-muted">
+                        {formatDateTime(key.createdAt)}
+                      </Td>
+                      <Td className="whitespace-nowrap text-sm text-ink-muted">
+                        {key.lastUsedAt ? formatRelativeTime(key.lastUsedAt) : "never"}
+                      </Td>
+                      <Td>
+                        <Badge tone={key.revokedAt ? "critical" : "positive"} dot>
+                          {key.revokedAt ? "Revoked" : "Active"}
+                        </Badge>
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableWrap>
+          )}
         </Card>
 
         <Card>

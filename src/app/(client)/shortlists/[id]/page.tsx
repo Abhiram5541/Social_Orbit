@@ -39,7 +39,7 @@ export default async function ShortlistPage({
         description={shortlist.description ?? undefined}
         breadcrumbs={[{ label: "Shortlists", href: "/shortlists" }, { label: shortlist.name }]}
         meta={
-          <span className="text-[12px] text-ink-muted">
+          <span className="text-sm text-ink-muted">
             {pluralise(shortlist.itemCount, "creator")} · created by {shortlist.createdByName}
           </span>
         }

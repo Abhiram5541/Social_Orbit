@@ -25,6 +25,7 @@ const SCOPES: Record<Platform, string[]> = {
     "instagram_manage_insights — reach, impressions and audience for a professional account",
   ],
   tiktok: [],
+  x: ["tweet.read — post statistics", "users.read — profile and identity match", "offline.access — stay connected"],
 };
 
 export default async function ConnectionsPage({
@@ -36,12 +37,24 @@ export default async function ConnectionsPage({
   const connectors = connectorStatuses();
   const outcome = await searchParams;
 
-  const connectorFor = (platform: Platform) =>
-    connectors.find((connector) => connector.platform === platform);
+  const entries = SUPPORTED_PLATFORMS.map((platform) => ({
+    platform,
+    account: profile.socialAccounts.find((entry) => entry.platform === platform),
+    available:
+      connectors.find((connector) => connector.platform === platform)?.state === "live",
+  }));
+
+  // The platform a creator can actually use — or already has data on — leads
+  // full-width. Connectors unusable in this environment collapse to one row
+  // each: one statement, not a disabled primary plus a warning saying the
+  // same thing twice.
+  const active = entries.filter((entry) => entry.available || entry.account);
+  const inactive = entries.filter((entry) => !entry.available && !entry.account);
 
   return (
     <>
       <PageHeader
+        eyebrow="My presence"
         title="Connected accounts"
         description="Connecting an account is how you become SocialOrbit Verified and how first-party analytics become available."
       />
@@ -70,104 +83,118 @@ export default async function ConnectionsPage({
           time — your public profile stays, your authorized analytics stop refreshing.
         </Notice>
 
-        <div className="grid gap-4 lg:grid-cols-2">
-          {SUPPORTED_PLATFORMS.map((platform) => {
-            const account = profile.socialAccounts.find((entry) => entry.platform === platform);
-            const connector = connectorFor(platform);
-            const available = connector?.state === "live";
+        {active.map(({ platform, account, available }) => (
+          <Card key={platform}>
+            <CardHeader>
+              <span className="flex items-center gap-2">
+                <Link2 className="size-4 text-ink-subtle" aria-hidden />
+                <CardTitle>{PLATFORM_LABEL[platform]}</CardTitle>
+              </span>
+              <Badge
+                tone={
+                  account?.needsReauth
+                    ? "critical"
+                    : account?.isConnected
+                      ? "positive"
+                      : "neutral"
+                }
+                dot
+              >
+                {account?.needsReauth
+                  ? "Reauthorisation needed"
+                  : account?.isConnected
+                    ? "Connected"
+                    : "Not connected"}
+              </Badge>
+            </CardHeader>
 
-            return (
-              <Card key={platform}>
-                <CardHeader>
-                  <span className="flex items-center gap-2">
-                    <Link2 className="size-4 text-ink-subtle" aria-hidden />
-                    <CardTitle>{PLATFORM_LABEL[platform]}</CardTitle>
-                  </span>
-                  <Badge
-                    tone={
-                      account?.needsReauth
-                        ? "critical"
-                        : account?.isConnected
-                          ? "positive"
-                          : "neutral"
-                    }
-                    dot
-                  >
-                    {account?.needsReauth
-                      ? "Reauthorisation needed"
-                      : account?.isConnected
-                        ? "Connected"
-                        : "Not connected"}
-                  </Badge>
-                </CardHeader>
+            <CardContent className="space-y-3">
+              {account ? (
+                <dl>
+                  <DataRow label="Account" value={account.handle} />
+                  <DataRow label="Followers" value={formatCompact(account.followers)} />
+                  <DataRow
+                    label="Connected"
+                    value={account.connectedAt ? formatDateTime(account.connectedAt) : "—"}
+                  />
+                  <DataRow
+                    label="Last sync"
+                    value={formatRelativeTime(account.lastSyncedAt)}
+                  />
+                </dl>
+              ) : (
+                <p className="text-base text-ink-muted">
+                  No {PLATFORM_LABEL[platform]} account is linked to your profile yet.
+                </p>
+              )}
 
-                <CardContent className="space-y-3">
-                  {account ? (
-                    <dl>
-                      <DataRow label="Account" value={account.handle} />
-                      <DataRow label="Followers" value={formatCompact(account.followers)} />
-                      <DataRow
-                        label="Connected"
-                        value={account.connectedAt ? formatDateTime(account.connectedAt) : "—"}
-                      />
-                      <DataRow
-                        label="Last sync"
-                        value={formatRelativeTime(account.lastSyncedAt)}
-                      />
-                    </dl>
+              {SCOPES[platform].length > 0 && (
+                <div>
+                  <p className="label-caps text-ink-muted">Scopes requested</p>
+                  <ul className="mt-1 space-y-1">
+                    {SCOPES[platform].map((scope) => (
+                      <li key={scope} className="text-xs leading-5 text-ink-muted">
+                        {scope}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {available ? (
+                <div className="flex flex-wrap gap-2 border-t border-line pt-3">
+                  {platform === "youtube" ? (
+                    // A plain link, not a fetch: this leaves the app for
+                    // Google's consent screen, and a redirect a browser
+                    // follows itself is the whole mechanism.
+                    <LinkButton href="/api/internal/connect/youtube/start" variant="primary">
+                      {account?.isConnected ? "Reconnect" : "Connect YouTube"}
+                    </LinkButton>
                   ) : (
-                    <p className="text-[13px] text-ink-muted">
-                      No {PLATFORM_LABEL[platform]} account is linked to your profile yet.
-                    </p>
+                    <Button variant="primary" disabled>
+                      {account?.isConnected ? "Reconnect" : `Connect ${PLATFORM_LABEL[platform]}`}
+                    </Button>
                   )}
-
-                  <div>
-                    <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-ink-muted">
-                      Scopes requested
-                    </p>
-                    <ul className="mt-1 space-y-1">
-                      {SCOPES[platform].map((scope) => (
-                        <li key={scope} className="font-num text-[11px] leading-5 text-ink-muted">
-                          {scope}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {!available && (
-                    <Notice tone="caution" icon={TriangleAlert}>
-                      This connector is not configured in this environment, so the connection
-                      flow is unavailable. Nothing is stored or attempted.
-                    </Notice>
-                  )}
-
-                  <div className="flex flex-wrap gap-2 border-t border-line pt-3">
-                    {platform === "youtube" && available ? (
-                      // A plain link, not a fetch: this leaves the app for
-                      // Google's consent screen, and a redirect a browser
-                      // follows itself is the whole mechanism.
-                      <LinkButton href="/api/internal/connect/youtube/start" variant="primary">
-                        {account?.isConnected ? "Reconnect" : "Connect YouTube"}
-                      </LinkButton>
+                  {account?.isConnected &&
+                    (platform === "youtube" ? (
+                      <DisconnectButton />
                     ) : (
-                      <Button variant="primary" disabled>
-                        {account?.isConnected ? "Reconnect" : `Connect ${PLATFORM_LABEL[platform]}`}
+                      <Button variant="ghost" disabled>
+                        Disconnect
                       </Button>
-                    )}
-                    {account?.isConnected &&
-                      (platform === "youtube" ? (
-                        <DisconnectButton disabled={!available} />
-                      ) : (
-                        <Button variant="ghost" disabled>
-                          Disconnect
-                        </Button>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                    ))}
+                </div>
+              ) : (
+                <p className="border-t border-line pt-3 text-sm text-ink-muted">
+                  This connector is not configured in this environment, so the connection flow
+                  is unavailable. Nothing is stored or attempted.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+
+        {inactive.length > 0 && (
+          <Card>
+            <ul className="divide-y divide-line">
+              {inactive.map(({ platform }) => (
+                <li key={platform} className="flex flex-wrap items-center gap-3 px-4 py-2.5">
+                  <Link2 className="size-4 shrink-0 text-ink-subtle" aria-hidden />
+                  <span className="min-w-0 flex-1 text-ink">
+                    {PLATFORM_LABEL[platform]}
+                    <span className="text-ink-muted">
+                      {" "}
+                      — connector not configured in this environment
+                    </span>
+                  </span>
+                  <Badge tone="neutral" dot>
+                    Unavailable
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
       </PageBody>
     </>
   );

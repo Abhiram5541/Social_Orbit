@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { FileText } from "lucide-react";
-import { formatDate } from "@/lib/format";
 import { requirePagePermission } from "@/server/auth/rbac";
 import { listCampaigns, listShortlists } from "@/server/repositories/workspace-repository";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
-import { Button, LinkButton } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LinkButton } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState, Notice } from "@/components/ui/states";
 
 export const metadata: Metadata = { title: "Reports" };
@@ -13,6 +12,8 @@ export const dynamic = "force-dynamic";
 
 interface ReportType {
   id: string;
+  /** What the report is drawn from — the ledger's kind tag. */
+  source: string;
   title: string;
   detail: string;
   /** Where you start this report today. */
@@ -25,6 +26,7 @@ interface ReportType {
 const REPORT_TYPES: ReportType[] = [
   {
     id: "influencer",
+    source: "Creator",
     title: "Influencer report",
     detail:
       "Account, audience and content performance for one creator, with score components, evidence and provenance.",
@@ -33,6 +35,7 @@ const REPORT_TYPES: ReportType[] = [
   },
   {
     id: "comparison",
+    source: "Shortlist",
     title: "Comparison report",
     detail:
       "Two to five creators on normalised metrics, with incomparable measures flagged rather than silently averaged.",
@@ -41,6 +44,7 @@ const REPORT_TYPES: ReportType[] = [
   },
   {
     id: "campaign",
+    source: "Campaign",
     title: "Campaign performance report",
     detail:
       "Attributed posts, per-creator campaign scores, reach, engagement and cost efficiency for one campaign.",
@@ -49,6 +53,7 @@ const REPORT_TYPES: ReportType[] = [
   },
   {
     id: "audience",
+    source: "Audience",
     title: "Audience report",
     detail:
       "Demographics and audience quality for creators who have authorised first-party access.",
@@ -67,55 +72,48 @@ export default async function ReportsPage() {
   return (
     <>
       <PageHeader
+        eyebrow="Activate"
         title="Reports"
-        description="Export what SocialOrbit holds, with the provenance intact. Large reports are generated in the background."
+        description="Export what SocialOrbit holds, with the provenance intact — every figure states whether it was verified, observed, derived, estimated or AI-inferred. A number that leaves the platform without that context is a number someone will eventually misquote."
       />
       <PageBody className="space-y-4">
-        <Notice tone="info" title="Every export carries its provenance">
-          A SocialOrbit export states, for each figure, whether it was verified, observed,
-          derived, estimated or AI-inferred. A number that leaves the platform without that
-          context is a number someone will eventually misquote.
-        </Notice>
-
         <Notice tone="caution" title="Exports run from the record, not from here">
           Open a creator, a shortlist or a campaign and export it from there. Scheduled
           generation, PDF rendering and a report archive are not built yet, so this page does
           not pretend to offer them.
         </Notice>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          {REPORT_TYPES.map((report) => (
-            <Card key={report.id}>
-              <CardHeader>
-                <span className="flex items-center gap-2">
-                  <FileText className="size-4 text-ink-subtle" aria-hidden />
-                  <CardTitle>{report.title}</CardTitle>
+        <Card>
+          <CardHeader>
+            <CardTitle>Report types</CardTitle>
+          </CardHeader>
+          <ul className="divide-y divide-line">
+            {REPORT_TYPES.map((report) => (
+              <li
+                key={report.id}
+                className="flex flex-wrap items-start gap-x-4 gap-y-2 px-4 py-3"
+              >
+                <span className="label-caps w-20 shrink-0 pt-0.5 text-ink-subtle">
+                  {report.source}
                 </span>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-[13px] leading-5 text-ink-muted">{report.detail}</p>
+                <div className="min-w-0 flex-1 basis-56">
+                  <p className="font-medium text-ink">{report.title}</p>
+                  <p className="mt-0.5 text-sm text-ink-muted">{report.detail}</p>
+                </div>
                 {report.available ? (
-                  <>
-                    <LinkButton href={report.start.href} size="sm" variant="primary">
-                      {report.start.label}
-                    </LinkButton>
-                    <p className="text-[12px] text-ink-subtle">
-                      Export to CSV from the record itself. Scheduled PDF delivery is not
-                      available yet.
-                    </p>
-                  </>
+                  <LinkButton href={report.start.href} size="sm" className="shrink-0">
+                    {report.start.label}
+                  </LinkButton>
                 ) : (
-                  <>
-                    <Button size="sm" variant="secondary" disabled>
-                      Not available yet
-                    </Button>
-                    <p className="text-[12px] text-ink-subtle">{report.unavailableNote}</p>
-                  </>
+                  <div className="w-full sm:w-60 sm:shrink-0 sm:text-right">
+                    <span className="label-caps text-ink-subtle">Not yet available</span>
+                    <p className="mt-0.5 text-sm text-ink-subtle">{report.unavailableNote}</p>
+                  </div>
                 )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
 
         <Card>
           <CardHeader>
@@ -142,11 +140,6 @@ export default async function ReportsPage() {
             }
           />
         </Card>
-
-        <p className="text-[12px] text-ink-muted">
-          Report history is empty because nothing has been generated in this workspace. Reports
-          are retained for 90 days from {formatDate(new Date().toISOString())}.
-        </p>
       </PageBody>
     </>
   );

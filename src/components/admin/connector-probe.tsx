@@ -69,14 +69,14 @@ export function ConnectorProbe({ disabled }: { disabled?: boolean }) {
     <Card>
       <CardHeader>
         <CardTitle>Live probe — YouTube</CardTitle>
-        <span className="font-num text-[12px] text-ink-muted">spends API quota</span>
+        <span className="font-num text-sm text-ink-muted">spends API quota</span>
       </CardHeader>
       <CardContent className="space-y-4">
-        <form onSubmit={run} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <form onSubmit={run}>
           <Field
             label="Channel"
             hint="Channel id, @handle, or a youtube.com URL."
-            className="flex-1"
+            inline
           >
             <Input
               value={channel}
@@ -86,21 +86,20 @@ export function ConnectorProbe({ disabled }: { disabled?: boolean }) {
               spellCheck={false}
               disabled={disabled}
             />
+            <Button
+              type="submit"
+              variant="primary"
+              loading={state.status === "loading"}
+              disabled={disabled}
+            >
+              Run probe
+            </Button>
           </Field>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={state.status === "loading"}
-            disabled={disabled}
-            className="sm:mb-[26px]"
-          >
-            Run probe
-          </Button>
         </form>
 
         {disabled && (
-          <p className="text-[13px] text-ink-muted">
-            <code className="font-num text-[12px]">YOUTUBE_API_KEY</code> is not set, so there is
+          <p className="text-base text-ink-muted">
+            <code className="font-num text-sm">YOUTUBE_API_KEY</code> is not set, so there is
             nothing to probe.
           </p>
         )}
@@ -125,7 +124,7 @@ function ProbeReadout({ result }: { result: ConnectorProbeResult }) {
           href={channel.url}
           target="_blank"
           rel="noreferrer noopener"
-          className="text-[14px] font-semibold text-brand-ink underline underline-offset-4"
+          className="font-semibold text-brand-ink underline underline-offset-4"
         >
           {channel.title}
         </a>
@@ -173,14 +172,14 @@ function ProbeReadout({ result }: { result: ConnectorProbeResult }) {
       </Section>
 
       <details className="rounded-lg border border-line">
-        <summary className="cursor-pointer px-3 py-2 text-[13px] font-medium text-ink transition-colors hover:bg-sunken">
+        <summary className="cursor-pointer px-3 py-2 text-base font-medium text-ink transition-colors hover:bg-sunken">
           Recent uploads ({result.recentContent.length})
         </summary>
         <ul className="divide-y divide-line border-t border-line">
           {result.recentContent.slice(0, 10).map((item) => (
             <li key={item.id} className="flex items-baseline justify-between gap-3 px-3 py-2">
-              <span className="min-w-0 flex-1 truncate text-[13px] text-ink">{item.title}</span>
-              <span className="font-num tabular-nums text-[12px] text-ink-muted">
+              <span className="min-w-0 flex-1 truncate text-base text-ink">{item.title}</span>
+              <span className="font-num text-sm text-ink-muted">
                 {formatCompact(item.views)} views · {formatDuration(item.durationSeconds)}
               </span>
             </li>
@@ -202,8 +201,8 @@ function Section({
 }) {
   return (
     <div>
-      <p className="label-caps text-[10px] text-ink-muted">{title}</p>
-      <p className="mt-0.5 text-[12px] leading-4 text-ink-muted">{note}</p>
+      <p className="label-caps-sm text-ink-muted">{title}</p>
+      <p className="mt-0.5 text-sm leading-4 text-ink-muted">{note}</p>
       <dl className="mt-2 grid gap-x-4 gap-y-2 sm:grid-cols-2 xl:grid-cols-3">{children}</dl>
     </div>
   );
@@ -212,11 +211,11 @@ function Section({
 function Metric({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="flex items-baseline justify-between gap-2 border-b border-line pb-1.5">
-      <dt className="text-[12px] text-ink-muted">
+      <dt className="text-sm text-ink-muted">
         {label}
         {hint && <span className="ml-1 text-ink-subtle">({hint})</span>}
       </dt>
-      <dd className="font-num tabular-nums text-[13px] text-ink">{value}</dd>
+      <dd className="font-num text-base text-ink">{value}</dd>
     </div>
   );
 }

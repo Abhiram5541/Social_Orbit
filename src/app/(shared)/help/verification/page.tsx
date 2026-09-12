@@ -66,16 +66,14 @@ export default async function VerificationHelpPage() {
             {STEPS.map((step, index) => (
               <li key={step.heading} className="flex gap-3 px-4 py-3">
                 <span
-                  className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-ink font-num text-[11px] font-semibold text-ink-inverse"
+                  className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-ink font-num text-xs font-semibold text-ink-inverse"
                   aria-hidden
                 >
                   {index + 1}
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-[14px] font-semibold text-ink">
-                    {step.heading}
-                  </span>
-                  <span className="block text-[13px] leading-6 text-ink-muted">{step.body}</span>
+                  <span className="block font-semibold text-ink">{step.heading}</span>
+                  <span className="block text-base leading-6 text-ink-muted">{step.body}</span>
                 </span>
               </li>
             ))}
@@ -89,7 +87,7 @@ export default async function VerificationHelpPage() {
               <CardTitle>The three statuses</CardTitle>
             </span>
           </CardHeader>
-          <CardContent className="space-y-3 text-[13px] leading-6 text-ink-muted">
+          <CardContent className="space-y-3 text-base leading-6 text-ink-muted">
             <p>
               <span className="font-semibold text-ink">SocialOrbit Verified</span> — an account
               is connected and the identity match passed. Authorized first-party metrics are
@@ -109,7 +107,7 @@ export default async function VerificationHelpPage() {
           </CardContent>
         </Card>
 
-        <p className="text-[13px] text-ink-muted">
+        <p className="text-base text-ink-muted">
           More on how the underlying numbers are produced in{" "}
           <Link href="/help" className="rounded font-medium text-brand-ink underline underline-offset-2">
             Help

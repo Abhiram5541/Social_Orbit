@@ -3,7 +3,6 @@ import type {
   Category,
   DataConfidence,
   Platform,
-  Provenance,
   VerificationStatus,
 } from "@/lib/contracts/common";
 import type {
@@ -431,45 +430,6 @@ function lookalikesFor(record: Assembled, now: Date): LookalikeCreator[] {
     .filter((item): item is LookalikeCreator => item !== null);
 }
 
-/* --- Provenance --------------------------------------------------------- */
-
-function observedProvenance(record: Assembled, confidence: number): Provenance {
-  const authorized = record.primary.isConnected;
-  return {
-    tier: authorized ? "oauth_authorized" : "platform_api",
-    kind: authorized ? "verified" : "observed",
-    collectedAt: record.primary.lastSyncedAt,
-    verifiedAt: authorized && record.raw.identityMatched ? record.primary.connectedAt : null,
-    sourceUrl: record.primary.url,
-    confidence,
-    ai: null,
-  };
-}
-
-function derivedProvenance(record: Assembled, confidence: number): Provenance {
-  return {
-    tier: "platform_api",
-    kind: "derived",
-    collectedAt: record.primary.lastSyncedAt,
-    verifiedAt: null,
-    sourceUrl: null,
-    confidence,
-    ai: null,
-  };
-}
-
-function estimatedProvenance(record: Assembled): Provenance {
-  return {
-    tier: "ai_inference",
-    kind: "estimated",
-    collectedAt: record.primary.lastSyncedAt,
-    verifiedAt: null,
-    sourceUrl: null,
-    confidence: 45,
-    ai: null,
-  };
-}
-
 function verificationOf(raw: RawInfluencer): VerificationStatus {
   if (raw.isConnected && raw.identityMatched) return "verified";
   if (raw.isConnected) return "pending";
@@ -748,7 +708,6 @@ export function toProfile(id: string, now: Date = new Date()): InfluencerProfile
   const rawAudience = data.audience.get(id) ?? null;
   const confidence = confidenceOf(record, Boolean(rawAudience), now);
 
-  const growthHistory = uploadHistoryFor(record);
   const primarySnapshots = record.snapshots.filter(
     (point) => point.accountId === record.primary.id,
   );

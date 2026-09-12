@@ -63,7 +63,7 @@ export function ChannelIngest({ disabled }: { disabled?: boolean }) {
     <Card>
       <CardHeader>
         <CardTitle>Ingest real channels — YouTube</CardTitle>
-        <span className="font-num text-[12px] text-ink-muted">spends API quota</span>
+        <span className="font-num text-sm text-ink-muted">spends API quota</span>
       </CardHeader>
       <CardContent className="space-y-4">
         <form onSubmit={submit} className="space-y-3">
@@ -91,8 +91,8 @@ export function ChannelIngest({ disabled }: { disabled?: boolean }) {
         </form>
 
         {disabled && (
-          <p className="text-[13px] text-ink-muted">
-            <code className="font-num text-[12px]">YOUTUBE_API_KEY</code> is not set.
+          <p className="text-base text-ink-muted">
+            <code className="font-num text-sm">YOUTUBE_API_KEY</code> is not set.
           </p>
         )}
 
@@ -118,8 +118,8 @@ export function ChannelIngest({ disabled }: { disabled?: boolean }) {
                     }`}
                     aria-hidden
                   />
-                  <span className="font-num text-[12px] text-ink-muted">{result.input}</span>
-                  <span className="min-w-0 flex-1 text-[13px] text-ink">
+                  <span className="font-num text-sm text-ink-muted">{result.input}</span>
+                  <span className="min-w-0 flex-1 text-base text-ink">
                     {result.influencerId ? (
                       <a
                         href={`/influencers/${result.influencerId}`}

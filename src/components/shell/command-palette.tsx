@@ -8,9 +8,11 @@ import { cn } from "@/lib/class-names";
 import { formatCompact } from "@/lib/format";
 import type { Permission } from "@/lib/contracts/auth";
 import type { InfluencerSummary } from "@/lib/contracts/influencer";
+import type { SearchQuota } from "@/lib/contracts/search";
 import { Avatar } from "@/components/ui/avatar";
 import { Spinner } from "@/components/ui/button";
 import { ScorePill } from "@/components/intelligence/score";
+import { QuotaMeter } from "@/components/intelligence/quota-meter";
 
 /* ---------------------------------------------------------------------------
  * Command palette.
@@ -43,10 +45,13 @@ export function CommandPalette({
   open,
   onClose,
   can,
+  quota,
 }: {
   open: boolean;
   onClose: () => void;
   can: (permission: Permission) => boolean;
+  /** Metered plans show the spend before the user commits to a full search. */
+  quota?: SearchQuota | null;
 }) {
   const router = useRouter();
   const ref = React.useRef<HTMLDialogElement>(null);
@@ -140,6 +145,13 @@ export function CommandPalette({
   }
 
   const activeKey = items[cursor]?.key;
+  // Stable option ids derived from row keys, for aria-activedescendant — the
+  // input keeps DOM focus while the announced highlight moves.
+  const optionId = (key: string) => `palette-opt-${key.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+  const metered =
+    quota != null && quota.limit !== null && quota.remaining !== null
+      ? { used: quota.used, limit: quota.limit }
+      : null;
 
   return (
     <dialog
@@ -152,10 +164,10 @@ export function CommandPalette({
       onClick={(event) => {
         if (event.target === ref.current) onClose();
       }}
-      className="mt-[8vh] w-[calc(100vw-2rem)] max-w-xl rounded-xl border border-line bg-surface p-0 text-ink shadow-overlay backdrop:bg-ink/40"
+      className="mt-[9vh] w-[calc(100vw-2rem)] max-w-2xl rounded-2xl bg-surface p-0 text-ink shadow-overlay"
     >
       <div onClick={(event) => event.stopPropagation()}>
-        <div className="flex items-center gap-2 border-b border-line px-3 transition-colors focus-within:border-brand">
+        <div className="flex items-center gap-2.5 border-b border-line px-4 transition-colors focus-within:border-brand">
           <Search className="size-4 shrink-0 text-ink-subtle" aria-hidden />
           <input
             ref={inputRef}
@@ -164,9 +176,13 @@ export function CommandPalette({
             onKeyDown={onKeyDown}
             placeholder="Search creators, or jump to a page…"
             aria-label="Search creators or jump to a page"
+            role="combobox"
+            aria-expanded={items.length > 0}
+            aria-autocomplete="list"
             aria-controls="palette-results"
+            aria-activedescendant={activeKey ? optionId(activeKey) : undefined}
             data-focus-custom
-            className="h-12 min-w-0 flex-1 bg-transparent text-[14px] outline-none placeholder:text-ink-subtle"
+            className="h-12 min-w-0 flex-1 bg-transparent outline-none placeholder:text-ink-subtle"
           />
           {loading && <Spinner className="text-ink-subtle" />}
         </div>
@@ -177,6 +193,7 @@ export function CommandPalette({
               {results.map((item) => (
                 <Row
                   key={item.id}
+                  id={optionId(`i:${item.id}`)}
                   active={activeKey === `i:${item.id}`}
                   onSelect={() => go(`/influencers/${item.id}`)}
                 >
@@ -185,8 +202,15 @@ export function CommandPalette({
                     <span className="font-medium text-ink">{item.displayName}</span>{" "}
                     <span className="text-ink-muted">@{item.primaryHandle}</span>
                   </span>
-                  <span className="shrink-0 font-num text-[12px] tabular-nums text-ink-muted">
+                  <span className="shrink-0 font-num text-sm text-ink-muted">
                     {formatCompact(item.followers)}
+                  </span>
+                  {/* Confidence beside the score, never folded into it. */}
+                  <span className="shrink-0 text-sm text-ink-subtle">
+                    <span className="font-num">{item.confidence}</span>
+                    <span className="label-caps-sm ml-0.5">
+                      <span className="sr-only">data </span>conf
+                    </span>
                   </span>
                   <ScorePill value={item.healthScore} label="Health" />
                 </Row>
@@ -199,12 +223,13 @@ export function CommandPalette({
               {commands.map((command) => (
                 <Row
                   key={command.id}
+                  id={optionId(`c:${command.id}`)}
                   active={activeKey === `c:${command.id}`}
                   onSelect={() => go(command.href)}
                 >
                   <span className="min-w-0 flex-1 truncate text-ink">{command.label}</span>
                   {command.hint && (
-                    <span className="shrink-0 text-[12px] text-ink-subtle">{command.hint}</span>
+                    <span className="shrink-0 text-sm text-ink-subtle">{command.hint}</span>
                   )}
                 </Row>
               ))}
@@ -212,7 +237,7 @@ export function CommandPalette({
           )}
 
           {items.length === 0 && (
-            <p className="px-3 py-8 text-center text-[13px] text-ink-muted">
+            <p className="px-3 py-8 text-center text-base text-ink-muted">
               {failed
                 ? "Search is unavailable right now. Try again in a moment."
                 : query.trim().length < 2
@@ -224,7 +249,7 @@ export function CommandPalette({
           )}
         </div>
 
-        <footer className="flex items-center gap-3 border-t border-line bg-sunken/50 px-3 py-2 text-[11px] text-ink-muted">
+        <footer className="flex flex-wrap items-center gap-3 border-t border-line bg-sunken/50 px-3 py-2 text-xs text-ink-muted">
           <Key>↑</Key>
           <Key>↓</Key>
           <span>navigate</span>
@@ -234,6 +259,17 @@ export function CommandPalette({
           <span>open</span>
           <Key>esc</Key>
           <span>close</span>
+          {/* The spend is stated before the user commits, not after the block —
+              Arch §3. Quick-search here is free; the full search page is not. */}
+          {metered && (
+            <span className="ml-auto flex items-center gap-2">
+              <span>
+                Full search spends <span className="font-num text-ink">1</span> of{" "}
+                <span className="font-num text-ink">{metered.limit}</span> this month
+              </span>
+              <QuotaMeter spent={metered.used} limit={metered.limit} />
+            </span>
+          )}
         </footer>
       </div>
     </dialog>
@@ -243,19 +279,19 @@ export function CommandPalette({
 function Group({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mb-1 last:mb-0">
-      <p className="px-2 py-1 text-[11px] font-medium uppercase tracking-[0.05em] text-ink-subtle">
-        {label}
-      </p>
+      <p className="label-caps px-2 py-1 text-ink-subtle">{label}</p>
       {children}
     </div>
   );
 }
 
 function Row({
+  id,
   active,
   onSelect,
   children,
 }: {
+  id: string;
   active: boolean;
   onSelect: () => void;
   children: React.ReactNode;
@@ -268,12 +304,13 @@ function Row({
   return (
     <button
       ref={ref}
+      id={id}
       type="button"
       role="option"
       aria-selected={active}
       onClick={onSelect}
       className={cn(
-        "flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors",
+        "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-base transition-colors",
         active ? "bg-brand-soft" : "hover:bg-sunken",
       )}
     >
@@ -284,7 +321,7 @@ function Row({
 
 function Key({ children }: { children: React.ReactNode }) {
   return (
-    <kbd className="inline-grid h-4 min-w-4 place-items-center rounded border border-line bg-surface px-1 font-num text-[10px] text-ink-muted">
+    <kbd className="inline-grid h-4 min-w-4 place-items-center rounded border border-line bg-surface px-1 font-num text-2xs text-ink-muted">
       {children}
     </kbd>
   );

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { requireOwnProfile } from "@/server/auth/creator";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Notice } from "@/components/ui/states";
 import { ProvenanceMix } from "@/components/intelligence/provenance";
 import { HealthPanel } from "@/components/profile/health-panel";
@@ -21,6 +21,7 @@ export default async function CreatorAnalyticsPage() {
   return (
     <>
       <PageHeader
+        eyebrow="Performance"
         title="Your analytics"
         description="Everything SocialOrbit holds about your account, including data only you and SocialOrbit reviewers can see."
       />
@@ -43,7 +44,14 @@ export default async function CreatorAnalyticsPage() {
         <ProfileTabs profile={profile} linkToProfiles={false} />
 
         <Card>
-          <CardContent>
+          <CardHeader>
+            <CardTitle>Where your record comes from</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-base text-ink-muted">
+              Every figure is tiered by how it was obtained — an authorised connection
+              outranks an official API read, which outranks anything a model inferred.
+            </p>
             <ProvenanceMix mix={profile.confidenceDetail.mix} />
           </CardContent>
         </Card>

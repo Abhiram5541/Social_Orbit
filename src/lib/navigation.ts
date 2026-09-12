@@ -51,27 +51,35 @@ export interface NavSection {
   items: NavItem[];
 }
 
+/* ---------------------------------------------------------------------------
+ * Information architecture.
+ *
+ * Grouped by what the user is trying to do, not by which backend module owns
+ * the route. The old grouping ("Workspace", "Data platform") named the
+ * implementation; a marketing director does not have a workspace task, they
+ * have a discovery task and an activation task.
+ *
+ * Technical operations sit at the bottom of every workspace, behind a section
+ * label that says so, so the daily path is the top of the rail.
+ * ------------------------------------------------------------------------ */
+
 const CLIENT_NAV: NavSection[] = [
   {
+    items: [{ href: "/dashboard", label: "Overview", icon: LayoutDashboard }],
+  },
+  {
+    label: "Discover",
     items: [
-      { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
       {
         href: "/discovery",
-        label: "Discovery",
+        label: "Creator search",
         icon: Search,
         permission: "influencer:search",
         matchNested: true,
       },
       // `/influencers` is deliberately absent. It is a shared route that sends
       // each role to their own list, and for a client that is `/discovery` —
-      // the item directly above. Keeping both put a nav entry on every page
-      // that bounced through a redirect to land where the previous one already
-      // goes.
-    ],
-  },
-  {
-    label: "Workspace",
-    items: [
+      // the item directly above.
       {
         href: "/shortlists",
         label: "Shortlists",
@@ -85,6 +93,11 @@ const CLIENT_NAV: NavSection[] = [
         icon: Scale,
         permission: "influencer:compare",
       },
+    ],
+  },
+  {
+    label: "Activate",
+    items: [
       {
         href: "/campaigns",
         label: "Campaigns",
@@ -94,7 +107,7 @@ const CLIENT_NAV: NavSection[] = [
       },
       {
         href: "/reports",
-        label: "Reports",
+        label: "Reporting",
         icon: FileText,
         permission: "report:read",
         matchNested: true,
@@ -104,7 +117,7 @@ const CLIENT_NAV: NavSection[] = [
   {
     label: "Account",
     items: [
-      { href: "/api-portal", label: "API", icon: Code2, permission: "api_key:read", matchNested: true },
+      { href: "/api-portal", label: "API access", icon: Code2, permission: "api_key:read", matchNested: true },
       { href: "/usage", label: "Usage & billing", icon: CreditCard, permission: "billing:read" },
       { href: "/settings", label: "Settings", icon: Settings, matchNested: true },
     ],
@@ -113,20 +126,16 @@ const CLIENT_NAV: NavSection[] = [
 
 const ADMIN_NAV: NavSection[] = [
   {
+    items: [{ href: "/admin", label: "Overview", icon: LayoutDashboard }],
+  },
+  {
+    label: "Discover",
     items: [
-      { href: "/admin", label: "Overview", icon: LayoutDashboard },
       {
         href: "/admin/influencers",
-        label: "Influencers",
+        label: "Creator database",
         icon: Users,
         permission: "influencer:read",
-        matchNested: true,
-      },
-      {
-        href: "/admin/verification",
-        label: "Verification",
-        icon: BadgeCheck,
-        permission: "verification:review",
         matchNested: true,
       },
     ],
@@ -148,7 +157,7 @@ const ADMIN_NAV: NavSection[] = [
       },
       {
         href: "/admin/anomalies",
-        label: "Anomaly queue",
+        label: "Anomalies",
         icon: Activity,
         permission: "analytics:anomaly_queue",
       },
@@ -162,8 +171,18 @@ const ADMIN_NAV: NavSection[] = [
     ],
   },
   {
-    label: "Data platform",
+    // Verification moves here from the top group: it is not a daily browsing
+    // destination, it is the trust apparatus — and it reads as what it is
+    // beside the connectors and the ingestion log that feed it.
+    label: "Trust & data",
     items: [
+      {
+        href: "/admin/verification",
+        label: "Verification",
+        icon: BadgeCheck,
+        permission: "verification:review",
+        matchNested: true,
+      },
       { href: "/admin/connectors", label: "Connectors", icon: Blocks, permission: "admin:connectors" },
       { href: "/admin/integrations", label: "Integrations", icon: Plug, permission: "admin:connectors" },
       { href: "/admin/ingestion", label: "Ingestion", icon: Database, permission: "admin:ingestion" },
@@ -184,11 +203,14 @@ const ADMIN_NAV: NavSection[] = [
 
 const INFLUENCER_NAV: NavSection[] = [
   {
+    items: [{ href: "/creator", label: "Overview", icon: LayoutDashboard }],
+  },
+  {
+    label: "My presence",
     items: [
-      { href: "/creator", label: "Overview", icon: LayoutDashboard },
       {
         href: "/creator/profile",
-        label: "My profile",
+        label: "Profile",
         icon: UserCircle,
         permission: "self:profile_read",
       },

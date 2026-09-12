@@ -10,7 +10,11 @@ export default async function SettingsPage() {
   const user = await requirePageSession("/creator/settings");
   return (
     <>
-      <PageHeader title="Settings" description="Your account, security and permissions." />
+      <PageHeader
+        eyebrow="Account"
+        title="Settings"
+        description="Your account, security and permissions."
+      />
       <PageBody>
         <SettingsPanels user={user} />
       </PageBody>

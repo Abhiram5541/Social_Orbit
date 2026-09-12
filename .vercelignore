@@ -1,0 +1,23 @@
+# Vercel falls back to .gitignore when this file is absent, and .gitignore
+# excludes /.data/ — which is correct for git and wrong for a deploy, because
+# the packed database is exactly what the deployment needs to carry.
+#
+# So this file exists to say: ignore the usual noise, but ship .data/*.gz.
+
+node_modules
+.next
+out
+build
+.git
+.env*.local
+test-results
+playwright-report
+.playwright-mcp
+docs
+e2e
+.agents
+.claude
+
+# The plain 41MB database. The packed copy beside it is what ships.
+.data/ingested.json
+.data/ingested.json.tmp
