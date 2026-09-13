@@ -160,13 +160,13 @@ export async function enrichCreators(
         continue;
       }
       // Keep what was already classified before rethrowing.
-      upsertAiOutputs(outputs);
+      await upsertAiOutputs(outputs);
       report.enriched += outputs.length;
       throw error;
     }
   }
 
-  upsertAiOutputs(outputs);
+  await upsertAiOutputs(outputs);
   report.enriched += outputs.length;
   return report;
 }

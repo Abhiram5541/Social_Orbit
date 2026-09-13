@@ -3,7 +3,8 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { SlidersHorizontal, SearchX, TriangleAlert } from "lucide-react";
+import { cn } from "@/lib/class-names";
+import { LayoutGrid, List, SlidersHorizontal, SearchX, TriangleAlert } from "lucide-react";
 import {
   CATEGORY_LABEL,
   PLATFORM_LABEL,
@@ -24,7 +25,7 @@ import {
 import type { InfluencerSummary } from "@/lib/contracts/influencer";
 import type { Paged } from "@/lib/contracts/common";
 import { formatCompact, pluralise } from "@/lib/format";
-import { Button, LinkButton } from "@/components/ui/button";
+import { Button, ButtonGroup, LinkButton, SegmentButton } from "@/components/ui/button";
 import { FilterChip } from "@/components/ui/badge";
 import { Panel } from "@/components/ui/panel";
 import { Popover } from "@/components/ui/overlay";
@@ -37,6 +38,16 @@ import { QuotaMeter } from "@/components/intelligence/quota-meter";
 import { CreatorPreview } from "./creator-preview";
 import { FilterPanel, type Draft } from "./filter-panel";
 import { ResultTable, SelectionBar } from "./result-table";
+import { ResultCards } from "./result-cards";
+
+/** The quick sorts, as the references draw them: a row of pills over the grid. */
+const QUICK_SORTS: { key: SortKey; label: string }[] = [
+  { key: "relevance", label: "Best match" },
+  { key: "health_score_desc", label: "Highest health" },
+  { key: "followers_desc", label: "Most followers" },
+  { key: "engagement_desc", label: "Most engaged" },
+  { key: "last_active_desc", label: "Recently active" },
+];
 
 /* ---------------------------------------------------------------------------
  * Discovery.
@@ -157,46 +168,23 @@ export function DiscoveryView({
   const activeFilters = countActiveFilters(query);
   // `lg`, matching the Tailwind breakpoint the rest of this view uses.
   const wideEnoughForDropdown = useMediaQuery("(min-width: 1024px)");
-  /*
-   * At `xl` the filters stop being a thing you open and become a thing you
-   * work in: a persistent rail showing every facet and its count. Discovery is
-   * an iterative task — widen the band, drop a market, re-read the count — and
-   * a popover that closes on every change turns one exploration into twenty
-   * round trips through a button.
-   */
-  const railFilters = useMediaQuery("(min-width: 1280px)");
+  // Filters live beside the search field at every width: a popover from `lg`
+  // up (nine groups in columns), a sheet below it. The persistent rail is gone
+  // — the results deserve the width, and the popover stays open while facets
+  // are toggled, so an exploration is still one pass rather than twenty.
   const chips = describeFilters(query);
 
   /* The intelligence preview. Everything it renders is already on the search
      result, so opening it costs no request. */
   const [previewId, setPreviewId] = React.useState<string | null>(null);
+  const [view, setView] = React.useState<"cards" | "table">("cards");
   const preview =
     previewId === null
       ? null
       : (data?.page.items.find((item) => item.id === previewId) ?? null);
 
   return (
-    <div className="flex min-h-0 flex-1">
-      {/* The working rail. Sticky under the topbar and scrolling on its own, so
-          the facet list stays reachable however far down the results the user
-          has read. */}
-      {railFilters && (
-        <aside
-          aria-label="Search filters"
-          className="sticky top-topbar hidden h-[calc(100dvh-var(--spacing-topbar))] w-68 shrink-0 flex-col overflow-y-auto border-r border-line bg-canvas xl:flex"
-        >
-          <FilterPanel
-            draft={draft}
-            facets={data?.facets ?? []}
-            onChange={(next) => {
-              setDraft(next);
-              apply(next);
-            }}
-            onReset={() => apply({ sort: query.sort })}
-          />
-        </aside>
-      )}
-
+    <div className="flex min-h-0 flex-1 gap-4 px-0 sm:px-1">
       {/* Below `lg` the filters open as a sheet: a dropdown holding nine filter
           groups is unusable on a phone. Only one of the two is ever mounted —
           hiding the other with a class would put a second copy of every
@@ -244,7 +232,7 @@ export function DiscoveryView({
       )}
 
       <div className="min-w-0 flex-1">
-        <div className="space-y-3 border-b border-line bg-surface px-4 py-3 sm:px-6">
+        <div className="space-y-3 rounded-xl bg-surface px-4 py-3 card-shadow">
           <form
             role="search"
             onSubmit={(event) => {
@@ -272,7 +260,7 @@ export function DiscoveryView({
             {quota.limit !== null && (
               <QuotaMeter spent={quota.used} limit={quota.limit} className="px-1" />
             )}
-            {railFilters ? null : wideEnoughForDropdown ? (
+            {wideEnoughForDropdown ? (
               <Popover
                 title="Filters"
                 className="w-[min(56rem,calc(100vw-1rem))]"
@@ -282,7 +270,7 @@ export function DiscoveryView({
                     <SlidersHorizontal className="size-4" aria-hidden />
                     Filters
                     {activeFilters > 0 && (
-                      <span className="rounded bg-brand px-1 font-num text-xs text-ink-inverse">
+                      <span className="rounded-full bg-brand px-1.5 font-num text-xs text-white">
                         {activeFilters}
                       </span>
                     )}
@@ -313,7 +301,7 @@ export function DiscoveryView({
                 <SlidersHorizontal className="size-4" aria-hidden />
                 Filters
                 {activeFilters > 0 && (
-                  <span className="rounded bg-brand px-1 font-num text-xs text-ink-inverse">
+                  <span className="rounded-full bg-brand px-1.5 font-num text-xs text-white">
                     {activeFilters}
                   </span>
                 )}
@@ -359,7 +347,7 @@ export function DiscoveryView({
           )}
         </div>
 
-        <div className="p-4">
+        <div className="pt-4">
           <Panel>
             {blocked ? (
               <EmptyState
@@ -405,21 +393,81 @@ export function DiscoveryView({
               />
             ) : (
               <>
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-2.5">
-                  <p className="text-base text-ink-muted">
-                    <span className="font-num text-ink">
-                      {formatCompact(data.page.total)}
-                    </span>{" "}
-                    {data.page.total === 1 ? "creator" : "creators"}
-                    {activeFilters > 0 && ` matching ${pluralise(activeFilters, "filter")}`}
-                  </p>
-                  {selected.size > 0 && (
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-rule px-4 py-3">
+                  <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                    {QUICK_SORTS.map((option) => {
+                      const active = query.sort === option.key;
+                      return (
+                        <button
+                          key={option.key}
+                          type="button"
+                          aria-pressed={active}
+                          onClick={() =>
+                            apply({ ...query, sort: option.key }, { resetPage: false })
+                          }
+                          className={cn(
+                            "press h-8 rounded-full px-3.5 text-sm font-semibold",
+                            active
+                              ? "bg-brand text-white shadow-brand"
+                              : "bg-sunken text-ink-muted hover:bg-sunken-strong hover:text-ink",
+                          )}
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="flex items-center gap-3">
                     <p className="text-sm text-ink-muted">
-                      {pluralise(selected.size, "creator")} selected for comparison
+                      <span className="font-num font-semibold text-ink">
+                        {formatCompact(data.page.total)}
+                      </span>{" "}
+                      {data.page.total === 1 ? "creator" : "creators"}
+                      {activeFilters > 0 && ` · ${pluralise(activeFilters, "filter")}`}
+                      {selected.size > 0 && ` · ${selected.size} selected`}
                     </p>
-                  )}
+                    <ButtonGroup aria-label="Result layout" className="hidden lg:inline-flex">
+                      <SegmentButton
+                        active={view === "cards"}
+                        onClick={() => setView("cards")}
+                        aria-label="Show as cards"
+                        className="h-7 px-2.5"
+                      >
+                        <LayoutGrid className="size-4" aria-hidden />
+                      </SegmentButton>
+                      <SegmentButton
+                        active={view === "table"}
+                        onClick={() => setView("table")}
+                        aria-label="Show as table"
+                        className="h-7 px-2.5"
+                      >
+                        <List className="size-4" aria-hidden />
+                      </SegmentButton>
+                    </ButtonGroup>
+                  </div>
                 </div>
 
+                {view === "cards" ? (
+                  <ResultCards
+                    items={data.page.items}
+                    onPreview={setPreviewId}
+                    previewId={previewId}
+                    selected={selected}
+                    onToggleSelect={(id) =>
+                      setSelected((previous) => {
+                        const next = new Set(previous);
+                        if (next.has(id)) next.delete(id);
+                        else next.add(id);
+                        return next;
+                      })
+                    }
+                    onShortlist={
+                      canShortlist
+                        ? (item) => router.push(`/shortlists?add=${item.id}`)
+                        : undefined
+                    }
+                  />
+                ) : (
                 <ResultTable
                   items={data.page.items}
                   sort={query.sort}
@@ -441,6 +489,7 @@ export function DiscoveryView({
                       : undefined
                   }
                 />
+                )}
 
                 <Pagination
                   page={data.page.page}

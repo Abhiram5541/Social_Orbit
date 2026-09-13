@@ -43,7 +43,7 @@ export function StatTile({
   return (
     <div className={cn("min-w-0 px-4 py-4", className)}>
       <div className="flex items-center gap-1">
-        <span className="label-caps-sm truncate text-ink-subtle">{label}</span>
+        <span className="truncate text-sm font-medium text-ink-subtle">{label}</span>
         {hint && <InfoHint label={`About ${label}`}>{hint}</InfoHint>}
         {provenance && <ProvenanceMark provenance={provenance} className="ml-auto" />}
       </div>
@@ -92,7 +92,7 @@ export function StatRow({
   return (
     <div
       className={cn(
-        "grid overflow-hidden rounded-xl border border-line bg-surface",
+        "grid overflow-hidden rounded-xl bg-surface card-shadow",
         // A one-metric strip must not be forced into two columns, and a
         // two-metric strip must not leave a third cell empty — both were
         // leaving a visible hole in the band.

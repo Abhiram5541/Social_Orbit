@@ -5,11 +5,19 @@ import { discoveryHomeFor } from "@/lib/navigation";
 import { requirePagePermission } from "@/server/auth/rbac";
 import { toProfile } from "@/server/repositories/influencer-repository";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
-import { Card, CardContent } from "@/components/ui/card";
-import { ProvenanceMix } from "@/components/intelligence/provenance";
-import { HealthPanel } from "@/components/profile/health-panel";
-import { ProfileHeader } from "@/components/profile/profile-header";
-import { ProfileTabs, ProvenanceFooter } from "@/components/profile/profile-tabs";
+import { CalendarDays } from "lucide-react";
+import { Freshness } from "@/components/intelligence/provenance";
+import {
+  ConfidenceCard,
+  EngagementSmallCard,
+  VersionsCard,
+  FollowersCard,
+  HealthGreenCard,
+  LookalikeTable,
+  ProfileChartCard,
+} from "@/components/profile/profile-bento";
+import { ProfileActions } from "@/components/profile/profile-actions";
+import { ProfileTabs } from "@/components/profile/profile-tabs";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +37,10 @@ export default async function InfluencerProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const user = await requirePagePermission("influencer:read", `/influencers/${id}`);
+  const user = await requirePagePermission(
+    "influencer:read",
+    `/influencers/${id}`,
+  );
 
   const profile = toProfile(id);
   if (!profile) notFound();
@@ -39,7 +50,8 @@ export default async function InfluencerProfilePage({
   // Authorized audience analytics are first-party creator data. Clients see the
   // public profile; the creator and SocialOrbit reviewers see the audience
   // breakdown (DPR §22). The route handler applies the identical rule.
-  const maySeeAudience = user.orgKind === "platform" || user.influencerId === id;
+  const maySeeAudience =
+    user.orgKind === "platform" || user.influencerId === id;
   const visible =
     maySeeAudience || !profile.audience.available
       ? profile
@@ -76,28 +88,52 @@ export default async function InfluencerProfilePage({
             : []),
           { label: profile.displayName },
         ]}
-        className="py-2.5"
+        className="pb-0 pt-2"
+      />
+
+      <PageHeader
+        title={
+          <>
+            {visible.displayName}{" "}
+            <span className="font-medium text-ink-subtle">
+              @{visible.primaryHandle}
+            </span>
+          </>
+        }
+        actions={
+          <>
+            <span className="inline-flex h-10 items-center gap-2 rounded-full bg-surface px-4 text-base font-medium text-ink">
+              <CalendarDays className="size-4 text-ink-muted" aria-hidden />
+              <Freshness at={visible.lastRefreshedAt} prefix="Refreshed" />
+            </span>
+            <ProfileActions profile={visible} />
+          </>
+        }
+        className="pt-1"
       />
 
       <PageBody className="space-y-4">
-        <ProfileHeader profile={visible} />
-
-        <HealthPanel
-          health={visible.health}
-          risk={visible.riskSignals}
-          confidence={visible.confidenceDetail}
-          ai={visible.ai}
-          benchmarks={visible.benchmarks}
-        />
+        {/* Nested stacks rather than grid spans: the same composition, and
+            nothing depends on a span class resolving in every engine. */}
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,2.95fr)_minmax(0,1.25fr)]">
+          <div className="min-w-0 space-y-4">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.9fr)]">
+              <div className="flex min-w-0 flex-col gap-4">
+                <HealthGreenCard profile={visible} />
+                <EngagementSmallCard profile={visible} />
+              </div>
+              <ProfileChartCard profile={visible} />
+            </div>
+            <LookalikeTable profile={visible} />
+          </div>
+          <div className="grid min-w-0 gap-4 md:grid-cols-3 xl:grid-cols-1">
+            <FollowersCard profile={visible} />
+            <ConfidenceCard profile={visible} />
+            <VersionsCard profile={visible} />
+          </div>
+        </div>
 
         <ProfileTabs profile={visible} />
-
-        <Card>
-          <CardContent className="space-y-3">
-            <ProvenanceMix mix={visible.confidenceDetail.mix} />
-            <ProvenanceFooter profile={visible} />
-          </CardContent>
-        </Card>
       </PageBody>
     </>
   );

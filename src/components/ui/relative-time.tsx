@@ -50,8 +50,13 @@ export function RelativeTime({
   const absolute = formatDateTime(at);
   const text = mounted ? formatRelativeTime(at) : absolute;
 
+  // The absolute form depends on the ICU build and the time zone, and the
+  // server's are not the browser's ("13 Sept 2026, 17:43" against "13 Sep
+  // 2026 at 17:43"). The text is replaced by the relative form on mount
+  // anyway, so the pre-hydration difference is suppressed rather than
+  // reconciled — reconciling it would re-render the whole subtree.
   return (
-    <time dateTime={at} title={absolute} className={className}>
+    <time dateTime={at} title={absolute} className={className} suppressHydrationWarning>
       {prefix ? `${prefix} ${text}` : text}
     </time>
   );

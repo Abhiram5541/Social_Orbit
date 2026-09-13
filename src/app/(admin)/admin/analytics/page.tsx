@@ -146,9 +146,9 @@ export default async function AnalyticsPage() {
           explanation={
             <>
               The distribution is dominated by the{" "}
-              <span className="text-ink">{modalHealth.label.toLowerCase()}</span> band —{" "}
-              <span className="font-num text-ink">{modalHealth.value}</span> of{" "}
-              <span className="font-num text-ink">{scored.length}</span> scored profiles.
+              <span className="font-semibold text-instrument-ink">{modalHealth.label.toLowerCase()}</span> band —{" "}
+              <span className="font-num font-semibold text-instrument-ink">{modalHealth.value}</span> of{" "}
+              <span className="font-num font-semibold text-instrument-ink">{scored.length}</span> scored profiles.
               Two of the nine health components — audience authenticity and growth pattern
               — cannot be measured without authorised access or accumulated snapshots, so
               the remaining weights are renormalised rather than counted as zero. That
@@ -158,8 +158,8 @@ export default async function AnalyticsPage() {
           }
           aside={
             <div>
-              <p className="label-caps-sm mb-2 text-ink-subtle">Health distribution</p>
-              <DistributionRows rows={healthRows} total={scored.length} showZero />
+              <p className="label-caps-sm mb-2 text-instrument-muted">Health distribution</p>
+              <DistributionRows onInstrument rows={healthRows} total={scored.length} showZero />
             </div>
           }
         />
@@ -247,7 +247,7 @@ export default async function AnalyticsPage() {
           </PanelFoot>
         </Panel>
 
-        <Split cols="even" className="overflow-hidden rounded-xl border border-line bg-surface">
+        <Split cols="even" className="overflow-hidden rounded-xl bg-surface card-shadow">
           <div className="min-w-0">
             <PanelHead>
               <PanelTitle as="h3">Confidence distribution</PanelTitle>
@@ -291,7 +291,7 @@ export default async function AnalyticsPage() {
           </div>
         </Split>
 
-        <Split cols="even" className="overflow-hidden rounded-xl border border-line bg-surface">
+        <Split cols="even" className="overflow-hidden rounded-xl bg-surface card-shadow">
           <div className="min-w-0">
             <PanelHead>
               <PanelTitle as="h3">Category coverage</PanelTitle>

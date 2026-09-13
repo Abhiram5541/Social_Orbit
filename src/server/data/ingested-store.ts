@@ -1,7 +1,16 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { gunzipSync } from "node:zlib";
-import { shared } from "./process-store";
+import {
+  applyWrites,
+  countInfluencersStored,
+  ensureSchema,
+  loadAll,
+  TABLES,
+  postgresDriver,
+  type WriteOp,
+} from "./postgres";
+import { replaceShared, shared } from "./process-store";
 import type {
   RawAccount,
   RawAiOutput,
@@ -91,6 +100,40 @@ function readStored(): { text: string; from: string } | null {
 }
 
 function load(): IngestedRecords {
+  if (postgresDriver()) {
+    // The database is loaded by `warmIngestedStore` before the first request.
+    // Reading the JSON file here instead would silently serve a stale copy of
+    // a different database, and then write on top of it.
+    console.warn("[data] ingested store read before warm-up; serving empty until it runs.");
+    return empty();
+  }
+  return loadFromDisk();
+}
+
+/**
+ * Loads the database into the process under the Postgres driver. Called once
+ * from `instrumentation.ts`, before the server accepts requests.
+ *
+ * A database with no creators and a JSON file beside it is a machine that ran
+ * the development driver until now: the file is imported once, so switching
+ * drivers loses nothing and needs no separate migration step.
+ */
+export async function warmIngestedStore(): Promise<void> {
+  if (!postgresDriver()) return;
+  await ensureSchema();
+
+  if ((await countInfluencersStored()) === 0 && readStored()) {
+    const fromDisk = loadFromDisk();
+    console.log(`[data] postgres is empty; importing ${fromDisk.influencers.length} creators from ${DATA_FILE}`);
+    await applyWrites(TABLES.map((table) => ({ table, upsert: fromDisk[table] })));
+  }
+
+  const records = await loadAll();
+  replaceShared("ingested", records);
+  console.log(`[data] loaded ${records.influencers.length} creators from postgres`);
+}
+
+function loadFromDisk(): IngestedRecords {
   const stored = readStored();
   if (!stored) return empty();
   try {
@@ -125,6 +168,7 @@ function load(): IngestedRecords {
  * losing the request is not.
  */
 function persist(records: IngestedRecords): void {
+  if (postgresDriver()) return;
   try {
     mkdirSync(dirname(DATA_FILE), { recursive: true });
     const temporary = `${DATA_FILE}.tmp`;
@@ -172,6 +216,29 @@ export function ingestedRecords(): IngestedRecords {
   return store();
 }
 
+/**
+ * Writes are applied to the database strictly in the order they were made to
+ * memory, or two mutations of the same creator could land reversed.
+ */
+let chain: Promise<void> = Promise.resolve();
+
+/**
+ * Records a mutation. Memory is already updated by the time this is called;
+ * the returned promise resolves once the database has it too. Under the
+ * development driver the whole file is rewritten and the promise is already
+ * settled.
+ */
+function commit(current: IngestedRecords, ops: WriteOp[]): Promise<void> {
+  current.revision += 1;
+  if (!postgresDriver()) {
+    persist(current);
+    return Promise.resolve();
+  }
+  const run = chain.then(() => applyWrites(ops));
+  chain = run.catch(() => undefined);
+  return run;
+}
+
 export function ingestedCount(): number {
   return store().influencers.length;
 }
@@ -198,8 +265,8 @@ export interface IngestedRecord {
  * 400-channel harvest doing that once per channel is quadratic over the whole
  * content table.
  */
-export function upsertIngested(records: IngestedRecord[]): void {
-  if (records.length === 0) return;
+export function upsertIngested(records: IngestedRecord[]): Promise<void> {
+  if (records.length === 0) return Promise.resolve();
   const current = store();
   const ids = new Set(records.map((record) => record.influencer.id));
 
@@ -226,8 +293,15 @@ export function upsertIngested(records: IngestedRecord[]): void {
     ...records.map((record) => record.snapshot),
   ];
 
-  current.revision += 1;
-  persist(current);
+  const owners = [...ids];
+  return commit(current, [
+    { table: "influencers", upsert: records.map((record) => record.influencer) },
+    { table: "accounts", deleteOwners: owners },
+    { table: "accounts", upsert: records.flatMap((record) => record.accounts) },
+    { table: "content", deleteOwners: owners },
+    { table: "content", upsert: records.flatMap((record) => record.content) },
+    { table: "snapshots", upsert: records.map((record) => record.snapshot) },
+  ]);
 }
 
 /**
@@ -239,13 +313,12 @@ export function upsertIngested(records: IngestedRecord[]): void {
  * classification, and re-running the model would cost tokens to learn the same
  * thing.
  */
-export function upsertAiOutputs(outputs: RawAiOutput[]): void {
-  if (outputs.length === 0) return;
+export function upsertAiOutputs(outputs: RawAiOutput[]): Promise<void> {
+  if (outputs.length === 0) return Promise.resolve();
   const current = store();
   const ids = new Set(outputs.map((output) => output.influencerId));
   current.ai = [...current.ai.filter((item) => !ids.has(item.influencerId)), ...outputs];
-  current.revision += 1;
-  persist(current);
+  return commit(current, [{ table: "ai", upsert: outputs }]);
 }
 
 /**
@@ -255,49 +328,46 @@ export function upsertAiOutputs(outputs: RawAiOutput[]): void {
  * is dead the moment the creator consents again, and keeping it around is a
  * live credential nobody can use and everybody could leak.
  */
-export function upsertGrant(grant: RawOAuthGrant): void {
+export function upsertGrant(grant: RawOAuthGrant): Promise<void> {
   const current = store();
   current.grants = [
     ...current.grants.filter((item) => item.accountId !== grant.accountId),
     grant,
   ];
-  current.revision += 1;
-  persist(current);
+  return commit(current, [{ table: "grants", upsert: [grant] }]);
 }
 
-export function removeGrant(accountId: string): void {
+export function removeGrant(accountId: string): Promise<void> {
   const current = store();
   current.grants = current.grants.filter((item) => item.accountId !== accountId);
-  current.revision += 1;
-  persist(current);
+  return commit(current, [{ table: "grants", deleteKeys: [accountId] }]);
 }
 
-/**
- * Persists an in-place edit to the stored records and invalidates read caches.
- *
- * For changes made by mutating a record the store already holds, where building
- * a whole replacement batch would be ceremony around a single field.
- */
 /**
  * Replaces one creator's stored upload history.
  *
  * Replaced rather than merged: a deeper read is a superset of a shallower one,
  * and merging would leave duplicates of every video read twice.
  */
-export function upsertViewHistory(influencerId: string, points: RawViewPoint[]): void {
+export function upsertViewHistory(influencerId: string, points: RawViewPoint[]): Promise<void> {
   const current = store();
   current.viewHistory = [
     ...current.viewHistory.filter((point) => point.influencerId !== influencerId),
     ...points,
   ];
-  current.revision += 1;
-  persist(current);
+  return commit(current, [
+    { table: "viewHistory", deleteOwners: [influencerId] },
+    { table: "viewHistory", upsert: points },
+  ]);
 }
 
-export function touchIngested(): void {
-  const current = store();
-  current.revision += 1;
-  persist(current);
+/**
+ * Persists accounts edited in place — a field flipped on a row the store
+ * already holds, where building a replacement record would be ceremony.
+ */
+export function upsertAccounts(accounts: RawAccount[]): Promise<void> {
+  if (accounts.length === 0) return Promise.resolve();
+  return commit(store(), [{ table: "accounts", upsert: accounts }]);
 }
 
 /**
@@ -307,16 +377,15 @@ export function touchIngested(): void {
  * `upsertIngested` carries exactly one snapshot per creator because an ingest
  * observes one moment. Backfilling a series needs to write many at once.
  */
-export function upsertSnapshots(points: RawSnapshot[]): void {
-  if (points.length === 0) return;
+export function upsertSnapshots(points: RawSnapshot[]): Promise<void> {
+  if (points.length === 0) return Promise.resolve();
   const current = store();
   const keys = new Set(points.map((point) => `${point.accountId}@${point.date}`));
   current.snapshots = [
     ...current.snapshots.filter((point) => !keys.has(`${point.accountId}@${point.date}`)),
     ...points,
   ];
-  current.revision += 1;
-  persist(current);
+  return commit(current, [{ table: "snapshots", upsert: points }]);
 }
 
 /**
@@ -330,7 +399,7 @@ export function upsertAudienceData(
   influencerId: string,
   signals: RawAudienceSignals | null,
   audience: RawAudience | null,
-): void {
+): Promise<void> {
   const current = store();
   current.signals = [
     ...current.signals.filter((item) => item.influencerId !== influencerId),
@@ -340,13 +409,17 @@ export function upsertAudienceData(
     ...current.audience.filter((item) => item.influencerId !== influencerId),
     ...(audience ? [audience] : []),
   ];
-  current.revision += 1;
-  persist(current);
+  return commit(current, [
+    { table: "signals", deleteOwners: [influencerId] },
+    { table: "signals", upsert: signals ? [signals] : [] },
+    { table: "audience", deleteOwners: [influencerId] },
+    { table: "audience", upsert: audience ? [audience] : [] },
+  ]);
 }
 
 /** Removes every record belonging to the given creators, across all tables. */
-export function removeInfluencers(ids: string[]): number {
-  if (ids.length === 0) return 0;
+export function removeInfluencers(ids: string[]): Promise<number> {
+  if (ids.length === 0) return Promise.resolve(0);
   const current = store();
   const set = new Set(ids);
   const before = current.influencers.length;
@@ -364,13 +437,15 @@ export function removeInfluencers(ids: string[]): number {
   current.grants = current.grants.filter((item) => !set.has(item.influencerId));
   current.snapshots = current.snapshots.filter((point) => !accountIds.has(point.accountId));
 
-  current.revision += 1;
-  persist(current);
-  return before - current.influencers.length;
+  const removed = before - current.influencers.length;
+  return commit(current, [
+    ...TABLES.filter((table) => table !== "snapshots").map((table) => ({ table, deleteOwners: ids })),
+    { table: "snapshots", deleteOwners: [...accountIds] },
+  ]).then(() => removed);
 }
 
 /** Test seam, and the operator's "start over". */
-export function clearIngested(): void {
+export function clearIngested(): Promise<void> {
   const current = store();
   current.influencers = [];
   current.accounts = [];
@@ -381,6 +456,5 @@ export function clearIngested(): void {
   current.grants = [];
   current.signals = [];
   current.audience = [];
-  current.revision += 1;
-  persist(current);
+  return commit(current, TABLES.map((table) => ({ table, truncate: true as const })));
 }

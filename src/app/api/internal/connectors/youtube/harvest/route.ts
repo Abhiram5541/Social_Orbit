@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { Category } from "@/lib/contracts/common";
 import { ApiFailure, handler, requirePermission } from "@/server/auth/rbac";
+import { PLANS } from "@/server/services/discovery-plan";
 import {
   HARVEST_CATEGORIES,
   backfillViewHistory,
@@ -9,9 +10,22 @@ import {
   refreshStored,
 } from "@/server/services/harvest-service";
 
+const DiscoveryQuery = z.object({
+  q: z.string().trim().min(2).max(120),
+  videoCategoryId: z.string().optional(),
+  regionCode: z.string().length(2).optional(),
+  relevanceLanguage: z.string().min(2).max(8).optional(),
+  order: z.enum(["viewCount", "relevance"]).optional(),
+  publishedAfter: z.string().datetime().optional(),
+});
+
 const Body = z.object({
   /** Omit to sweep every category. */
   categories: z.array(Category).optional(),
+  /** The caller's own searches instead of the category plan — 100 units each. */
+  queries: z.array(DiscoveryQuery).min(1).max(100).optional(),
+  /** A named plan from discovery-plan.ts; `offset`/`limit` pick a slice of it. */
+  plan: z.enum(["places", "top"]).optional(),
   target: z.number().int().min(1).max(1000).default(400),
   videos: z.number().int().min(5).max(50).default(50),
   /** Re-read channels already held instead of discovering new ones. */
@@ -63,12 +77,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const plan = parsed.data.plan ? PLANS[parsed.data.plan] : null;
+    const queries = plan
+      ? plan.slice(parsed.data.offset, parsed.data.offset + parsed.data.limit)
+      : parsed.data.queries;
+
     const report = await harvest({
       target: parsed.data.target,
       videosPerChannel: parsed.data.videos,
       categories: parsed.data.categories ?? HARVEST_CATEGORIES,
+      queries,
     });
 
-    return NextResponse.json(report);
+    return NextResponse.json({
+      ...report,
+      ...(plan ? { planRemaining: Math.max(0, plan.length - parsed.data.offset - parsed.data.limit) } : {}),
+    });
   });
 }

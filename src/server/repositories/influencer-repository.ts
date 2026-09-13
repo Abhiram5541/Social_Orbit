@@ -60,6 +60,7 @@ import {
 } from "@/server/data/records";
 import { FOLLOWER_BANDS, type FollowerBand } from "@/lib/contracts/search";
 import { FORMULA_VERSION } from "@/lib/contracts/score";
+import { placeMentions } from "@/server/analytics/place-mentions";
 import { costEfficiency, placementRate } from "@/server/analytics/pricing";
 import { lookalikes, type SimilarityCandidate } from "@/server/analytics/similarity";
 
@@ -634,6 +635,11 @@ export function toSummary(id: string, now: Date = new Date()): InfluencerSummary
     categories: categoriesFor(record.raw),
     countryCode: record.raw.countryCode,
     countryName: record.raw.countryName,
+    placeMentions: placeMentions({
+      channelText: `${record.raw.displayName} ${record.raw.bio}`,
+      contentText: record.content.map((item) => `${item.title} ${item.caption}`),
+      countryCode: record.raw.countryCode || null,
+    }),
     languages: record.raw.languages,
     activity: derived.activity,
     isDemo: record.raw.isDemo === true,
@@ -989,11 +995,27 @@ function buildSignalReading(
 
 /* --- Collection reads --------------------------------------------------- */
 
+/**
+ * Every published creator, scored. Memoised on the record revision and a
+ * one-minute clock bucket: the platform overview alone asks for this three
+ * times per request, and each pass scores the whole database (~2s in dev for
+ * 2.4K creators). The minute matters because staleness and activity are
+ * measured against `now`; a write invalidates it the way the cohort cache is.
+ */
+let summariesCache: { revision: number; minute: number; list: InfluencerSummary[] } | null = null;
+
 export function allSummaries(now: Date = new Date()): InfluencerSummary[] {
-  return readRecords()
+  const revision = ingestedRevision();
+  const minute = Math.floor(now.getTime() / 60_000);
+  if (summariesCache?.revision === revision && summariesCache.minute === minute) {
+    return summariesCache.list;
+  }
+  const list = readRecords()
     .influencers.filter((raw) => raw.status === "published")
     .map((raw) => toSummary(raw.id, now))
     .filter((summary): summary is InfluencerSummary => summary !== null);
+  summariesCache = { revision, minute, list };
+  return list;
 }
 
 export function countInfluencers(): number {

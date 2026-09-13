@@ -1,6 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import { Globe, Languages, Tag, TriangleAlert } from "lucide-react";
+import { Globe, Languages, MapPin, Tag, TriangleAlert } from "lucide-react";
 import {
   CATEGORY_LABEL,
   PLATFORM_LABEL,
@@ -86,6 +86,13 @@ export function ProfileHeader({
             {profile.countryName && (
               <Meta icon={Globe} label="Country">
                 {profile.countryName}
+              </Meta>
+            )}
+            {profile.placeMentions.length > 0 && (
+              // A place the creator's own text keeps naming — not a platform
+              // location field, which no public API exposes below country.
+              <Meta icon={MapPin} label="Mentions">
+                {profile.placeMentions.join(", ")}
               </Meta>
             )}
             {profile.languages.length > 0 && (

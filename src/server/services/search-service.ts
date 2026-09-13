@@ -80,6 +80,7 @@ function matchesText(item: InfluencerSummary, needle: string): boolean {
     item.displayName,
     item.primaryHandle,
     item.countryName ?? "",
+    ...item.placeMentions,
     ...item.categories.map((category) => CATEGORY_LABEL[category]),
     ...item.languages,
   ]

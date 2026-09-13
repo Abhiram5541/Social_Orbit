@@ -9,6 +9,29 @@ not mean a production database is attached yet.
 
 ---
 
+## Design system — re-skinned, 13 September 2026
+
+The graphite instrument housing was replaced by a soft, light, green direction
+(CLAUDE.md D31). Composition rules (D18, D19, D21) are unchanged; what changed is
+material, colour, type and shape.
+
+| Layer | Before | After |
+| --- | --- | --- |
+| Chrome | graphite rail, topbar and drawer | a rounded frame on a grey ground holding a white pill topbar (centred tab strip, round controls, avatar) and an icon-only rail; labelled drawer below `lg` |
+| Profile | header card + graphite health panel + tabs | the dashboard's composition: green score card, components/uploads column chart, similar-creators table, follower curve, confidence + source mix; tabs below |
+| Canvas | warm paper (#f6f4f1) | pale green-grey (#f2f5f3), white borderless cards with a whisper of shadow |
+| Accent | cobalt for intent, brass for measurement | one green (#17804a) for intent *and* measured growth; brass kept for the dial ticks and seal; verified stays blue |
+| Feature card | full-bleed graphite `Instrument` band | rounded deep-forest `Instrument` card inside the gutter, still one per screen |
+| Type | Space Grotesk + Instrument Sans | Plus Jakarta Sans (headings, numerals) + Inter (interface) |
+| Radius | 4 / 6 / 8 / 10 / 14 / 18px | 6 / 10 / 12 / 16 / 20 / 28px; buttons, tabs and chips are pills |
+| Metric strip | one strip, figures only | one card, figures with optional tinted icon coins |
+| Dashboard | stacked bands | reference bento: green score card, hatched column chart with toggle, roster table, area curve with actions, confidence + avatar stack; signals and campaigns below |
+| Discovery | table only | card grid with quick-sort pills by default, table one toggle away |
+| Charts | Recharts + sparklines | plus hand-rolled `Columns` / `AreaCurve` in `charts/bento.tsx` |
+| Marketing | graphite hero | inherited deep forest; not redesigned |
+
+Nothing about the data contract moved.
+
 ## Design system — replaced, 5 September 2026
 
 The frontend was redesigned at product level, not restyled. The thesis is recorded in
@@ -110,9 +133,9 @@ covered by the responsive suite.
 
 | Area | What exists | What is missing |
 | --- | --- | --- |
-| Persistence | Repository interfaces, a process-wide dev store, mutations that behave correctly | PostgreSQL driver, migrations, indexes |
+| Persistence | **PostgreSQL** holds the influencer database (`postgres.ts`, D29): loaded at boot, written through per mutation, JSON imported on first boot. Local via `docker compose` | Shortlists, campaigns, users, API keys and usage are still process memory; reads are still from the in-memory set, so a working set past ~10k creators needs query-backed reads |
 | Connectors — YouTube | **Live.** Real YouTube Data API v3 calls: channel resolution by id/@handle/URL, channel statistics, recent uploads with per-video statistics, YouTube's own topic categories. Zod-validated responses, quota- and credential-aware failures, an operator probe at `/admin/connectors` | OAuth round trip, so no `oauth_authorized` tier data (watch time, impressions, demographics) |
-| Ingestion — YouTube | **Live.** `/admin/ingestion` ingests real channels into the influencer database. They are searchable, comparable, shortlistable and scored through the same engines as the seeded fixtures, carrying observed statistics only | A scheduler: ingestion is an explicit operator action, since each channel spends shared daily quota. Snapshots accumulate only as often as someone re-ingests, so trend lines need repeat passes |
+| Ingestion — YouTube | **Live and scheduled.** `/admin/ingestion` ingests real channels; `daily-jobs.ts` (D30) re-reads every account daily for a snapshot and runs ten discovery searches from a rotating plan, in-process on a long-lived server or via the Vercel cron routes | Discovery is a fixed rotation, not adaptive; no lookalike/related-channel expansion yet |
 | Connectors — Instagram, TikTok | Adapter boundary, per-platform requirements, honest status reporting, degradation | The HTTP calls themselves; blocked on credentials |
 | AI enrichment | **Live.** OpenAI structured-output classification: category, creator type, commercial intent, brand safety and comment quality, the last judged from comments actually read from the platform. Every output stores provider, model, prompt and schema version, and its evidence. Operator control on `/admin/ai` | Gemini as the second opinion, and therefore the DPR UC-12 conflict queue, which has nothing to compare yet. No worker, so enrichment is a batched operator action |
 | Reports | Report types, provenance guarantees, generation UI | Async generation, PDF/CSV rendering, storage |

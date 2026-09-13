@@ -866,18 +866,18 @@ export function demoIds(): string[] {
   return BLUEPRINTS.map((blueprint) => `demo_${blueprint.key}`);
 }
 
-export function seedDemoCreators(now: Date = new Date()): DemoReport {
+export async function seedDemoCreators(now: Date = new Date()): Promise<DemoReport> {
   // Rebuilt from scratch each time, so a re-seed cannot leave a stale snapshot
   // series behind a shifted date window.
-  removeInfluencers(demoIds());
+  await removeInfluencers(demoIds());
 
   const built = BLUEPRINTS.map((blueprint) => build(blueprint, now));
 
-  upsertIngested(built.map((item) => item.record));
-  upsertSnapshots(built.flatMap((item) => item.snapshots));
-  upsertAiOutputs(built.map((item) => item.ai));
+  await upsertIngested(built.map((item) => item.record));
+  await upsertSnapshots(built.flatMap((item) => item.snapshots));
+  await upsertAiOutputs(built.map((item) => item.ai));
   for (const item of built) {
-    upsertAudienceData(item.id, item.signals, item.audience);
+    await upsertAudienceData(item.id, item.signals, item.audience);
   }
 
   return {
@@ -890,6 +890,6 @@ export function seedDemoCreators(now: Date = new Date()): DemoReport {
   };
 }
 
-export function removeDemoCreators(): number {
+export function removeDemoCreators(): Promise<number> {
   return removeInfluencers(demoIds());
 }

@@ -29,9 +29,12 @@ export default async function SystemHealthPage() {
     },
     {
       name: "PostgreSQL",
-      detail: "Canonical store for influencers, snapshots, scores and tenant data",
-      ok: Boolean(process.env.DATABASE_URL),
-      note: process.env.DATABASE_URL ? null : "running on the development data driver",
+      detail: "Durable store for the influencer database",
+      ok: process.env.SOCIALORBIT_DATA_DRIVER === "postgres",
+      note:
+        process.env.SOCIALORBIT_DATA_DRIVER === "postgres"
+          ? null
+          : "running on the development data driver — records live in .data/ingested.json",
     },
     {
       name: "Redis",

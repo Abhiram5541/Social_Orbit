@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/class-names";
 
 /* ---------------------------------------------------------------------------
@@ -23,57 +24,94 @@ export function Tooltip({
   className?: string;
 }) {
   const id = React.useId();
-  const [open, setOpen] = React.useState(false);
+  const anchor = React.useRef<HTMLSpanElement>(null);
+  const [rect, setRect] = React.useState<DOMRect | null>(null);
   const timer = React.useRef<number | undefined>(undefined);
 
   React.useEffect(() => () => window.clearTimeout(timer.current), []);
 
   // Hover waits ~250ms so the tip does not pop on every incidental pointer
   // pass; focus opens immediately — keyboard users asked for it deliberately.
+  function show() {
+    setRect(anchor.current?.getBoundingClientRect() ?? null);
+  }
   function openAfterDelay() {
     window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => setOpen(true), 250);
+    timer.current = window.setTimeout(show, 250);
   }
   function close() {
     window.clearTimeout(timer.current);
-    setOpen(false);
+    setRect(null);
   }
 
-  const position = {
-    top: "bottom-full left-1/2 -translate-x-1/2 mb-1.5",
-    bottom: "top-full left-1/2 -translate-x-1/2 mt-1.5",
-    left: "right-full top-1/2 -translate-y-1/2 mr-1.5",
-    right: "left-full top-1/2 -translate-y-1/2 ml-1.5",
+  // Closed on scroll rather than repositioned: the anchor moves, the tip
+  // would lag, and a hover tip has no business surviving a scroll anyway.
+  React.useEffect(() => {
+    if (!rect) return;
+    window.addEventListener("scroll", close, true);
+    return () => window.removeEventListener("scroll", close, true);
+  }, [rect]);
+
+  const open = rect !== null;
+  const gap = 6;
+  // Fixed coordinates from the anchor's viewport rect, rendered in a portal
+  // so no scrolling or clipping ancestor (the navigation rail, a table
+  // viewport) can cut the tip off.
+  const style: React.CSSProperties | undefined = rect
+    ? {
+        top: {
+          top: rect.top - gap,
+          bottom: rect.bottom + gap,
+          left: rect.top + rect.height / 2,
+          right: rect.top + rect.height / 2,
+        }[side],
+        left: {
+          top: rect.left + rect.width / 2,
+          bottom: rect.left + rect.width / 2,
+          left: rect.left - gap,
+          right: rect.right + gap,
+        }[side],
+      }
+    : undefined;
+  const translate = {
+    top: "-translate-x-1/2 -translate-y-full",
+    bottom: "-translate-x-1/2",
+    left: "-translate-x-full -translate-y-1/2",
+    right: "-translate-y-1/2",
   }[side];
 
   return (
     <span
+      ref={anchor}
       className={cn("relative inline-flex", className)}
       onPointerEnter={openAfterDelay}
       onPointerLeave={close}
       onFocusCapture={() => {
         window.clearTimeout(timer.current);
-        setOpen(true);
+        show();
       }}
       onBlurCapture={close}
     >
       {React.cloneElement(children, { "aria-describedby": open ? id : undefined })}
-      {open && (
-        <span
-          role="tooltip"
-          id={id}
-          className={cn(
-            "pointer-events-none absolute z-50 w-max max-w-64 rounded-md bg-ink px-2 py-1.5",
-            "text-sm text-ink-inverse shadow-popover",
-            // Arrives rather than pops — the Menu panel's entrance, opacity
-            // only because the positioning classes already own transform.
-            "opacity-100 transition-opacity duration-(--duration-fast) ease-(--ease-out-quick) starting:opacity-0",
-            position,
-          )}
-        >
-          {content}
-        </span>
-      )}
+      {open &&
+        createPortal(
+          <span
+            role="tooltip"
+            id={id}
+            style={style}
+            className={cn(
+              "pointer-events-none fixed z-50 w-max max-w-64 rounded-md bg-ink px-2 py-1.5",
+              "text-sm text-ink-inverse shadow-popover",
+              // Arrives rather than pops — opacity only, the transform is
+              // spent on positioning.
+              "opacity-100 transition-opacity duration-(--duration-fast) ease-(--ease-out-quick) starting:opacity-0",
+              translate,
+            )}
+          >
+            {content}
+          </span>,
+          document.body,
+        )}
     </span>
   );
 }
@@ -312,7 +350,7 @@ export function Popover({
           onOpenChange?.(open);
         }}
         className={cn(
-          "fixed m-0 flex flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-popover",
+          "fixed m-0 flex flex-col overflow-hidden rounded-xl bg-surface shadow-popover",
           "[&:not(:popover-open)]:hidden",
           className,
         )}

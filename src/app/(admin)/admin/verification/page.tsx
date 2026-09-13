@@ -97,8 +97,9 @@ export default async function Page() {
           }
           aside={
             <div>
-              <p className="label-caps-sm mb-2 text-ink-subtle">Identity states</p>
+              <p className="label-caps-sm mb-2 text-instrument-muted">Identity states</p>
               <CompositionBar
+                onInstrument
                 segments={[
                   { label: "Verified", value: verified, tone: "brand" },
                   { label: "Connected, awaiting match", value: connected, tone: "caution" },

@@ -13,8 +13,13 @@ directory holds what those connectors wrote and hands it to the repository layer
 | File | Role |
 | --- | --- |
 | `records.ts` | Raw record shapes, plus the read view the repositories consume |
-| `ingested-store.ts` | The store itself — real connector output, persisted to `.data/ingested.json` |
+| `ingested-store.ts` | The store itself — real connector output, held in memory and written through to the driver |
+| `postgres.ts` | The PostgreSQL driver: schema, load at boot, ordered write-through (CLAUDE.md D29) |
 | `process-store.ts` | Process-wide anchor for in-memory state (CLAUDE.md D7) |
+
+`SOCIALORBIT_DATA_DRIVER=development` persists to `.data/ingested.json`;
+`postgres` persists to `DATABASE_URL` (`docker compose up -d` for a local one). An empty
+Postgres imports the JSON file on first boot.
 
 ## What this is deliberately **not**
 
@@ -51,6 +56,9 @@ curl -X POST localhost:3000/api/internal/connectors/youtube/harvest \
 Run it a category at a time. `search.list` costs 100 quota units against a 10,000/day
 budget while every other endpoint costs 1, so discovery is the only expensive part — a
 category costs roughly 280 units and yields up to 40 creators.
+
+To sweep a place rather than a category, pass your own searches as `queries` (see
+`scripts/harvest-places.mjs`, which does this for Hyderabad, Bengaluru and Rajahmundry).
 
 ## What a harvested creator does and does not carry
 

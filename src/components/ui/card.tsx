@@ -1,8 +1,8 @@
 import * as React from "react";
 import { cn } from "@/lib/class-names";
 
-/* Depth is a 1px border and a tonal step, not a shadow. Shadows are reserved
-   for things that genuinely float above the page.
+/* A card is white, borderless and rounded; its edge is tonal against the
+   canvas, with a whisper of shadow so it sits on the ground.
 
    Card law, applied product-wide:
      · Rows tint on hover (hover:bg-sunken/70). Clickable cards lift
@@ -22,7 +22,7 @@ export function Card({
         // `min-width: auto` and its content can push it wider than its track,
         // which is how a dense table quietly widens the whole page. Wide
         // content is the scroll container's job, never the card's.
-        "min-w-0 rounded-xl border border-line bg-surface",
+        "min-w-0 rounded-xl bg-surface card-shadow",
         className,
       )}
       {...props}
@@ -37,7 +37,7 @@ export function CardHeader({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center justify-between gap-3 border-b border-rule px-4 py-2.5",
+        "flex flex-wrap items-center justify-between gap-3 border-b border-rule px-5 py-3.5",
         className,
       )}
       {...props}
@@ -66,7 +66,7 @@ export function CardContent({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("p-4", className)} {...props} />;
+  return <div className={cn("p-5", className)} {...props} />;
 }
 
 export function CardFooter({
@@ -76,7 +76,7 @@ export function CardFooter({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-3 border-t border-rule bg-sunken/50 px-4 py-2 text-sm text-ink-muted",
+        "flex flex-wrap items-center gap-3 border-t border-rule bg-sunken/60 px-5 py-2.5 text-sm text-ink-muted",
         className,
       )}
       {...props}
@@ -104,7 +104,7 @@ export function AiPanel({
   return (
     <div
       className={cn(
-        "rounded-lg border border-inferred-line bg-inferred-soft/60 p-4",
+        "rounded-lg bg-inferred-soft/70 p-4",
         className,
       )}
       {...props}

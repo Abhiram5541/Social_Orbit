@@ -131,7 +131,7 @@ export default function PricingPage() {
           ))}
         </div>
 
-        <div className="scroll-x mt-10 rounded-xl border border-line bg-surface">
+        <div className="scroll-x mt-10 rounded-xl bg-surface card-shadow">
           <table className="w-full min-w-max border-collapse text-base">
             <caption className="sr-only">Feature comparison across plans</caption>
             <colgroup>

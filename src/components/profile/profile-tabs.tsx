@@ -7,8 +7,6 @@ import type { Provenance } from "@/lib/contracts/common";
 import {
   formatCompact,
   formatCurrencyRange,
-  formatDuration,
-  formatFrequency,
   formatNumber,
   formatPercent,
   NO_VALUE,
@@ -19,10 +17,10 @@ import { BuildingHistory, EmptyState, Notice } from "@/components/ui/states";
 import { Tabs, TabPanel } from "@/components/ui/tabs";
 import { Table, TableWrap, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
 import { DataRow, StatRow, StatTile } from "@/components/intelligence/stat";
-import { Metric, MetricStrip } from "@/components/intelligence/signal";
-import { ProvenanceMark, TrackedValue } from "@/components/intelligence/provenance";
+import { ProvenanceMark } from "@/components/intelligence/provenance";
 import { BrandSafetyPanel, BrandSignalsPanel } from "@/components/profile/brand-safety-panel";
-import { LookalikePanel, CostEfficiencyPanel } from "@/components/profile/lookalike-panel";
+import { CostEfficiencyPanel } from "@/components/profile/lookalike-panel";
+import { AiCard, CadenceCard, ProvenanceCard, SignalsCard } from "@/components/profile/profile-bento";
 import { ScoreBar } from "@/components/intelligence/score";
 import { CategoryBars, TrendChart } from "@/components/charts/trend-chart";
 import { RelativeTime } from "@/components/ui/relative-time";
@@ -57,10 +55,13 @@ function windowLabel(gain: { days: number } | null): string {
 
 export function ProfileTabs({
   profile,
-  linkToProfiles = true,
 }: {
   profile: InfluencerProfile;
-  /** False in the creator portal, where other creators' profiles are barred. */
+  /**
+   * Accepted for the creator portal, which passes false. The overview no
+   * longer links to other creators — the lookalike table lives on the client
+   * profile page, which owns that decision.
+   */
   linkToProfiles?: boolean;
 }) {
   const [tab, setTab] = React.useState<string>("overview");
@@ -83,120 +84,15 @@ export function ProfileTabs({
       <Tabs items={[...TABS]} value={tab} onValueChange={setTab} label="Profile sections" />
 
       <TabPanel value="overview" active={tab === "overview"} className="space-y-4">
-        {/* One continuous instrument strip, and every figure on it can explain
-            itself: the click-through names the source tier, the collection
-            time, the method, the derivation and the field confidence. This is
-            the product's differentiator, so it is a first-class interaction
-            rather than a tooltip nobody on a touch device can reach. */}
-        <div className="-mx-4 border-y border-line bg-surface sm:-mx-6">
-          <MetricStrip>
-            <Metric
-              label="Followers"
-              tone="lead"
-              value={
-                <TrackedValue
-                  label="Followers"
-                  value={formatCompact(profile.glance.followers)}
-                  provenance={observed}
-                  valueClassName="text-metric font-medium"
-                />
-              }
-            />
-            <Metric
-              label="Total views"
-              value={
-                <TrackedValue
-                  label="Total views"
-                  value={formatCompact(profile.glance.totalViews)}
-                  provenance={observed}
-                  valueClassName="text-stat font-medium"
-                />
-              }
-            />
-            <Metric
-              label="Median views"
-              value={
-                <TrackedValue
-                  label="Median views"
-                  value={formatCompact(profile.glance.medianViews)}
-                  provenance={derived}
-                  derivation="Median of observed view counts across indexed content. Median rather than mean because view counts are heavily skewed by outliers."
-                  valueClassName="text-stat font-medium"
-                />
-              }
-            />
-            <Metric
-              label="Engagement"
-              value={
-                <TrackedValue
-                  label="Engagement rate"
-                  value={formatPercent(profile.glance.engagementRate)}
-                  provenance={derived}
-                  derivation={
-                    profile.primaryPlatform === "youtube"
-                      ? "Observed interactions ÷ observed views — the denominator YouTube reports. Posts that hide likes or disable comments contribute no interactions and are not counted as zero."
-                      : "Observed interactions ÷ followers. Reach is available only on creator-connected professional accounts."
-                  }
-                  valueClassName="text-stat font-medium"
-                />
-              }
-            />
-            <Metric
-              label="Content indexed"
-              value={
-                <TrackedValue
-                  label="Content indexed"
-                  value={formatCompact(profile.glance.contentCount)}
-                  provenance={observed}
-                  valueClassName="text-stat font-medium"
-                />
-              }
-            />
-            <Metric
-              label="Upload freq."
-              value={
-                <TrackedValue
-                  label="Upload frequency"
-                  value={formatFrequency(profile.glance.uploadFrequency)}
-                  provenance={derived}
-                  derivation="Publications per week across the indexed window."
-                  valueClassName="text-stat font-medium"
-                />
-              }
-            />
-            <Metric
-              label="Avg. length"
-              value={
-                <TrackedValue
-                  label="Average content length"
-                  value={formatDuration(profile.glance.averageContentLength)}
-                  provenance={observed}
-                  valueClassName="text-stat font-medium"
-                />
-              }
-            />
-            <Metric
-              label="Est. reach/mo"
-              value={
-                <TrackedValue
-                  label="Estimated monthly reach"
-                  value={formatCompact(profile.glance.estimatedMonthlyReach)}
-                  provenance={estimated}
-                  derivation="Modelled from median views and publishing cadence. An estimate, not a measurement — treat it as a range."
-                  valueClassName="text-stat font-medium"
-                />
-              }
-            />
-          </MetricStrip>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <CostEfficiencyPanel profile={profile} />
+          <CadenceCard profile={profile} />
+          <SignalsCard profile={profile} />
         </div>
 
-        <div className="grid items-start gap-4 lg:grid-cols-2">
-          <HistoryCard
-            title="Follower history"
-            series={profile.followerHistory}
-            valueKey="followers"
-            valueLabel="followers"
-          />
+        <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <AiCard profile={profile} />
+          <ProvenanceCard profile={profile} />
           <HistoryCard
             title="Total views"
             series={profile.followerHistory}
@@ -303,19 +199,6 @@ export function ProfileTabs({
         )}
 
         {profile.ai && <BrandSignalsPanel profile={profile} />}
-
-        <div className="grid items-start gap-4 lg:grid-cols-2">
-          <CostEfficiencyPanel profile={profile} />
-          <LookalikePanel profile={profile} linkToProfiles={linkToProfiles} />
-        </div>
-
-        {!profile.ai && (
-          <Notice tone="info" title="No AI enrichment for this creator yet">
-            Classification, brand-safety and comment-quality readings come from the AI layer,
-            which has not run for this profile. The measured figures above are unaffected —
-            AI explains scores here, it never produces them.
-          </Notice>
-        )}
       </TabPanel>
 
       <TabPanel value="growth" active={tab === "growth"} className="space-y-4">
@@ -784,7 +667,7 @@ function ListBlock({
 /** Rendered under the profile: the composition of what the reader just read. */
 export function ProvenanceFooter({ profile }: { profile: InfluencerProfile }) {
   return (
-    <dl className="grid gap-2 border-t border-line pt-3 text-sm text-ink-muted sm:grid-cols-2">
+    <dl className="grid gap-2 text-sm text-ink-muted sm:grid-cols-2">
       <DataRow label="Score version" value={profile.health.scoreVersion} />
       <DataRow label="Formula version" value={profile.health.formulaVersion} />
       <DataRow

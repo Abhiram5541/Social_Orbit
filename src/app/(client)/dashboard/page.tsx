@@ -1,22 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Search } from "lucide-react";
+import {
+  ArrowDownRight,
+  ArrowRight,
+  ArrowUpRight,
+  CalendarDays,
+  Search,
+  ShieldCheck,
+} from "lucide-react";
 import { CAMPAIGN_STATUS_LABEL } from "@/lib/contracts/campaign";
 import { healthBand } from "@/lib/contracts/score";
 import {
   formatCompact,
   formatDate,
   formatPercent,
-  formatRelativeTime,
   NO_VALUE,
   pluralise,
 } from "@/lib/format";
 import { requirePageSession } from "@/server/auth/rbac";
 import { countInfluencers } from "@/server/repositories/influencer-repository";
-import { quotaFor } from "@/server/repositories/usage-repository";
-import { listShortlists } from "@/server/repositories/workspace-repository";
 import { workspaceIntelligence } from "@/server/services/workspace-intelligence";
-import { PageBand, PageBody, PageHeader } from "@/components/shell/app-shell";
+import { PageBody, PageHeader } from "@/components/shell/app-shell";
 import { LinkButton } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -24,20 +28,23 @@ import {
   InstrumentLabel,
   Panel,
   PanelBody,
-  PanelFoot,
-  PanelHead,
-  PanelTitle,
   RowList,
-  Split,
 } from "@/components/ui/panel";
 import { Avatar } from "@/components/ui/avatar";
-import { CompositionBar, DistributionRows, type DistributionTone } from "@/components/charts/distribution-bars";
-import { ReachQualityPlot } from "@/components/charts/distribution";
+import { AreaCurve } from "@/components/charts/bento";
+import { ColumnsToggle } from "@/components/charts/columns-toggle";
 import { Greeting } from "@/components/intelligence/greeting";
-import { FeedFooterLink, Insight, InsightFeed } from "@/components/intelligence/insight";
-import { QuotaMeter } from "@/components/intelligence/quota-meter";
-import { ScorePill, ScoreRing } from "@/components/intelligence/score";
-import { Metric, MetricStrip } from "@/components/intelligence/signal";
+import {
+  FeedFooterLink,
+  Insight,
+  InsightFeed,
+} from "@/components/intelligence/insight";
+import { OrbitMark } from "@/components/shell/logo";
+import {
+  CardHead,
+  RoundLink,
+  SplitFigure,
+} from "@/components/intelligence/bento-card";
 
 export const metadata: Metadata = { title: "Overview" };
 
@@ -53,10 +60,8 @@ const BAND_READING: Record<
 
 export default async function DashboardPage() {
   const user = await requirePageSession("/dashboard");
-  const quota = quotaFor(user.orgId, user.plan);
   const { portfolio, campaigns, liveCampaigns, insights, shortlistCount } =
     workspaceIntelligence(user);
-  const shortlists = listShortlists(user);
   const indexed = countInfluencers();
 
   const reading =
@@ -64,172 +69,381 @@ export default async function DashboardPage() {
       ? null
       : BAND_READING[healthBand(portfolio.medianHealth)];
 
+  const ranked = [...portfolio.creators].sort(
+    (a, b) => (b.healthScore ?? -1) - (a.healthScore ?? -1),
+  );
+  // Cumulative audience as creators are added smallest-first: the shape says
+  // how concentrated the roster's reach is. Not a time series, and labelled
+  // as such — the database holds too few snapshot days to draw one honestly.
+  const reachCurve = [...portfolio.creators]
+    .map((creator) => creator.followers ?? 0)
+    .sort((a, b) => a - b)
+    .reduce<number[]>(
+      (acc, value) => [...acc, (acc[acc.length - 1] ?? 0) + value],
+      [0],
+    );
+  const scored = portfolio.creators.filter(
+    (creator) => creator.healthScore !== null,
+  ).length;
+
   return (
     <>
       <PageHeader
-        eyebrow={user.orgName}
         title={<Greeting name={user.name} />}
-        description={
-          portfolio.tracked > 0
-            ? `Creator intelligence across ${pluralise(portfolio.tracked, "tracked creator")}, ${pluralise(liveCampaigns.length, "live campaign")} and ${pluralise(shortlistCount, "shortlist")}.`
-            : "Your creator intelligence workspace. Nothing is tracked yet."
-        }
         actions={
-          <LinkButton href="/discovery" variant="primary" className="gap-2">
-            <Search className="size-4" aria-hidden />
-            Discover creators
-          </LinkButton>
+          <>
+            <span className="inline-flex h-10 items-center gap-2 rounded-full bg-surface px-4 text-base font-medium text-ink">
+              <CalendarDays className="size-4 text-ink-muted" aria-hidden />
+              {formatDate(new Date().toISOString())}
+            </span>
+            <LinkButton
+              href="/discovery"
+              variant="secondary"
+              className="gap-2 border-0 bg-surface"
+            >
+              <Search className="size-4" aria-hidden />
+              Discover creators
+            </LinkButton>
+          </>
         }
+        className="pt-4"
       />
 
       {portfolio.tracked === 0 ? (
         <FirstRun indexed={indexed} />
       ) : (
         <>
-          {/* The screen's one loud moment: the roster's median health, read
-              off the instrument rather than printed on the page. Everything
-              below it is quiet by comparison, which is the only way a reader
-              can tell what this screen is for in one glance. */}
-          <Instrument className="py-7">
-            <div className="grid items-center gap-x-10 gap-y-8 lg:grid-cols-[auto_minmax(0,1fr)_minmax(0,22rem)]">
-              <div className="flex items-center gap-6">
-                <ScoreRing
-                  value={portfolio.medianHealth}
-                  size={132}
-                  tone="instrument"
-                  label="Median SocialOrbit Health across your roster"
-                />
-                <div className="min-w-0">
-                  <InstrumentLabel>Roster health</InstrumentLabel>
-                  <p className="mt-1.5 font-display text-lg font-bold text-instrument-ink">
-                    {reading?.label ?? "Not yet measurable"}
-                  </p>
-                  <p className="mt-0.5 text-sm text-instrument-muted">
-                    Median SocialOrbit Health
-                  </p>
+          <PageBody className="space-y-4">
+            {/* Nested stacks rather than grid spans: the same composition, and
+              nothing depends on a span class resolving in every engine. */}
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,2.95fr)_minmax(0,1.25fr)]">
+              <div className="min-w-0 space-y-4">
+                <div className="grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.9fr)]">
+                  {/* Left: the score, printed on a green card. ---------------- */}
+                  <div className="flex min-w-0 flex-col gap-4">
+                    <Panel>
+                      <CardHead
+                        title="Roster health"
+                        subtitle="Median SocialOrbit Health"
+                        href="/shortlists"
+                      />
+                      <PanelBody className="pt-0">
+                        <div className="relative overflow-hidden rounded-xl bg-brand p-5 text-white">
+                          <span
+                            aria-hidden
+                            className="pointer-events-none absolute -right-10 -top-16 size-44 rounded-full bg-white/10"
+                          />
+                          <div className="flex items-center justify-between">
+                            <span className="flex items-center gap-2">
+                              <OrbitMark className="size-6 [&_rect]:fill-white/20" />
+                              <span className="font-display text-base font-bold">
+                                SocialOrbit
+                              </span>
+                            </span>
+                            <span className="rounded-full bg-white/15 px-2.5 py-1 label-caps-sm text-white">
+                              {reading?.label ?? "Unscored"}
+                            </span>
+                          </div>
+                          <p className="mt-6 text-xs font-medium text-white/70">
+                            Health
+                          </p>
+                          <p className="mt-1 flex items-baseline gap-1.5">
+                            <span className="font-num text-hero font-bold leading-none tracking-tight">
+                              {portfolio.medianHealth === null
+                                ? NO_VALUE
+                                : Math.round(portfolio.medianHealth)}
+                            </span>
+                            <span className="font-num text-lg font-semibold text-white/70">
+                              /100
+                            </span>
+                          </p>
+                          <div className="mt-6 flex items-center justify-between text-xs font-medium text-white/75">
+                            <span className="font-num tracking-widest">
+                              •••• median of {portfolio.tracked}
+                            </span>
+                            <span>{pluralise(scored, "scored")}</span>
+                          </div>
+                        </div>
+                      </PanelBody>
+                    </Panel>
+
+                    <Panel>
+                      <PanelBody className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm text-ink-muted">
+                            Median engagement
+                          </p>
+                          <p className="mt-1 font-num text-stat-lg font-bold leading-none text-ink">
+                            {formatPercent(portfolio.medianEngagement)}
+                          </p>
+                        </div>
+                        <Badge tone="positive">observed</Badge>
+                      </PanelBody>
+                    </Panel>
+                  </div>
+
+                  {/* Middle: the column chart with its toggle. ---------------- */}
+                  <Panel className="flex min-w-0 flex-col">
+                    <CardHead
+                      title="Health by creator"
+                      subtitle="Stored scores, highest first"
+                      icon={ShieldCheck}
+                    />
+                    <PanelBody className="flex-1 pt-0">
+                      <ColumnsToggle
+                        height={250}
+                        options={[
+                          {
+                            label: "Health",
+                            items: ranked.slice(0, 8).map((creator, index) => ({
+                              id: creator.id,
+                              label: creator.displayName.split(" ")[0],
+                              value: creator.healthScore,
+                              highlight: index === 0,
+                              href: `/influencers/${creator.id}`,
+                            })),
+                          },
+                          {
+                            label: "Confidence",
+                            items: ranked.slice(0, 8).map((creator, index) => ({
+                              id: creator.id,
+                              label: creator.displayName.split(" ")[0],
+                              value: creator.confidence,
+                              highlight: index === 0,
+                              href: `/influencers/${creator.id}`,
+                            })),
+                          },
+                        ]}
+                      />
+                    </PanelBody>
+                  </Panel>
                 </div>
+
+                {/* Bottom of the main block: the roster table. -------------- */}
+                <Panel className="min-w-0">
+                  <CardHead
+                    title="Roster"
+                    subtitle="Tracked creators, ranked by health"
+                    href="/shortlists"
+                  />
+                  <div className="scroll-x px-3 pb-3">
+                    <table className="w-full min-w-[36rem] border-separate border-spacing-0 text-base">
+                      <thead>
+                        <tr className="text-left text-xs font-medium text-ink-subtle">
+                          <th scope="col" className="px-3 pb-2 font-medium">
+                            Creator
+                          </th>
+                          <th scope="col" className="px-3 pb-2 font-medium">
+                            Followers
+                          </th>
+                          <th scope="col" className="px-3 pb-2 font-medium">
+                            Engagement
+                          </th>
+                          <th scope="col" className="px-3 pb-2 font-medium">
+                            Status
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 pb-2 text-right font-medium"
+                          >
+                            Health
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {ranked.slice(0, 6).map((creator) => {
+                          const band =
+                            creator.healthScore === null
+                              ? null
+                              : healthBand(creator.healthScore);
+                          return (
+                            <tr
+                              key={creator.id}
+                              className="group [&>td]:py-2.5 even:[&>td]:bg-sunken/70 [&>td:first-child]:rounded-l-lg [&>td:last-child]:rounded-r-lg"
+                            >
+                              <td className="px-3">
+                                <Link
+                                  href={`/influencers/${creator.id}`}
+                                  className="flex items-center gap-3 rounded-md"
+                                >
+                                  <Avatar
+                                    name={creator.displayName}
+                                    src={creator.avatarUrl}
+                                    size="sm"
+                                  />
+                                  <span className="min-w-0">
+                                    <span className="block truncate font-semibold text-ink group-hover:text-brand-ink">
+                                      {creator.displayName}
+                                    </span>
+                                    <span className="block truncate text-xs text-ink-subtle">
+                                      @{creator.primaryHandle}
+                                    </span>
+                                  </span>
+                                </Link>
+                              </td>
+                              <td className="px-3 font-num text-ink">
+                                {formatCompact(creator.followers)}
+                              </td>
+                              <td className="px-3 font-num text-ink">
+                                {formatPercent(creator.engagementRate)}
+                              </td>
+                              <td className="px-3">
+                                {band ? (
+                                  <Badge tone={BAND_READING[band].tone} dot>
+                                    {BAND_READING[band].label}
+                                  </Badge>
+                                ) : (
+                                  <Badge>Not scored</Badge>
+                                )}
+                              </td>
+                              <td className="px-3 text-right font-num font-bold text-ink">
+                                {creator.healthScore === null
+                                  ? NO_VALUE
+                                  : Math.round(creator.healthScore)}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </Panel>
               </div>
 
-              <p className="measure max-w-md text-base leading-relaxed text-instrument-muted">
-                Half the creators you track score above{" "}
-                <span className="font-num font-medium text-instrument-ink">
-                  {portfolio.medianHealth === null
-                    ? NO_VALUE
-                    : Math.round(portfolio.medianHealth)}
-                </span>
-                .{" "}
-                {portfolio.flagged > 0
-                  ? `${portfolio.flagged} of them carry a measured audience-risk signal, and risk does not average — a single disqualifying signal sets the floor.`
-                  : portfolio.risk.unknown === portfolio.tracked
-                    ? "No audience-quality signal was measurable for any of them: that needs authorised access, and is reported as unknown rather than as low risk."
-                    : "No creator on the roster carries a medium or high audience-risk signal."}
-              </p>
+              {/* Right: audience, confidence, shortlists. -------------------- */}
+              <div className="grid min-w-0 gap-4 md:grid-cols-3 xl:grid-cols-1">
+                <Panel>
+                  <CardHead
+                    title="Combined audience"
+                    subtitle="Sum of observed followers"
+                    href="/discovery"
+                  />
+                  <PanelBody className="pt-0 text-center">
+                    <p className="text-xs text-ink-subtle">Total audience</p>
+                    <SplitFigure
+                      value={formatCompact(portfolio.totalReach)}
+                      className="mt-1"
+                    />
+                    <AreaCurve
+                      values={reachCurve}
+                      height={120}
+                      className="mt-4"
+                      ariaLabel="Cumulative audience across the roster, smallest creator first"
+                    />
+                    <p className="mt-1 text-2xs text-ink-subtle">
+                      Cumulative, smallest creator first
+                    </p>
+                    <div className="mt-4 flex gap-2">
+                      <LinkButton
+                        href="/discovery"
+                        variant="primary"
+                        size="sm"
+                        className="flex-1 gap-1.5"
+                      >
+                        Discover
+                        <ArrowUpRight className="size-3.5" aria-hidden />
+                      </LinkButton>
+                      <LinkButton
+                        href="/compare"
+                        variant="secondary"
+                        size="sm"
+                        className="flex-1 gap-1.5 border-0 bg-sunken"
+                      >
+                        Compare
+                        <ArrowDownRight className="size-3.5" aria-hidden />
+                      </LinkButton>
+                    </div>
+                  </PanelBody>
+                </Panel>
 
-              <div className="min-w-0 space-y-5 lg:border-l lg:border-instrument-line lg:pl-10">
-                <div>
-                  <InstrumentLabel className="mb-2.5">Health distribution</InstrumentLabel>
-                  <DistributionRows
-                    onInstrument
-                    rows={portfolio.healthBands.map((band) => ({
-                      label: band.label,
-                      sublabel: band.range,
-                      value: band.count,
-                      tone: band.tone as DistributionTone,
-                    }))}
-                    total={portfolio.tracked}
+                <Panel>
+                  <CardHead
+                    title="Data confidence"
+                    subtitle="Median across the roster"
+                    icon={ShieldCheck}
                   />
-                </div>
-                <div>
-                  <InstrumentLabel className="mb-2.5">Audience risk</InstrumentLabel>
-                  <CompositionBar
-                    onInstrument
-                    segments={[
-                      { label: "Low", value: portfolio.risk.low, tone: "positive" },
-                      { label: "Medium", value: portfolio.risk.medium, tone: "caution" },
-                      { label: "High", value: portfolio.risk.high, tone: "critical" },
-                      {
-                        label: "Not measurable",
-                        value: portfolio.risk.unknown,
-                        tone: "neutral",
-                      },
-                    ]}
-                  />
-                </div>
+                  <PanelBody className="pt-0">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <SplitFigure
+                        value={
+                          portfolio.medianConfidence === null
+                            ? NO_VALUE
+                            : `${Math.round(portfolio.medianConfidence)}%`
+                        }
+                      />
+                      <Badge
+                        tone={
+                          portfolio.preliminary > 0 ? "caution" : "positive"
+                        }
+                      >
+                        {portfolio.preliminary > 0
+                          ? `${portfolio.preliminary} preliminary`
+                          : "all scored"}
+                      </Badge>
+                    </div>
+                    <div className="mt-5 rounded-lg bg-sunken p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-base font-semibold text-ink">
+                            Shortlists
+                          </p>
+                          <p className="text-xs text-ink-subtle">
+                            {pluralise(shortlistCount, "list")} ·{" "}
+                            {pluralise(portfolio.tracked, "creator")}
+                          </p>
+                        </div>
+                        <RoundLink href="/shortlists" label="Open shortlists" />
+                      </div>
+                      <div className="mt-3 flex items-center">
+                        <div className="flex -space-x-2.5">
+                          {ranked.slice(0, 4).map((creator) => (
+                            <Avatar
+                              key={creator.id}
+                              name={creator.displayName}
+                              src={creator.avatarUrl}
+                              size="md"
+                              className="[&_img]:ring-2 [&_img]:ring-sunken [&_span]:ring-2 [&_span]:ring-sunken"
+                            />
+                          ))}
+                        </div>
+                        {portfolio.tracked > 4 && (
+                          <span className="-ml-2.5 grid size-10 place-items-center rounded-full bg-brand font-num text-sm font-bold text-white ring-2 ring-sunken">
+                            +{portfolio.tracked - 4}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </PanelBody>
+                </Panel>
               </div>
             </div>
-          </Instrument>
 
-          <PageBand inset={false}>
-            <MetricStrip>
-              <Metric
-                label="Tracked creators"
-                value={formatCompact(portfolio.tracked)}
-                tone="lead"
-                footnote={`across ${pluralise(shortlistCount, "shortlist")}`}
-              />
-              <Metric
-                label="Combined audience"
-                value={formatCompact(portfolio.totalReach)}
-                footnote="sum of observed followers"
-              />
-              <Metric
-                label="Median engagement"
-                value={formatPercent(portfolio.medianEngagement)}
-                footnote="observed, per creator"
-              />
-              <Metric
-                label="Data confidence"
-                value={
-                  portfolio.medianConfidence === null
-                    ? NO_VALUE
-                    : `${Math.round(portfolio.medianConfidence)}%`
-                }
-                footnote={
-                  portfolio.preliminary > 0
-                    ? `${portfolio.preliminary} preliminary`
-                    : "median across roster"
-                }
-              />
-              <Metric
-                label="Identity verified"
-                value={`${portfolio.verified}/${portfolio.tracked}`}
-                tone={portfolio.verified === 0 ? "muted" : "default"}
-                footnote="OAuth-confirmed"
-              />
-              <Metric
-                label="Live campaigns"
-                value={formatCompact(liveCampaigns.length)}
-                footnote={
-                  campaigns.length > 0 ? `${campaigns.length} total` : "none created yet"
-                }
-              />
-            </MetricStrip>
-          </PageBand>
-
-          <PageBody className="space-y-5">
-            <Split cols="lead" className="overflow-hidden rounded-xl border border-line bg-surface">
-              <div className="min-w-0">
-                <PanelHead>
-                  <PanelTitle>What&apos;s happening</PanelTitle>
-                  <span className="text-sm text-ink-muted">
-                    {insights.length > 0
+            {/* Second screen: the signals and the campaigns. ------------ */}
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,2.95fr)_minmax(0,1.25fr)]">
+              <Panel className="min-w-0">
+                <CardHead
+                  title="What's happening"
+                  subtitle={
+                    insights.length > 0
                       ? `${pluralise(insights.length, "signal")} across your roster`
-                      : "No signals firing"}
-                  </span>
-                </PanelHead>
+                      : "No signals firing"
+                  }
+                />
                 {insights.length === 0 ? (
-                  <PanelBody>
-                    <p className="text-base font-medium text-ink">Nothing needs a decision</p>
+                  <PanelBody className="pt-0">
+                    <p className="text-base font-medium text-ink">
+                      Nothing needs a decision
+                    </p>
                     <p className="mt-1 max-w-md text-sm text-ink-muted">
-                      SocialOrbit is watching this roster for risk signals, health
-                      falling below review threshold, dormancy, thin confidence and
-                      stale observations. None are firing.
+                      SocialOrbit is watching this roster for risk signals,
+                      health falling below review threshold, dormancy, thin
+                      confidence and stale observations. None are firing.
                     </p>
                   </PanelBody>
                 ) : (
                   <>
                     <InsightFeed>
-                      {insights.slice(0, 6).map((insight) => (
+                      {insights.slice(0, 5).map((insight) => (
                         <Insight
                           key={insight.id}
                           kind={insight.kind}
@@ -240,279 +454,107 @@ export default async function DashboardPage() {
                         />
                       ))}
                     </InsightFeed>
-                    {insights.length > 6 && (
+                    {insights.length > 5 && (
                       <FeedFooterLink href="/shortlists">
-                        {insights.length - 6} more across your shortlists
+                        {insights.length - 5} more across your shortlists
                       </FeedFooterLink>
                     )}
                   </>
                 )}
-              </div>
+              </Panel>
 
-              <div className="flex min-w-0 flex-col">
-                <PanelHead>
-                  <PanelTitle as="h3">Roster</PanelTitle>
-                  <Link
-                    href="/shortlists"
-                    className="rounded text-sm font-medium text-brand-ink hover:underline"
-                  >
-                    All shortlists
-                  </Link>
-                </PanelHead>
-                {shortlists.length === 0 ? (
-                  <PanelBody>
-                    <p className="text-sm text-ink-muted">
-                      Save creators from discovery to build a roster.
-                    </p>
+              <Panel className="min-w-0">
+                <CardHead
+                  title="Campaigns"
+                  subtitle={
+                    campaigns.length > 0
+                      ? `${pluralise(liveCampaigns.length, "live")} · ${campaigns.length} total`
+                      : "None created yet"
+                  }
+                  href="/campaigns"
+                />
+                {campaigns.length === 0 ? (
+                  <PanelBody className="pt-0">
+                    <div className="flex flex-col items-start gap-3">
+                      <Pipeline />
+                      <p className="text-sm text-ink-muted">
+                        Create a campaign to select creators, set a tracking
+                        hashtag, and measure what each of them delivered.
+                      </p>
+                      <LinkButton
+                        href="/campaigns/new"
+                        variant="primary"
+                        size="sm"
+                      >
+                        Create campaign
+                      </LinkButton>
+                    </div>
                   </PanelBody>
                 ) : (
-                  // Capped: the roster column sets the height of the split,
-                  // and an unbounded list of shortlists left the feed beside
-                  // it standing in a void. The head links to the full set.
-                  <RowList>
-                    {shortlists.slice(0, 5).map((shortlist) => (
-                      <li key={shortlist.id}>
-                        <Link
-                          href={`/shortlists/${shortlist.id}`}
-                          className="flex items-center justify-between gap-3 px-4 py-2.5 transition-colors hover:bg-sunken/70"
-                        >
-                          <span className="min-w-0">
-                            <span className="block truncate text-base font-medium text-ink">
-                              {shortlist.name}
-                            </span>
-                            <span className="block text-sm text-ink-muted">
-                              {pluralise(shortlist.itemCount, "creator")}
+                  <RowList className="px-2 pb-2">
+                    {campaigns.slice(0, 4).map((campaign) => {
+                      const progress =
+                        campaign.participantCount === 0
+                          ? 0
+                          : Math.round(
+                              (campaign.confirmedCount /
+                                campaign.participantCount) *
+                                100,
+                            );
+                      return (
+                        <li key={campaign.id}>
+                          <Link
+                            href={`/campaigns/${campaign.id}`}
+                            className="block rounded-lg px-3 py-3 transition-colors hover:bg-sunken/70"
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <p className="min-w-0 truncate font-semibold text-ink">
+                                {campaign.name}
+                              </p>
+                              <Badge
+                                tone={
+                                  campaign.status === "live"
+                                    ? "positive"
+                                    : campaign.status === "completed"
+                                      ? "neutral"
+                                      : "caution"
+                                }
+                                dot={campaign.status === "live"}
+                              >
+                                {CAMPAIGN_STATUS_LABEL[campaign.status]}
+                              </Badge>
+                            </div>
+                            <p className="mt-0.5 truncate text-xs text-ink-subtle">
+                              <span className="font-num">
+                                #{campaign.hashtag}
+                              </span>
                               <span aria-hidden> · </span>
-                              {formatRelativeTime(shortlist.updatedAt)}
-                            </span>
-                          </span>
-                          <ArrowUpRight
-                            className="size-4 shrink-0 text-ink-subtle"
-                            aria-hidden
-                          />
-                        </Link>
-                      </li>
-                    ))}
+                              {formatDate(campaign.startsOn)} –{" "}
+                              {formatDate(campaign.endsOn)}
+                            </p>
+                            <div className="mt-2.5 flex items-center gap-3">
+                              <span className="h-2 flex-1 overflow-hidden rounded-full bg-sunken-strong">
+                                <span
+                                  className="animate-extend block h-full rounded-full bg-brand"
+                                  style={{ width: `${progress}%` }}
+                                />
+                              </span>
+                              <span className="shrink-0 font-num text-xs text-ink-muted">
+                                <span className="font-semibold text-ink">
+                                  {campaign.confirmedCount}/
+                                  {campaign.participantCount}
+                                </span>{" "}
+                                confirmed
+                              </span>
+                            </div>
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </RowList>
                 )}
-                {shortlists.length > 5 && (
-                  <FeedFooterLink href="/shortlists">
-                    {shortlists.length - 5} more {shortlists.length - 5 === 1 ? "shortlist" : "shortlists"}
-                  </FeedFooterLink>
-                )}
-                <PanelFoot className="mt-auto">
-                  {quota.limit === null ? (
-                    <span>
-                      <span className="font-num text-ink">{quota.used}</span> searches this
-                      month · unlimited on your plan
-                    </span>
-                  ) : (
-                    <QuotaMeter
-                      variant="labelled"
-                      label="Searches this month"
-                      spent={quota.used}
-                      limit={quota.limit}
-                    />
-                  )}
-                </PanelFoot>
-              </div>
-            </Split>
-
-            <Panel>
-              <PanelHead>
-                <div>
-                  <PanelTitle>Reach against engagement quality</PanelTitle>
-                  <p className="mt-0.5 text-sm text-ink-muted">
-                    Every creator you track, plotted by observed audience size and
-                    observed engagement rate. Colour is the SocialOrbit Health band.
-                  </p>
-                </div>
-              </PanelHead>
-              <PanelBody>
-                <ReachQualityPlot
-                  height={220}
-                  ariaLabel="Tracked creators plotted by follower count against engagement rate"
-                  points={portfolio.creators
-                    .filter(
-                      (creator) =>
-                        creator.followers !== null && creator.engagementRate !== null,
-                    )
-                    .map((creator) => ({
-                      id: creator.id,
-                      name: creator.displayName,
-                      x: creator.followers as number,
-                      y: creator.engagementRate as number,
-                      tone: (creator.healthScore === null
-                        ? "neutral"
-                        : ({
-                            excellent: "positive",
-                            strong: "brand",
-                            fair: "caution",
-                            weak: "critical",
-                          }[healthBand(creator.healthScore)] as DistributionTone)),
-                      detail:
-                        creator.healthScore === null
-                          ? "Not scored"
-                          : `Health ${Math.round(creator.healthScore)} · confidence ${Math.round(creator.confidence)}%`,
-                    }))}
-                />
-              </PanelBody>
-              <PanelFoot>
-                <span>
-                  Audience is on a log scale — creator sizes span four orders of
-                  magnitude, and a linear axis collapses everyone below a million into
-                  the origin.
-                </span>
-              </PanelFoot>
-            </Panel>
-
-            <Panel>
-              <PanelHead>
-                <PanelTitle>Campaigns</PanelTitle>
-                <Link
-                  href="/campaigns"
-                  className="rounded text-sm font-medium text-brand-ink hover:underline"
-                >
-                  View all
-                </Link>
-              </PanelHead>
-              {campaigns.length === 0 ? (
-                <PanelBody className="py-8">
-                  <div className="mx-auto flex max-w-md flex-col items-center gap-3 text-center">
-                    <Pipeline />
-                    <div className="space-y-1">
-                      <p className="text-base font-medium text-ink">No campaigns yet</p>
-                      <p className="text-sm text-ink-muted">
-                        Create a campaign to select creators, set a tracking hashtag, and
-                        measure what each of them delivered.
-                      </p>
-                    </div>
-                    <LinkButton href="/campaigns/new" variant="primary" size="sm">
-                      Create campaign
-                    </LinkButton>
-                  </div>
-                </PanelBody>
-              ) : (
-                <RowList>
-                  {campaigns.slice(0, 5).map((campaign) => (
-                    <li key={campaign.id}>
-                      <Link
-                        href={`/campaigns/${campaign.id}`}
-                        className="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 transition-colors hover:bg-sunken/70"
-                      >
-                        {/* Full width on a phone so the figures wrap to their
-                            own line: at 390px the name and a three-column dl
-                            fighting for one row squeezed the hashtag into an
-                            ellipsis. */}
-                        <div className="w-full min-w-0 sm:w-auto sm:flex-1">
-                          <p className="flex flex-wrap items-center gap-2 font-medium text-ink">
-                            {campaign.name}
-                            <Badge
-                              tone={
-                                campaign.status === "live"
-                                  ? "positive"
-                                  : campaign.status === "completed"
-                                    ? "neutral"
-                                    : "caution"
-                              }
-                              dot={campaign.status === "live"}
-                            >
-                              {CAMPAIGN_STATUS_LABEL[campaign.status]}
-                            </Badge>
-                          </p>
-                          <p className="mt-0.5 truncate text-sm text-ink-muted">
-                            <span className="font-num">#{campaign.hashtag}</span>
-                            <span aria-hidden> · </span>
-                            {formatDate(campaign.startsOn)} – {formatDate(campaign.endsOn)}
-                          </p>
-                        </div>
-                        <dl className="flex flex-wrap gap-x-6 gap-y-1 sm:shrink-0 sm:text-right">
-                          <div>
-                            <dt className="label-caps-sm text-ink-subtle">Creators</dt>
-                            <dd className="font-num text-ink">
-                              {campaign.confirmedCount}/{campaign.participantCount}
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="label-caps-sm text-ink-subtle">Posts</dt>
-                            <dd className="font-num text-ink">
-                              {formatCompact(campaign.attributedPosts)}
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="label-caps-sm text-ink-subtle">Reach</dt>
-                            <dd className="font-num text-ink">
-                              {formatCompact(campaign.totalReach)}
-                            </dd>
-                          </div>
-                        </dl>
-                      </Link>
-                    </li>
-                  ))}
-                </RowList>
-              )}
-            </Panel>
-
-            {portfolio.creators.length > 0 && (
-              <Panel>
-                <PanelHead>
-                  <PanelTitle>Roster detail</PanelTitle>
-                  <span className="text-sm text-ink-muted">
-                    Ranked by SocialOrbit Health
-                  </span>
-                </PanelHead>
-                <RowList>
-                  {[...portfolio.creators]
-                    .sort((a, b) => (b.healthScore ?? -1) - (a.healthScore ?? -1))
-                    .map((creator) => (
-                      <li key={creator.id}>
-                        <Link
-                          href={`/influencers/${creator.id}`}
-                          className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-sunken/70"
-                        >
-                          <Avatar
-                            name={creator.displayName}
-                            src={creator.avatarUrl}
-                            size="sm"
-                          />
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-base font-medium text-ink">
-                              {creator.displayName}
-                            </span>
-                            <span className="block truncate text-sm text-ink-muted">
-                              @{creator.primaryHandle}
-                              <span aria-hidden> · </span>
-                              {formatCompact(creator.followers)} followers
-                            </span>
-                          </span>
-                          <span className="hidden shrink-0 text-right sm:block">
-                            <span className="label-caps-sm block text-ink-subtle">
-                              Engagement
-                            </span>
-                            <span className="font-num text-base text-ink">
-                              {formatPercent(creator.engagementRate)}
-                            </span>
-                          </span>
-                          <span className="hidden shrink-0 text-right md:block">
-                            <span className="label-caps-sm block text-ink-subtle">
-                              Confidence
-                            </span>
-                            <span className="font-num text-base text-ink">
-                              {Math.round(creator.confidence)}%
-                            </span>
-                          </span>
-                          <span className="shrink-0 text-right">
-                            <span className="label-caps-sm block text-ink-subtle">
-                              Health
-                            </span>
-                            <ScorePill value={creator.healthScore} label="Health" />
-                          </span>
-                        </Link>
-                      </li>
-                    ))}
-                </RowList>
               </Panel>
-            )}
+            </div>
           </PageBody>
         </>
       )}
@@ -530,10 +572,26 @@ export default async function DashboardPage() {
  */
 function FirstRun({ indexed }: { indexed: number }) {
   const steps = [
-    { title: "Discover", detail: "Search the indexed database by market, category, audience quality and campaign fit." },
-    { title: "Understand", detail: "Read a creator's health, risk and confidence, and where every figure came from." },
-    { title: "Shortlist", detail: "Save candidates, compare them side by side, and share the reasoning." },
-    { title: "Measure", detail: "Run a campaign against a tracking hashtag and score what each creator delivered." },
+    {
+      title: "Discover",
+      detail:
+        "Search the indexed database by market, category, audience quality and campaign fit.",
+    },
+    {
+      title: "Understand",
+      detail:
+        "Read a creator's health, risk and confidence, and where every figure came from.",
+    },
+    {
+      title: "Shortlist",
+      detail:
+        "Save candidates, compare them side by side, and share the reasoning.",
+    },
+    {
+      title: "Measure",
+      detail:
+        "Run a campaign against a tracking hashtag and score what each creator delivered.",
+    },
   ];
 
   return (
@@ -549,9 +607,10 @@ function FirstRun({ indexed }: { indexed: number }) {
               {formatCompact(indexed)}
             </p>
             <p className="measure mt-5 text-base leading-relaxed text-instrument-muted">
-              Every one carries a deterministic health score, a separate data-confidence
-              reading and the provenance of each figure behind it. Start a search to build
-              your first shortlist — nothing here is tracked until you save it.
+              Every one carries a deterministic health score, a separate
+              data-confidence reading and the provenance of each figure behind
+              it. Start a search to build your first shortlist — nothing here is
+              tracked until you save it.
             </p>
             <div className="mt-7 flex flex-wrap gap-2">
               <LinkButton href="/discovery" variant="accent" className="gap-2">
@@ -569,7 +628,10 @@ function FirstRun({ indexed }: { indexed: number }) {
           </div>
           <ol className="min-w-0 divide-y divide-instrument-line lg:border-l lg:border-instrument-line lg:pl-12">
             {steps.map((step, index) => (
-              <li key={step.title} className="flex gap-3 py-3 first:pt-0 last:pb-0">
+              <li
+                key={step.title}
+                className="flex gap-3 py-3 first:pt-0 last:pb-0"
+              >
                 <span
                   aria-hidden
                   className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border border-instrument-line-strong font-num text-2xs font-semibold text-instrument-muted"
@@ -580,7 +642,9 @@ function FirstRun({ indexed }: { indexed: number }) {
                   <span className="block text-base font-medium text-instrument-ink">
                     {step.title}
                   </span>
-                  <span className="block text-sm text-instrument-muted">{step.detail}</span>
+                  <span className="block text-sm text-instrument-muted">
+                    {step.detail}
+                  </span>
                 </span>
               </li>
             ))}
@@ -602,7 +666,9 @@ function Pipeline() {
       {["Select creators", "Set hashtag", "Measure"].map((step, index) => (
         <span key={step} className="flex items-center gap-1.5">
           {index > 0 && <ArrowRight className="size-3 text-ink-subtle" />}
-          <span className="rounded-md border border-line bg-sunken px-2 py-0.5">{step}</span>
+          <span className="rounded-md border border-line bg-sunken px-2 py-0.5">
+            {step}
+          </span>
         </span>
       ))}
     </div>

@@ -1,31 +1,28 @@
 import type { Metadata, Viewport } from "next";
-import { Instrument_Sans, Space_Grotesk } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/query-provider";
 
 /**
  * Two voices with non-overlapping jobs.
  *
- * Space Grotesk sets every heading and — the decision that matters — every
- * numeral. It descends from Space Mono, so its digits are uniform width by
- * construction: a metric column aligns without a companion monospace and
- * without a feature flag, and its figures carry an engineered character that
- * makes a score read as a reading rather than as a label. It replaces
- * Montserrat, which was doing both jobs and was distinctive at neither.
+ * Plus Jakarta Sans sets every heading and — the decision that matters —
+ * every numeral. It ships tabular figures, so a metric column aligns without
+ * a companion monospace, and its rounded geometry is what makes a score read
+ * as friendly rather than clinical.
  *
- * Instrument Sans carries interface text, where the job is to disappear: a
- * humanist grotesque that stays legible at 11px in a dense table and never
- * competes with the display voice above it.
+ * Inter carries interface text, where the job is to disappear: it stays
+ * legible at 12px in a dense table and never competes with the display voice.
  */
-const display = Space_Grotesk({
-  variable: "--font-space-grotesk",
+const display = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["500", "600", "700", "800"],
   display: "swap",
 });
 
-const sans = Instrument_Sans({
-  variable: "--font-instrument-sans",
+const sans = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
@@ -45,10 +42,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  // Duplicates --color-instrument in globals.css by value — Next metadata
-  // cannot read a CSS custom property. Change both together. The chrome, not
-  // the canvas: the browser furniture continues the housing.
-  themeColor: "#17181c",
+  // Duplicates --color-canvas in globals.css by value — Next metadata cannot
+  // read a CSS custom property. Change both together.
+  themeColor: "#e4e7e5",
 };
 
 export default function RootLayout({

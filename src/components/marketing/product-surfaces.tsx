@@ -80,7 +80,7 @@ export function SurfaceFrame({
   return (
     <figure
       className={cn(
-        "m-0 overflow-hidden rounded-xl border border-line bg-surface shadow-overlay",
+        "m-0 overflow-hidden rounded-xl bg-surface shadow-overlay",
         className,
       )}
     >
@@ -469,7 +469,7 @@ function InstrumentTrack({
 export function ProvenanceDossier() {
   return (
     <div className="grid items-start gap-5 sm:grid-cols-[minmax(0,14rem)_minmax(0,20rem)]">
-      <div className="rounded-xl border border-line bg-surface px-5 py-5">
+      <div className="rounded-xl bg-surface card-shadow px-5 py-5">
         <p className="label-caps-sm text-ink-subtle">Engagement rate</p>
         <p className="mt-2 font-num text-metric-lg font-medium leading-none text-ink underline decoration-line-strong decoration-dotted underline-offset-8">
           5.4%
@@ -480,7 +480,7 @@ export function ProvenanceDossier() {
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-line bg-surface shadow-popover">
+      <div className="overflow-hidden rounded-xl bg-surface shadow-popover">
         <div className="border-b border-rule px-3 py-2.5">
           <p className="label-caps-sm text-ink-subtle">Engagement rate</p>
           <p className="mt-1 flex items-baseline gap-2">

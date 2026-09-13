@@ -3,53 +3,43 @@
 /* ============================================================================
    SocialOrbit design tokens
 
-   The product is an instrument for judging whether a number can be trusted
-   before money is spent on it. Four decisions carry that reading:
+   The product answers "should I work with this creator?" — a decision made
+   by marketing teams, not by engineers. Four decisions carry that reading:
 
-   1. THE CHROME IS THE INSTRUMENT. The rail and the topbar are graphite —
-      the housing. The work canvas is warm paper set inside it. Previously the
-      housing existed on exactly one card (the score readout) while everything
-      else was grey-on-grey admin chrome, so the product's best idea was
-      quarantined in a component. Now the frame states the identity on every
-      route, and the paper reads brighter for sitting inside a dark bezel.
+   1. THE CANVAS IS SOFT, AND THE WORK FLOATS ON IT. A pale green-grey ground
+      with white, borderless, generously rounded cards set on it. Structure is
+      tonal: a card is white *because* the ground is not, so no hairline is
+      needed to say where it ends. The chrome (rail, topbar) is the same white
+      as the cards — it is furniture in the same room, not a housing around it.
 
-   2. THE CANVAS IS WARM, NEVER WHITE. #f6f4f1, with white reserved for panels
-      that hold analysis. A cool grey page behind white cards is the universal
-      admin-panel tell; warm paper against graphite reads as a printed
-      instrument record.
+   2. ONE GREEN, SPENT ON INTENT AND ON GROWTH. The brand green marks actions,
+      the active route, focus and the score arc. It is also the colour of a
+      measured positive — deliberately: on this product "good" and "go" are
+      the same reading. Deep forest (`--color-instrument`) is the one dark
+      material, used for the single feature card a screen is allowed.
 
-   3. THE ACCENT IS SCARCE, AND GOLD IS SCARCER. Cobalt marks intent —
-      interaction, focus, verified provenance. Brass is spent on measurement
-      alone: the dial arc, the tick marks, the verification seal. It never
-      appears on a control, so its presence always means "this was measured".
+   3. RADIUS IS LARGE AND RISES WITH SIZE. 6 / 10 / 12 / 16 / 20 / 28px —
+      chip, input, button, tile, card, feature card. Controls are pills.
 
-   4. TWO VOICES, ONE OF WHICH COUNTS. Space Grotesk sets every heading and
-      every numeral — it is drawn from a monospace, so its figures are uniform
-      width by construction and a metric column aligns without a feature flag.
-      Instrument Sans carries interface text, where it disappears.
+   4. TWO VOICES. Plus Jakarta Sans sets headings and every numeral (it ships
+      tabular figures, so a metric column aligns). Inter carries interface
+      text, where the job is to disappear at 12px in a dense table.
 
    This block is the ONLY place raw colour values are allowed to appear.
    ========================================================================= */
 
 @theme {
-  /* --- Type -----------------------------------------------------------
-     Two families with non-overlapping jobs. `--font-display` is also
-     `--font-num`: a figure in this product is a measurement, and measurements
-     are set in the voice that headlines them. Space Grotesk descends from
-     Space Mono, so its digits are uniform width natively. */
-  --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-space-grotesk), var(--font-instrument-sans), ui-sans-serif, sans-serif;
-  --font-num: var(--font-space-grotesk), ui-monospace, ui-sans-serif, sans-serif;
-  /* Sanctioned only inside <pre>/<code>: an API reference needs monospace
-     texture. No webfont cost — the platform stack is the point. */
+  /* --- Type ------------------------------------------------------------- */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), var(--font-inter), ui-sans-serif, sans-serif;
+  --font-num: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  /* Sanctioned only inside <pre>/<code>. */
   --font-mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, monospace;
 
   /* --- Type scale -------------------------------------------------------
      Body text is 14px set on `body` and has no token; everything else is one
-     of these. The interface ramp is fixed — a dashboard must not reflow its
-     type as the window moves. Only the two marketing sizes are fluid, because
-     a landing page is read at every width there is. */
-  --text-2xs: 0.6875rem; /* 11px — instrument units, kbd hints */
+     of these. The interface ramp is fixed; only the marketing sizes are fluid. */
+  --text-2xs: 0.6875rem; /* 11px — units, kbd hints */
   --text-2xs--line-height: 0.875rem;
   --text-xs: 0.75rem; /* 12px — caps labels, badges */
   --text-xs--line-height: 1rem;
@@ -61,183 +51,164 @@
   --text-md--line-height: 1.5rem;
   --text-lg: 1.125rem; /* 18px — panel titles that lead a screen */
   --text-lg--line-height: 1.625rem;
-  --text-stat: 1.25rem; /* 20px — stat tiles */
-  --text-stat--line-height: 1.625rem;
-  --text-stat-lg: 1.5rem; /* 24px — lead figures */
-  --text-stat-lg--line-height: 1.875rem;
-  --text-title: 1.75rem; /* 28px — page titles */
-  --text-title--line-height: 2.125rem;
-  --text-title-lg: 2.25rem; /* 36px — the title of a screen that is a document */
-  --text-title-lg--line-height: 2.5rem;
+  --text-stat: 1.375rem; /* 22px — stat tiles */
+  --text-stat--line-height: 1.75rem;
+  --text-stat-lg: 1.625rem; /* 26px — lead figures */
+  --text-stat-lg--line-height: 2rem;
+  --text-title: 1.875rem; /* 30px — page titles */
+  --text-title--line-height: 2.25rem;
+  --text-title-lg: 2.375rem; /* 38px — the title of a screen that is a document */
+  --text-title-lg--line-height: 2.75rem;
 
-  /* Marketing display. Fluid: the landing page is read from 360px to 2560px
-     and a fixed display size is either shouting on a phone or lost on a
-     monitor. */
-  --text-display: clamp(2.25rem, 1.4rem + 3.6vw, 4.25rem);
+  --text-display: clamp(2.5rem, 1.5rem + 3.8vw, 4.5rem);
   --text-display--line-height: 1.04;
   --text-display-sm: clamp(1.75rem, 1.25rem + 2.1vw, 2.75rem);
   --text-display-sm--line-height: 1.12;
 
-  /* Metric ramp. Separate from the text ramp because a figure and a heading
-     at the same pixel size do not carry the same weight — a number is read as
-     a quantity first and glyphs second, so it can go larger before it starts
-     shouting. */
-  --text-metric: 1.875rem; /* 30px — metric strip */
-  --text-metric--line-height: 2.125rem;
-  --text-metric-lg: 2.75rem; /* 44px — panel lead figure */
+  /* Metric ramp. A figure is read as a quantity first and glyphs second, so
+     it can go larger than a heading before it starts shouting. */
+  --text-metric: 2rem; /* 32px — metric strip */
+  --text-metric--line-height: 2.25rem;
+  --text-metric-lg: 2.75rem; /* 44px — card lead figure */
   --text-metric-lg--line-height: 2.875rem;
   --text-hero: clamp(3.5rem, 2.6rem + 3.4vw, 5rem); /* the one executive signal */
   --text-hero--line-height: 1;
 
-  /* Space Grotesk is already tight; the floor is -0.04em and display sizes
-     sit well short of it. Caps labels carry their own tracking. */
-  --tracking-display: -0.028em;
-  --tracking-tight: -0.018em;
+  --tracking-display: -0.03em;
+  --tracking-tight: -0.015em;
 
   /* --- Workspace -------------------------------------------------------
-     Warm paper, white analysis surfaces, and a sunken step for apparatus. */
-  --color-canvas: #f6f4f1;
+     A soft green-grey ground; white where the work is. */
+  /* The frame: the page ground the rounded shell sits on, then the shell's
+     own fill, then white where the work is. Three steps, no lines. */
+  --color-ground: #e4e7e5;
+  --color-canvas: #f2f3f2;
   --color-surface: #ffffff;
-  --color-sunken: #f0ede8;
-  --color-sunken-strong: #e4e0d9;
+  --color-sunken: #f4f6f5;
+  --color-sunken-strong: #e8ece9;
 
-  --color-line: #e2ded7;
-  --color-line-strong: #c8c3ba;
-  /* The rule used *inside* a panel to separate rows and columns. Lighter than
-     the panel's own edge, so structure inside a container never competes with
-     the container. */
-  --color-rule: #edeae5;
+  --color-line: #e6ebe8;
+  --color-line-strong: #d3dad5;
+  /* The rule used *inside* a card to separate rows. Lighter than any edge. */
+  --color-rule: #eef1ef;
 
-  /* A three-step text ramp. Every step clears WCAG AA (4.5:1) against all
-     three light backgrounds — surface, canvas and sunken — measured, not
-     eyeballed: 16.4, 7.4 and 5.3 worst case. */
-  --color-ink: #17171a;
-  --color-ink-muted: #4d4e57;
-  --color-ink-subtle: #63646d;
-  --color-ink-inverse: #f7f6f4;
+  /* Three-step text ramp. Every step clears WCAG AA against surface, canvas
+     and sunken — measured: 14.9, 6.3 and 4.9 worst case. */
+  --color-ink: #14201a;
+  --color-ink-muted: #4f5b55;
+  --color-ink-subtle: #5f6c65;
+  --color-ink-inverse: #f6f9f7;
 
-  /* --- Instrument: the graphite chrome ----------------------------------
-     The rail, the topbar, the score housing and the marketing footer are all
-     one material. `raised` is the only lifted surface inside it. */
-  --color-instrument: #17181c;
-  --color-instrument-deep: #101115;
-  --color-instrument-raised: #23252c;
-  --color-instrument-line: #2c2f37;
-  --color-instrument-line-strong: #3a3d47;
-  --color-instrument-ink: #f4f4f6;
-  --color-instrument-muted: #9a9daa;
-  /* Raised from #71747f: at 10px caps on graphite that step measured 3.9:1 and
-     failed every route it appeared on. This clears 4.5:1 with room, and still
-     reads a step quieter than `muted`. */
-  --color-instrument-subtle: #838793;
+  /* --- Instrument: the deep-forest feature card ------------------------
+     The one dark material. It no longer wraps the page; it is a rounded card
+     a screen may use once, for its headline reading. Token names are kept
+     from the graphite era so every consumer inherited the new material. */
+  --color-instrument: #173a2f;
+  --color-instrument-deep: #112c24;
+  --color-instrument-raised: #1f4a3c;
+  --color-instrument-line: #275846;
+  --color-instrument-line-strong: #33705a;
+  --color-instrument-ink: #f2f8f4;
+  --color-instrument-muted: #a9c7b7;
+  --color-instrument-subtle: #8fb3a1;
 
-  /* --- Accent: intent, spent sparingly -----------------------------------
-     Deep cobalt, not link-blue. Reserved for interaction, active state, focus
-     and verified provenance. `lift` is the on-graphite variant — cobalt at
-     4.5:1 against near-black is impossible, so the chrome gets its own step. */
-  --color-brand: #2743d4;
-  --color-brand-active: #1a2f9e;
-  --color-brand-soft: #e8ecfc;
-  --color-brand-softer: #f3f5fd;
-  --color-brand-line: #c3ccf5;
-  --color-brand-ink: #1f37b4;
-  --color-brand-lift: #8fa4ff;
-  --color-brand-glow: #6d84ff;
+  /* --- Accent: the green ------------------------------------------------
+     Actions, active route, focus, the score arc. 4.97:1 with white text. */
+  --color-brand: #17804a;
+  --color-brand-active: #156d3c;
+  --color-brand-soft: #e5f4eb;
+  --color-brand-softer: #f1f9f4;
+  --color-brand-line: #bfe3cd;
+  --color-brand-ink: #146b3b;
+  /* On the deep-forest card. */
+  --color-brand-lift: #7fd6a2;
+  --color-brand-glow: #5fcf8f;
 
   /* --- Brass: measurement, and nothing else ------------------------------
-     The dial arc, its tick marks, the verification seal. Never a button,
-     never a link, never a background. Its scarcity is what makes a gold mark
-     on a screen mean "this figure was measured, not asserted". */
-  --color-brass: #a97a25;
-  /* Brass dark enough to set text on `brass-soft` at 4.9:1. The dial's brass
-     is a stroke and only has to be seen; a seal has to be read. */
-  --color-brass-ink: #8a6117;
-  --color-brass-lift: #e0b165;
-  --color-brass-soft: #f8f1e2;
-  --color-brass-line: #e6d3ae;
+     The dial's tick ring and the verification seal. Never a control. */
+  --color-brass: #c19a3a;
+  --color-brass-ink: #8a6a1a;
+  --color-brass-lift: #e8c46a;
+  --color-brass-soft: #fbf4e2;
+  --color-brass-line: #ecdcaa;
 
   /* --- Semantic: applied to measurements, never to chrome ---------------- */
-  --color-positive: #0f6f52;
-  --color-positive-soft: #e4f2ec;
-  --color-positive-line: #a5d9c4;
-  --color-positive-lift: #4dc79b;
+  --color-positive: #167243;
+  --color-positive-soft: #e6f5ec;
+  --color-positive-line: #b7e1c8;
+  --color-positive-lift: #7fd6a2;
 
-  --color-caution: #9c5606;
-  --color-caution-soft: #fbf1e3;
-  --color-caution-line: #eed2a3;
-  --color-caution-lift: #e5a44e;
+  --color-caution: #a1600a;
+  --color-caution-soft: #fdf2e1;
+  --color-caution-line: #f1d6a3;
+  --color-caution-lift: #f0b35a;
 
-  --color-critical: #b0233a;
-  --color-critical-hover: #991e32;
-  --color-critical-active: #83192b;
-  --color-critical-soft: #fceaed;
-  --color-critical-line: #f2c1ca;
-  --color-critical-lift: #f2778c;
+  --color-critical: #c4304a;
+  --color-critical-hover: #a8283e;
+  --color-critical-active: #8d2134;
+  --color-critical-soft: #fdeaee;
+  --color-critical-line: #f5c3cc;
+  --color-critical-lift: #f78a9c;
 
-  --color-neutral-metric: #4a4c56;
+  --color-neutral-metric: #55635c;
 
-  /* --- Provenance: how a fact came to exist ------------------------------ */
-  --color-verified: #2743d4;
-  --color-observed: #0f6f52;
-  --color-inferred: #6435c8;
-  --color-inferred-soft: #f1ecfc;
-  --color-inferred-line: #d5c4f3;
-  --color-estimated: #9c5606;
+  /* --- Provenance: how a fact came to exist ------------------------------
+     Verified stays blue so it is never confused with a positive reading. */
+  --color-verified: #2b62d9;
+  --color-observed: #167243;
+  --color-inferred: #6d45c9;
+  --color-inferred-soft: #f0ebfc;
+  --color-inferred-line: #d6c6f4;
+  --color-estimated: #a1600a;
 
   /* --- Chart series -----------------------------------------------------
-     Fixed order, never cycled. Disjoint from the status hues above so a
-     series is never mistaken for a warning. Three is the ceiling: comparison
-     renders side-by-side charts, never more than three series overlaid. */
-  --color-series-1: #2743d4;
-  --color-series-2: #c25c10;
-  --color-series-3: #0d7570;
-  --color-grid: #eae7e1;
+     Fixed order, never cycled. Green, deep teal, warm orange — three is the
+     ceiling; comparison renders side-by-side. */
+  --color-series-1: #1f9457;
+  --color-series-2: #2c5f72;
+  --color-series-3: #d9822b;
+  --color-grid: #e6ebe8;
 
-  /* --- Decorative tints --------------------------------------------------
-     Avatar identity tints only. Chosen outside the status hues so a name can
-     never hash into the amber the system reserves for measured caution. */
-  --color-tint-slate: #464f61;
-  --color-tint-slate-soft: #e9eaef;
-  --color-tint-teal: #0e6560;
-  --color-tint-teal-soft: #e0eeec;
+  /* --- Decorative tints: avatar identity only ---------------------------- */
+  --color-tint-slate: #4a5a6b;
+  --color-tint-slate-soft: #e8ecf0;
+  --color-tint-teal: #1c6b6b;
+  --color-tint-teal-soft: #dff0ee;
 
   /* --- Shape ------------------------------------------------------------
-     Radius rises with the size of the thing. A 4px badge and a 4px panel is
-     the tell of a system that picked one number; a panel that curves more
-     than the chip inside it reads as an object holding contents. */
-  --radius-xs: 0.25rem; /* 4px  — dot, tick, micro-tag */
-  --radius-sm: 0.375rem; /* 6px  — inputs, small buttons, table chips */
-  --radius-md: 0.5rem; /* 8px  — buttons, menu items, nav items */
-  --radius-lg: 0.625rem; /* 10px — tiles, list cards */
-  --radius-xl: 0.875rem; /* 14px — panels */
-  --radius-2xl: 1.125rem; /* 18px — the instrument housing, overlays */
+     Radius rises with the size of the thing. Controls are pills. */
+  --radius-xs: 0.375rem; /* 6px  — micro-tag, kbd */
+  --radius-sm: 0.625rem; /* 10px — inputs, chips */
+  --radius-md: 0.75rem; /* 12px — menu items, nav items, icon buttons */
+  --radius-lg: 1.125rem; /* 18px — tiles, list cards */
+  --radius-xl: 1.5rem; /* 24px — cards */
+  --radius-2xl: 2rem; /* 32px — feature card, the rail, overlays */
+  --radius-3xl: 2.5rem; /* 40px — the shell */
 
   /* --- Elevation ---------------------------------------------------------
-     Declared once per element: a border OR a shadow, never a hairline sitting
-     under a wide soft shadow. These shadows therefore carry their own hairline
-     as the first layer, so an overlay stays defined against white without a
-     second declaration. */
-  --shadow-raised: 0 1px 2px 0 rgb(23 23 26 / 0.06);
-  --shadow-lifted: 0 0 0 1px rgb(23 23 26 / 0.05), 0 2px 4px -2px rgb(23 23 26 / 0.08),
-    0 6px 12px -4px rgb(23 23 26 / 0.06);
-  --shadow-popover: 0 0 0 1px rgb(23 23 26 / 0.06), 0 4px 8px -3px rgb(23 23 26 / 0.1),
-    0 14px 28px -10px rgb(23 23 26 / 0.16);
-  --shadow-overlay: 0 0 0 1px rgb(23 23 26 / 0.07), 0 8px 16px -6px rgb(23 23 26 / 0.12),
-    0 28px 56px -18px rgb(23 23 26 / 0.28);
-  --shadow-instrument: 0 2px 6px -2px rgb(16 17 21 / 0.4), 0 20px 40px -16px rgb(16 17 21 / 0.5);
-  /* On graphite, elevation is light rather than shadow: a raised surface is
-     lit from above by a hairline, the way a machined panel catches a highlight. */
-  --shadow-chrome-raised: inset 0 1px 0 0 rgb(255 255 255 / 0.07);
+     Cards are borderless; depth is tonal against the canvas, and a card that
+     floats gets a wide, soft, low-alpha shadow rather than a hairline. */
+  --shadow-raised: 0 1px 2px 0 rgb(20 40 30 / 0.04);
+  /* Flat: a white card on the shell's grey needs no shadow to have an edge. */
+  --shadow-card: 0 0 0 0 transparent;
+  --shadow-lifted: 0 2px 6px -2px rgb(20 40 30 / 0.08), 0 14px 32px -12px rgb(20 40 30 / 0.14);
+  --shadow-popover: 0 0 0 1px rgb(20 40 30 / 0.05), 0 6px 12px -4px rgb(20 40 30 / 0.08),
+    0 20px 40px -12px rgb(20 40 30 / 0.16);
+  --shadow-overlay: 0 0 0 1px rgb(20 40 30 / 0.06), 0 12px 24px -8px rgb(20 40 30 / 0.12),
+    0 36px 72px -20px rgb(20 40 30 / 0.28);
+  --shadow-instrument: 0 4px 12px -4px rgb(17 44 36 / 0.3), 0 24px 48px -16px rgb(17 44 36 / 0.4);
+  --shadow-chrome-raised: inset 0 1px 0 0 rgb(255 255 255 / 0.08);
+  /* The brand pill: a coloured glow under a green button, the way the
+     references light a primary action. */
+  --shadow-brand: 0 1px 2px rgb(23 128 74 / 0.2), 0 8px 20px -8px rgb(23 128 74 / 0.45);
 
   /* --- Layout constants ------------------------------------------------- */
-  --spacing-sidebar: 15.5rem;
-  --spacing-sidebar-rail: 4.25rem;
-  --spacing-topbar: 3.5rem;
-  --spacing-measure: 68ch; /* body measure ceiling — 65–75ch */
+  --spacing-sidebar: 16rem;
+  --spacing-sidebar-rail: 4.5rem;
+  --spacing-topbar: 4rem;
+  --spacing-measure: 68ch;
 
-  /* --- Motion -----------------------------------------------------------
-     Two curves and four durations, used everywhere. `settle` overshoots very
-     slightly — enough to feel mechanical rather than springy. */
+  /* --- Motion ----------------------------------------------------------- */
   --ease-out-quick: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-settle: cubic-bezier(0.34, 1.26, 0.64, 1);
   --duration-fast: 130ms;
@@ -245,8 +216,6 @@
   --duration-slow: 560ms;
   --duration-reveal: 700ms;
 
-  /* Every bare `transition-*` utility inherits system timing instead of
-     Tailwind's 150ms/ease. */
   --default-transition-duration: 130ms;
   --default-transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -280,15 +249,15 @@
     font-variant-numeric: lining-nums;
   }
 
-  /* Every numeric aligns in a column. Space Grotesk's figures are uniform
-     width by construction; `tnum` is stated so a fallback face behaves the
-     same way, and `zero 0` so no face ever slashes a zero in a metric. */
+  /* Every numeric aligns in a column. Plus Jakarta Sans ships `tnum`; it is
+     stated so a fallback face behaves the same way, and `zero 0` so no face
+     ever slashes a zero in a metric. */
   .font-num,
   [class*="font-num"] {
     font-family: var(--font-num);
     font-variant-numeric: tabular-nums lining-nums;
     font-feature-settings: "tnum" 1, "zero" 0;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.02em;
   }
 
   /* --- Browser surfaces --------------------------------------------------
@@ -330,15 +299,15 @@
   :focus-visible {
     outline: 2px solid var(--color-brand);
     outline-offset: 2px;
-    border-radius: 3px;
+    border-radius: 6px;
   }
 
   [data-focus-custom]:focus-visible {
     outline: none;
   }
 
-  /* On graphite, deep cobalt does not clear contrast; the lift variant exists
-     for exactly this surface. */
+  /* On the deep-forest card the brand green does not clear contrast; the
+     lift variant exists for exactly this surface. */
   .bg-instrument :focus-visible,
   .bg-instrument-deep :focus-visible {
     outline-color: var(--color-brand-lift);
@@ -489,6 +458,11 @@
     to { transform: scaleX(1); }
   }
 
+  @keyframes so-grow {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+  }
+
   @keyframes so-draw {
     from { stroke-dashoffset: 1; }
     to { stroke-dashoffset: 0; }
@@ -519,6 +493,13 @@
   .animate-extend {
     transform-origin: left center;
     animation: so-extend var(--duration-base) var(--ease-out-quick) backwards;
+    animation-delay: var(--stagger, 0ms);
+  }
+
+  /* A column growing from its base. */
+  .animate-grow {
+    transform-origin: center bottom;
+    animation: so-grow var(--duration-slow) var(--ease-out-quick) backwards;
     animation-delay: var(--stagger, 0ms);
   }
 
@@ -615,11 +596,27 @@
   }
 
   .lift:hover {
-    transform: translate3d(0, -2px, 0);
+    transform: translate3d(0, -3px, 0);
     box-shadow: var(--shadow-lifted);
   }
 
-  /* A cursor-tracked cobalt wash on a dark surface. The component sets --mx
+  /* A white card on the canvas: no border, a whisper of shadow so it reads
+     as sitting on the ground rather than printed on it. */
+  .card-shadow {
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Diagonal hatching, the references' texture for a bar that is context
+     rather than the reading. currentColor at low alpha, so it takes any hue. */
+  .hatch {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      currentColor 0 1.5px,
+      transparent 1.5px 6px
+    );
+  }
+
+  /* A cursor-tracked green wash on a dark surface. The component sets --mx
      and --my on pointer move; with no pointer the element is simply inert. */
   .pointer-glow::before {
     content: "";
@@ -629,7 +626,7 @@
     opacity: 0;
     background: radial-gradient(
       18rem circle at var(--mx, 50%) var(--my, 0%),
-      rgb(109 132 255 / 0.16),
+      rgb(95 207 143 / 0.18),
       transparent 65%
     );
     transition: opacity var(--duration-base) var(--ease-out-quick);
@@ -671,8 +668,8 @@
 
   dialog::backdrop {
     opacity: 0;
-    background-color: rgb(16 17 21 / 0.45);
-    backdrop-filter: blur(2px);
+    background-color: rgb(17 44 36 / 0.4);
+    backdrop-filter: blur(3px);
     transition:
       opacity var(--duration-base) var(--ease-out-quick),
       overlay var(--duration-base) allow-discrete,

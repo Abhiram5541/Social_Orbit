@@ -132,8 +132,8 @@ export async function completeXConnection(code: string, state: string): Promise<
     grantedAt: new Date().toISOString(),
     needsReauth: false,
   };
-  upsertGrant(grant);
-  markConnected(verified.influencerId, account.id, true);
+  await upsertGrant(grant);
+  await markConnected(verified.influencerId, account.id, true);
 
   return {
     influencerId: verified.influencerId,
@@ -168,7 +168,7 @@ async function fetchOwnAccount(
  *  reused directly because it is not exported, and exporting one function to
  *  save six lines here is a smaller win than it looks like once the two
  *  call sites' platform-specific error types are accounted for. */
-function markConnected(influencerId: string, accountId: string, connected: boolean): void {
+async function markConnected(influencerId: string, accountId: string, connected: boolean): Promise<void> {
   const data = readRecords();
   const influencer = data.influencers.find((item) => item.id === influencerId);
   const accounts = data.accounts.filter((item) => item.influencerId === influencerId);
@@ -176,7 +176,7 @@ function markConnected(influencerId: string, accountId: string, connected: boole
   const snapshot = data.snapshots.find((item) => item.accountId === accountId);
   if (!influencer || accounts.length === 0 || !snapshot) return;
 
-  upsertIngested([
+  await upsertIngested([
     {
       influencer: { ...influencer, isConnected: connected, identityMatched: connected },
       accounts: accounts.map((item) =>
@@ -195,9 +195,9 @@ function markConnected(influencerId: string, accountId: string, connected: boole
   ]);
 }
 
-export function disconnectX(influencerId: string, accountId: string): void {
-  removeGrant(accountId);
-  markConnected(influencerId, accountId, false);
+export async function disconnectX(influencerId: string, accountId: string): Promise<void> {
+  await removeGrant(accountId);
+  await markConnected(influencerId, accountId, false);
 }
 
 /**
@@ -215,13 +215,13 @@ export async function xAccessTokenFor(accountId: string): Promise<string | null>
   }
 
   if (!grant.sealedRefreshToken) {
-    upsertGrant({ ...grant, needsReauth: true });
+    await upsertGrant({ ...grant, needsReauth: true });
     return null;
   }
 
   try {
     const renewed = await refreshAccessToken(openToken(grant.sealedRefreshToken));
-    upsertGrant({
+    await upsertGrant({
       ...grant,
       sealedAccessToken: sealToken(renewed.accessToken),
       sealedRefreshToken: renewed.refreshToken ? sealToken(renewed.refreshToken) : grant.sealedRefreshToken,
@@ -230,7 +230,7 @@ export async function xAccessTokenFor(accountId: string): Promise<string | null>
     });
     return renewed.accessToken;
   } catch {
-    upsertGrant({ ...grant, needsReauth: true });
+    await upsertGrant({ ...grant, needsReauth: true });
     return null;
   }
 }

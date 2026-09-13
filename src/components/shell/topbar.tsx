@@ -2,116 +2,121 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Bell, HelpCircle, Menu, Search } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Bell, Menu, Search } from "lucide-react";
 import { cn } from "@/lib/class-names";
 import { ROLE_WORKSPACE, type SessionUser } from "@/lib/contracts/auth";
 import type { SearchQuota } from "@/lib/contracts/search";
+import { isActive, type NavItem } from "@/lib/navigation";
+import { Wordmark } from "./logo";
+import { AccountMenu } from "./sidebar";
 
 /* ---------------------------------------------------------------------------
- * The topbar carries the page, not the account.
+ * The topbar: one white pill across the shell.
  *
- * Identity, workspace and the account menu moved into the rail, where they
- * belong to the housing rather than to whatever screen is open. What is left
- * is the one control every route shares — the command palette — and the two
- * status affordances that are genuinely global: remaining search allowance,
- * which a free-plan client must see *before* spending a search, and the
- * notification count.
- *
- * It stays graphite, continuous with the rail: the chrome is one material
- * wrapping the paper the analysis is printed on.
+ * Wordmark on the left, the primary destinations as a centred tab strip, and
+ * on the right the round controls every route shares — search, alerts,
+ * account. The rail beside the page carries the full navigation as icons;
+ * this strip is the five places a person goes most.
  * ------------------------------------------------------------------------ */
-
-/**
- * `⌘` on Apple hardware, `Ctrl` everywhere else — resolved through
- * `useSyncExternalStore` so the server renders a stable snapshot and React
- * never reports a hydration mismatch for a value the server cannot know.
- */
-function useCommandKey(): string {
-  return React.useSyncExternalStore(
-    () => () => {},
-    () => (/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl"),
-    () => "Ctrl",
-  );
-}
 
 export function Topbar({
   user,
   quota,
+  tabs,
+  homeHref,
   onOpenNav,
   onOpenSearch,
   unreadCount = 0,
 }: {
   user: SessionUser;
   quota?: SearchQuota | null;
+  /** The primary destinations, drawn as a centred tab strip. */
+  tabs: NavItem[];
+  homeHref: string;
   onOpenNav: () => void;
   onOpenSearch: () => void;
   unreadCount?: number;
 }) {
-  const commandKey = useCommandKey();
+  const pathname = usePathname();
   const workspace = ROLE_WORKSPACE[user.role];
 
   return (
-    <header className="bg-instrument sticky top-0 z-30 flex h-topbar shrink-0 items-center gap-2 px-3">
+    <header className="flex h-topbar shrink-0 items-center gap-3 rounded-full bg-surface pl-5 pr-3">
       <button
         type="button"
         onClick={onOpenNav}
         aria-label="Open navigation"
-        className="press grid size-9 shrink-0 place-items-center rounded-md text-instrument-muted hover:bg-instrument-raised hover:text-instrument-ink lg:hidden"
+        className="press -ml-2 grid size-10 shrink-0 place-items-center rounded-full text-ink-muted hover:bg-sunken hover:text-ink lg:hidden"
       >
         <Menu className="size-4.5" aria-hidden />
       </button>
 
-      {/* The trigger looks like an input but is a button — it opens a palette,
-          it does not accept typing in place. */}
-      <button
-        type="button"
-        onClick={onOpenSearch}
-        className={cn(
-          "press group flex h-9 min-w-0 flex-1 items-center gap-2.5 rounded-md bg-instrument-raised px-3",
-          "text-left text-base text-instrument-muted shadow-chrome-raised",
-          "hover:bg-instrument-line hover:text-instrument-ink",
-          "sm:max-w-xl",
-        )}
-      >
-        <Search className="size-4 shrink-0" aria-hidden />
-        {/* States what the palette can actually do — creator search across the
-            indexed database, and page jumps. It does not claim a natural
-            language layer the product has not built. */}
-        <span className="truncate">
-          Search creators<span className="hidden md:inline"> across the SocialOrbit database</span>,
-          or jump to a page
-        </span>
-        <kbd className="ml-auto hidden shrink-0 items-center gap-0.5 rounded border border-instrument-line-strong px-1.5 py-0.5 font-num text-2xs font-medium text-instrument-muted sm:flex">
-          {commandKey}
-          <span className="font-sans">K</span>
-        </kbd>
-      </button>
+      {/* One node, not a phone/desktop pair: two nodes toggled by media
+          rules render stacked the moment a stylesheet is stale. On a phone
+          only the tagline is dropped. */}
+      <Link href={homeHref} className="shrink-0 rounded-md" aria-label="SocialOrbit home">
+        <Wordmark className="[&_.label-caps-sm]:hidden sm:[&_.label-caps-sm]:block" />
+      </Link>
 
-      <div className="ml-auto flex items-center gap-1">
+      <nav aria-label="Primary" className="mx-auto hidden lg:block">
+        <ul className="flex items-center gap-1 rounded-full bg-sunken p-1">
+          {tabs.map((item) => {
+            const active = isActive(item, pathname);
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "press inline-flex h-9 items-center rounded-full px-4 text-base whitespace-nowrap",
+                    active
+                      ? "bg-surface font-semibold text-ink shadow-raised"
+                      : "font-medium text-ink-muted hover:text-ink",
+                  )}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      <div className="ml-auto flex items-center gap-1.5 lg:ml-0">
         {quota?.limit !== null && quota !== undefined && quota !== null && (
           <QuotaChip quota={quota} />
         )}
 
-        <Link
-          href="/help"
-          aria-label="Help and documentation"
-          className="press hidden size-9 place-items-center rounded-md text-instrument-muted hover:bg-instrument-raised hover:text-instrument-ink sm:grid"
+        {/* Opens the palette — creator search across the database and page
+            jumps. A round control rather than a field, as the reference. */}
+        <button
+          type="button"
+          onClick={onOpenSearch}
+          aria-label="Search creators or jump to a page"
+          className="press grid size-10 place-items-center rounded-full bg-sunken text-ink-muted hover:bg-sunken-strong hover:text-ink"
         >
-          <HelpCircle className="size-4.5" aria-hidden />
-        </Link>
+          <Search className="size-4.5" aria-hidden />
+        </button>
 
         <Link
           href={workspace === "influencer" ? "/creator/notifications" : "/notifications"}
           aria-label={
             unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"
           }
-          className="press relative grid size-9 place-items-center rounded-md text-instrument-muted hover:bg-instrument-raised hover:text-instrument-ink"
+          className="press relative grid size-10 place-items-center rounded-full bg-sunken text-ink-muted hover:bg-sunken-strong hover:text-ink"
         >
           <Bell className="size-4.5" aria-hidden />
           {unreadCount > 0 && (
-            <span className="absolute right-1.5 top-1.5 size-2 rounded-full border-2 border-instrument bg-brand-lift" />
+            <span className="absolute -right-0.5 -top-0.5 grid min-w-4 place-items-center rounded-full bg-critical px-1 font-num text-2xs font-bold text-white">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
           )}
         </Link>
+
+        <div className="ml-1">
+          <AccountMenu user={user} collapsed chevron />
+        </div>
       </div>
     </header>
   );
@@ -119,11 +124,8 @@ export function Topbar({
 
 /**
  * Remaining search allowance. Free-plan clients need to see this before they
- * spend a search, not after they are blocked — Arch §3.
- *
- * The bar is the point: a count alone makes a person do the division. Under
- * the last fifth it turns amber, and at zero it turns rose, so the state is
- * legible without reading either number.
+ * spend a search, not after they are blocked — Arch §3. Under the last fifth
+ * it turns amber, at zero rose.
  */
 function QuotaChip({ quota }: { quota: SearchQuota }) {
   if (quota.limit === null || quota.remaining === null) return null;
@@ -134,27 +136,23 @@ function QuotaChip({ quota }: { quota: SearchQuota }) {
   return (
     <Link
       href="/usage"
-      className="press hidden items-center gap-2 rounded-md px-2 py-1.5 hover:bg-instrument-raised sm:inline-flex"
+      className="press mr-1 hidden h-10 items-center gap-2.5 rounded-full bg-sunken px-4 hover:bg-sunken-strong xl:inline-flex"
       aria-label={`${quota.remaining} of ${quota.limit} searches remaining this month`}
     >
-      <span className="label-caps-sm text-instrument-muted">Searches</span>
-      <span aria-hidden className="h-1 w-12 overflow-hidden rounded-full bg-instrument-line-strong">
+      <span className="text-xs font-medium text-ink-subtle">Searches</span>
+      <span aria-hidden className="h-1.5 w-12 overflow-hidden rounded-full bg-line-strong">
         <span
           className={cn(
             "block h-full rounded-full transition-[width]",
-            exhausted ? "bg-critical-lift" : low ? "bg-caution-lift" : "bg-brand-lift",
+            exhausted ? "bg-critical" : low ? "bg-caution" : "bg-brand",
           )}
           style={{ width: `${used}%` }}
         />
       </span>
       <span
         className={cn(
-          "font-num text-sm font-medium",
-          exhausted
-            ? "text-critical-lift"
-            : low
-              ? "text-caution-lift"
-              : "text-instrument-ink",
+          "font-num text-sm font-semibold",
+          exhausted ? "text-critical" : low ? "text-caution" : "text-ink",
         )}
       >
         {quota.remaining}

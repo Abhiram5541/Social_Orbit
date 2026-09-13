@@ -5,28 +5,21 @@ type Variant = "primary" | "accent" | "secondary" | "ghost" | "danger" | "link";
 type Size = "sm" | "md" | "lg" | "icon";
 
 /*
- * The primary action is ink, not the accent colour.
- *
- * A blue primary button on a blue-accented dashboard is the single most
- * templated thing in this category, and it spends the accent on every screen
- * until the accent stops meaning anything. Ink reads as the deliberate,
- * committed action; cobalt is then free to mean exactly one thing — active
- * state, focus, verified provenance and the score.
+ * The primary action is the brand green, drawn as a pill with a soft green
+ * glow beneath it. Ink is not used for buttons: on a light, friendly surface
+ * a black button reads as a warning, and the green is what the whole product
+ * uses to say "go".
  */
 const VARIANTS: Record<Variant, string> = {
   primary:
-    "bg-ink text-ink-inverse hover:bg-instrument-raised " +
-    "disabled:bg-ink/30",
-  /*
-   * The one cobalt control. Reserved for the single commitment on a marketing
-   * page or an onboarding step — never for a toolbar, where a blue button on a
-   * blue-accented product spends the accent until it stops meaning anything.
-   */
+    "bg-brand text-white shadow-brand hover:bg-brand-active " +
+    "disabled:bg-brand/35 disabled:shadow-none",
+  /* Kept for callers; identical to primary now that the primary is green. */
   accent:
-    "bg-brand text-white hover:bg-brand-active disabled:bg-brand/35",
+    "bg-brand text-white shadow-brand hover:bg-brand-active disabled:bg-brand/35 disabled:shadow-none",
   secondary:
-    "bg-surface text-ink border border-line-strong hover:bg-sunken " +
-    "hover:border-ink-subtle active:bg-sunken-strong " +
+    "bg-surface text-ink border border-line-strong hover:border-brand-line hover:bg-brand-softer hover:text-brand-ink " +
+    "active:bg-brand-soft " +
     "disabled:bg-surface disabled:text-ink-subtle disabled:hover:border-line-strong",
   ghost:
     "text-ink-muted hover:bg-sunken hover:text-ink active:bg-sunken-strong " +
@@ -38,10 +31,10 @@ const VARIANTS: Record<Variant, string> = {
 };
 
 const SIZES: Record<Size, string> = {
-  sm: "h-8 px-2.5 text-base gap-1.5 rounded-sm",
-  md: "h-9 px-3.5 gap-2 rounded-md",
-  lg: "h-11 px-5 text-md gap-2 rounded-md",
-  icon: "size-9 rounded-md",
+  sm: "h-8 px-3.5 text-base gap-1.5 rounded-full",
+  md: "h-10 px-4.5 gap-2 rounded-full",
+  lg: "h-12 px-6 text-md gap-2 rounded-full",
+  icon: "size-10 rounded-full",
 };
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -109,7 +102,7 @@ export function ButtonGroup({
     <div
       role="group"
       className={cn(
-        "inline-flex items-center rounded-md border border-line bg-surface p-0.5",
+        "inline-flex items-center rounded-full bg-sunken p-1",
         className,
       )}
       {...props}
@@ -127,10 +120,10 @@ export function SegmentButton({
       type="button"
       aria-pressed={active}
       className={cn(
-        "press h-7 rounded-sm px-2.5 text-base font-semibold",
+        "press h-8 rounded-full px-3.5 text-base font-semibold",
         active
-          ? "bg-ink text-ink-inverse"
-          : "text-ink-muted hover:bg-sunken hover:text-ink",
+          ? "bg-brand text-white shadow-brand"
+          : "text-ink-muted hover:text-ink",
         className,
       )}
       {...props}

@@ -23,9 +23,11 @@ export function Greeting({ name }: { name: string }) {
     () => "Welcome back",
   );
 
+  // The reference sets the salutation heavy and the name light.
   return (
     <>
-      {salutation}, {name.split(" ")[0]}
+      {salutation},{" "}
+      <span className="font-medium text-ink-subtle">{name.split(" ")[0]}</span>
     </>
   );
 }

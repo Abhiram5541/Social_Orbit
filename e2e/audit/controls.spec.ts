@@ -63,6 +63,8 @@ async function snapshot(page: Page) {
     body: (document.querySelector("main")?.innerText ?? "").length,
     checked: document.querySelectorAll("input:checked").length,
     expanded: document.querySelectorAll("details[open], [aria-expanded='true']").length,
+    // Tooltips and popovers render in the top layer / body, outside <main>.
+    floating: document.querySelectorAll("[role='tooltip'], [popover]:popover-open, [aria-pressed='true']").length,
   }));
 }
 
@@ -150,7 +152,8 @@ test("audit interactive controls", async ({ page, request }) => {
       else if (
         after.body !== before.body ||
         after.checked !== before.checked ||
-        after.expanded !== before.expanded
+        after.expanded !== before.expanded ||
+        after.floating !== before.floating
       ) {
         outcome = "dom-changed";
       } else if (sawRequest) outcome = "request";

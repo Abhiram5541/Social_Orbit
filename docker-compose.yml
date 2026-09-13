@@ -1,0 +1,22 @@
+# Local PostgreSQL for the influencer database.
+#
+#   docker compose up -d
+#
+# Credentials match DATABASE_URL in .env.example. Data lives in the named
+# volume, so `docker compose down` keeps it and `down -v` drops it.
+services:
+  postgres:
+    image: postgres:17
+    container_name: socialorbit-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: socialorbit
+    ports:
+      - "5432:5432"
+    volumes:
+      - socialorbit-pgdata:/var/lib/postgresql/data
+
+volumes:
+  socialorbit-pgdata:

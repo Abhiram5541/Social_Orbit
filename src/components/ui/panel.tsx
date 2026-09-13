@@ -15,12 +15,12 @@ import { cn } from "@/lib/class-names";
  *             default — most groupings are a band, not an object.
  *   Split     two or three columns divided by a single shared rule instead of
  *             a gutter between separate cards.
- *   Panel     a genuine object: a chart, a queue, a dossier block. Bordered,
- *             but flat — the border is the object's edge, not decoration.
+ *   Panel     a genuine object: a chart, a queue, a dossier block. A white,
+ *             borderless, rounded card on the canvas — its edge is tonal.
  *
  * Inside any of them, rows and columns separate with `--color-rule`, which is
- * lighter than the container's own edge. Structure inside a container must
- * never compete with the container.
+ * lighter than any edge. Structure inside a container must never compete
+ * with the container.
  * ------------------------------------------------------------------------ */
 
 /**
@@ -151,8 +151,8 @@ export function Split({
 
 /**
  * A genuine object on the canvas — reserved for things that are one artifact:
- * a chart, a queue, a dossier block. Flat by default; shadow only when it
- * actually floats.
+ * a chart, a queue, a dossier block. White, borderless, with a whisper of
+ * shadow so it sits on the ground rather than being printed on it.
  */
 export function Panel({
   className,
@@ -165,7 +165,7 @@ export function Panel({
       // dense content then pushes it wider than its track — which is how a
       // table quietly widens the whole page. Wide content scrolls internally.
       className={cn(
-        "min-w-0 overflow-hidden rounded-xl border border-line bg-surface",
+        "min-w-0 overflow-hidden rounded-xl bg-surface card-shadow",
         className,
       )}
       {...props}
@@ -181,7 +181,7 @@ export function PanelHead({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-rule px-4 py-2.5",
+        "flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-rule px-5 py-3.5",
         className,
       )}
       {...props}
@@ -203,7 +203,7 @@ export function PanelBody({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("p-4", className)} {...props} />;
+  return <div className={cn("p-5", className)} {...props} />;
 }
 
 /**
@@ -217,7 +217,7 @@ export function PanelFoot({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-rule bg-sunken/50 px-4 py-2 text-sm text-ink-muted",
+        "flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-rule bg-sunken/60 px-5 py-2.5 text-sm text-ink-muted",
         className,
       )}
       {...props}
@@ -243,13 +243,13 @@ export function RowList({
 }
 
 /**
- * A full-bleed band in the chrome's graphite.
+ * The deep-forest feature card.
  *
  * The one place a screen is allowed to speak loudly, and it is spent on the
  * screen's single headline reading — a roster's median health, a campaign's
- * performance score, a creator's dossier readout. The material is the same
- * one the rail and topbar are made of, so a reading appears to be printed by
- * the instrument rather than pasted onto the page.
+ * performance score, a creator's dossier readout. It is a rounded card set
+ * on the canvas like every other card, in the product's one dark material,
+ * so it is read as the feature rather than as chrome.
  *
  * At most one per screen. Two of these and neither is the headline.
  */
@@ -261,21 +261,21 @@ export function Instrument({
   ...props
 }: React.HTMLAttributes<HTMLElement> & {
   as?: React.ElementType;
-  /** Page-level use: the band supplies the page gutter itself. */
+  /** Page-level use: the card sits inside the page gutter. */
   inset?: boolean;
-  /** Nested inside PageBody: cancel that gutter, then restore it inside. */
+  /** Nested inside PageBody: already inside the gutter, so no margin. */
   bleed?: boolean;
 }) {
   return (
     <Tag
       className={cn(
-        "bg-instrument relative min-w-0 text-instrument-ink",
-        // A single hairline of light along the top edge, the way a machined
-        // panel catches the light. It is what keeps the band from reading as
-        // a hole cut in the page.
-        "before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/8",
-        inset && !bleed && "px-4 sm:px-6",
-        bleed && "-mx-4 px-4 sm:-mx-6 sm:px-6",
+        "bg-instrument relative min-w-0 overflow-hidden rounded-2xl text-instrument-ink shadow-instrument",
+        // A soft green bloom in one corner, so the card has depth without a
+        // gradient fill — the references light their dark cards the same way.
+        "before:pointer-events-none before:absolute before:-right-24 before:-top-24 before:size-72 before:rounded-full before:bg-brand-glow/12 before:blur-3xl",
+        "px-5 sm:px-7",
+        // Page-level: inside the gutter, and a gap before whatever follows.
+        inset && !bleed && "mb-4 sm:mx-1",
         className,
       )}
       {...props}

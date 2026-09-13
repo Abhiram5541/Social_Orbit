@@ -74,16 +74,8 @@ export type FilterSurface = { scope: Locator; commit: () => Promise<void> };
 export async function openFilters(page: Page): Promise<FilterSurface> {
   const width = page.viewportSize()?.width ?? 1440;
 
-  if (width >= 1280) {
-    // `<aside aria-label>` maps to `complementary`, not `region` — a filter
-    // rail is complementary content, and the role has to match the element
-    // the page actually renders.
-    return {
-      scope: page.getByRole("complementary", { name: "Search filters" }),
-      commit: async () => {},
-    };
-  }
-
+  // Filters sit beside the search field at every width: a popover from `lg`
+  // up, a sheet below it. There is no persistent rail.
   await page.getByRole("button", { name: /^Filters/ }).click();
   const scope = page.getByRole("dialog", { name: "Filters" });
 

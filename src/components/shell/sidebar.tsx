@@ -5,8 +5,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   ChevronDown,
-  ChevronsLeft,
-  ChevronsRight,
   CreditCard,
   LogOut,
   Settings,
@@ -23,30 +21,14 @@ import {
 } from "@/lib/contracts/auth";
 import { Avatar } from "@/components/ui/avatar";
 import { Tooltip, Menu as PopMenu, MenuItem, MenuLabel, MenuSeparator } from "@/components/ui/overlay";
-import { Wordmark, OrbitMark } from "./logo";
 
 /* ---------------------------------------------------------------------------
- * Primary navigation — the instrument housing.
+ * Navigation.
  *
- * The rail and the topbar are graphite; the work canvas is warm paper set
- * inside them. That inversion is the product's identity, and it is why the
- * chrome is the one place the dark material appears on every route rather
- * than on a single card.
- *
- * Three things live here, in the order a person needs them:
- *
- *   Identity    which organisation's data this is, and on what plan
- *   Navigation  grouped by intent, active item raised out of the housing
- *   Account     who is signed in, and the way out
- *
- * Putting identity and account in the rail empties the topbar of everything
- * that is not about the page in front of you — which is what makes the topbar
- * able to carry page context instead of a second row of chrome.
- *
- * Three responsive shapes rather than one shrunk layout:
- *   ≥ lg   full 248px rail with section labels
- *   ≥ lg   collapsed 68px icon rail (user preference, remembered)
- *   < lg   a drawer, rendered by AppShell — not this component
+ * An icon rail beside the page (`IconRail`) plus the topbar's tab strip at
+ * `lg` and above; the labelled list (`SidebarNav`) in a drawer below it. The
+ * one place colour appears in the chrome is the active route, a filled green
+ * circle or pill — so a glance says where you are before a label is read.
  * ------------------------------------------------------------------------ */
 
 export function SidebarNav({
@@ -66,12 +48,12 @@ export function SidebarNav({
       {sections.map((section, index) => (
         <div key={section.label ?? index} className="flex flex-col gap-0.5">
           {section.label && !collapsed && (
-            <span className="label-caps-sm px-2.5 pb-2 text-instrument-muted">
+            <span className="label-caps-sm px-3 pb-2 text-ink-subtle">
               {section.label}
             </span>
           )}
           {section.label && collapsed && index > 0 && (
-            <div className="mx-3 mb-2 h-px bg-instrument-line" role="separator" />
+            <div className="mx-3 mb-2 h-px bg-line" role="separator" />
           )}
           {section.items.map((item) => {
             const active = isActive(item, pathname);
@@ -82,30 +64,17 @@ export function SidebarNav({
                 aria-current={active ? "page" : undefined}
                 onClick={onNavigate}
                 className={cn(
-                  "press group relative flex items-center gap-2.5 rounded-md px-2.5 py-2 text-base",
-                  collapsed && "justify-center px-0",
+                  "press group relative flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-base",
+                  collapsed && "size-10 justify-center px-0",
                   active
-                    ? "bg-instrument-raised font-semibold text-instrument-ink shadow-chrome-raised"
-                    : "font-medium text-instrument-muted hover:bg-instrument-raised/60 hover:text-instrument-ink",
+                    ? "bg-brand font-semibold text-white shadow-brand"
+                    : "font-medium text-ink-muted hover:bg-brand-softer hover:text-brand-ink",
                 )}
               >
-                {/* The cobalt edge: the accent spent on exactly one place in
-                    the chrome — where you are. */}
-                {active && (
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "absolute rounded-full bg-brand-lift",
-                      collapsed ? "inset-y-2 left-0 w-0.5" : "inset-y-1.5 -left-px w-0.5",
-                    )}
-                  />
-                )}
                 <item.icon
                   className={cn(
-                    "size-4 shrink-0 transition-colors",
-                    active
-                      ? "text-brand-lift"
-                      : "text-instrument-subtle group-hover:text-instrument-muted",
+                    "size-[1.125rem] shrink-0 transition-colors",
+                    active ? "text-white" : "text-ink-subtle group-hover:text-brand-ink",
                   )}
                   aria-hidden
                 />
@@ -129,67 +98,75 @@ export function SidebarNav({
   );
 }
 
-export function Sidebar({
+/**
+ * The rail: every destination as an icon in a white pill column beside the
+ * page. Groups are separated by a gap rather than a label — the label is the
+ * tooltip. The active icon is the one filled green circle on the screen.
+ */
+export function IconRail({
   sections,
-  collapsed,
-  onToggleCollapsed,
-  homeHref,
-  user,
+  className,
 }: {
   sections: NavSection[];
-  collapsed: boolean;
-  onToggleCollapsed: () => void;
-  homeHref: string;
-  user: SessionUser;
+  className?: string;
 }) {
+  const pathname = usePathname();
+
   return (
-    <aside
-      className={cn(
-        "instrument-scroll bg-instrument hidden shrink-0 flex-col lg:flex",
-        collapsed ? "w-sidebar-rail" : "w-sidebar",
-      )}
-    >
-      <div
+    <>
+      {/* Holds the rail's column in the flow; the rail itself is fixed. */}
+      <div aria-hidden className="hidden w-16 shrink-0 lg:block" />
+      <aside
+        aria-label="Navigation rail"
+        // Fixed to the viewport, not sticky: sticky depends on the rail being
+        // shorter than the window and on its containing block, and the
+        // platform workspace's fifteen icons broke both on a short screen.
+        // Left edge follows the centred frame; height fills the window under
+        // the topbar; a long list scrolls inside the pill, scrollbar hidden.
         className={cn(
-          "flex h-topbar shrink-0 items-center",
-          collapsed ? "justify-center px-0" : "px-4",
+          "fixed top-[6.75rem] left-[max(1.75rem,calc((100vw-105rem)/2+1rem))] z-20 hidden h-[calc(100dvh-7.5rem)] w-16 flex-col items-center gap-3 overflow-y-auto rounded-full bg-surface py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:flex",
+          className,
         )}
       >
-        <Link href={homeHref} className="rounded" aria-label="SocialOrbit home">
-          {collapsed ? <OrbitMark /> : <Wordmark inverse />}
-        </Link>
+      {sections.map((section, index) => (
+        <div key={section.label ?? index} className="flex shrink-0 flex-col items-center gap-0.5">
+          {section.items.map((item) => {
+            const active = isActive(item, pathname);
+            return (
+              <Tooltip key={item.href} content={item.label} side="right">
+                <Link
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "press grid size-10 place-items-center rounded-full",
+                    active
+                      ? "bg-brand text-white shadow-brand"
+                      : "text-ink-subtle hover:bg-sunken hover:text-ink",
+                  )}
+                >
+                  <item.icon className="size-[1.125rem]" aria-hidden />
+                  <span className="sr-only">{item.label}</span>
+                </Link>
+              </Tooltip>
+            );
+          })}
+        </div>
+      ))}
+      <div className="flex shrink-0 flex-col items-center border-t border-rule pt-2">
+        <form action="/api/internal/auth/logout" method="post">
+          <Tooltip content="Sign out" side="right">
+            <button
+              type="submit"
+              className="press grid size-10 place-items-center rounded-full text-ink-subtle hover:bg-critical-soft hover:text-critical"
+            >
+              <LogOut className="size-[1.125rem]" aria-hidden />
+              <span className="sr-only">Sign out</span>
+            </button>
+          </Tooltip>
+        </form>
       </div>
-
-      {!collapsed && <OrgBlock user={user} />}
-
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <SidebarNav sections={sections} collapsed={collapsed} />
-      </div>
-
-      <div className="shrink-0 border-t border-instrument-line p-3">
-        <AccountMenu user={user} collapsed={collapsed} />
-        <button
-          type="button"
-          onClick={onToggleCollapsed}
-          aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
-          aria-pressed={collapsed}
-          className={cn(
-            "press mt-1 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm font-medium",
-            "text-instrument-subtle hover:bg-instrument-raised hover:text-instrument-ink",
-            collapsed ? "w-full justify-center px-0" : "w-full",
-          )}
-        >
-          {collapsed ? (
-            <ChevronsRight className="size-4" aria-hidden />
-          ) : (
-            <>
-              <ChevronsLeft className="size-4" aria-hidden />
-              <span>Collapse</span>
-            </>
-          )}
-        </button>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }
 
@@ -214,23 +191,23 @@ export function OrgBlock({ user }: { user: SessionUser }) {
           <button
             type="button"
             {...props}
-            className="press flex w-full items-center gap-2.5 rounded-lg bg-instrument-raised px-2.5 py-2 text-left shadow-chrome-raised hover:bg-instrument-line"
+            className="press flex w-full items-center gap-2.5 rounded-lg bg-sunken px-2.5 py-2 text-left hover:bg-sunken-strong"
           >
             <span
               aria-hidden
-              className="grid size-7 shrink-0 place-items-center rounded-md bg-instrument-line-strong font-display text-sm font-bold text-instrument-ink"
+              className="grid size-8 shrink-0 place-items-center rounded-sm bg-instrument font-display text-sm font-bold text-instrument-ink"
             >
               {user.orgName.slice(0, 1).toUpperCase()}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-base font-semibold text-instrument-ink">
+              <span className="block truncate text-base font-semibold text-ink">
                 {user.orgName}
               </span>
-              <span className="label-caps-sm block truncate text-instrument-muted">
+              <span className="label-caps-sm block truncate text-ink-subtle">
                 {user.orgKind === "platform" ? "Platform" : plan.label}
               </span>
             </span>
-            <ChevronDown className="size-3.5 shrink-0 text-instrument-muted" aria-hidden />
+            <ChevronDown className="size-3.5 shrink-0 text-ink-subtle" aria-hidden />
           </button>
         )}
       >
@@ -274,13 +251,16 @@ export function OrgBlock({ user }: { user: SessionUser }) {
   );
 }
 
-/** Who is signed in, and the way out. Sits at the foot of the housing. */
+/** Who is signed in, and the way out. Sits at the foot of the rail. */
 export function AccountMenu({
   user,
   collapsed,
+  chevron = false,
 }: {
   user: SessionUser;
   collapsed: boolean;
+  /** Avatar with a small chevron beside it — the topbar trigger. */
+  chevron?: boolean;
 }) {
   const router = useRouter();
   const workspace = ROLE_WORKSPACE[user.role];
@@ -293,31 +273,40 @@ export function AccountMenu({
 
   return (
     <PopMenu
-      align="start"
-      side="top"
+      // In the topbar the trigger sits at the far right, so the menu hangs
+      // from its end edge and opens downward; in the drawer's foot it opens
+      // upward from the start edge, as before.
+      align={chevron ? "end" : "start"}
+      side={chevron ? "bottom" : "top"}
       trigger={(props) => (
         <button
           type="button"
           {...props}
           aria-label={collapsed ? `Account: ${user.name}` : undefined}
           className={cn(
-            "press flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left",
-            "hover:bg-instrument-raised",
-            collapsed && "justify-center px-0",
+            "press flex w-full items-center gap-2.5 text-left",
+            collapsed
+              ? chevron
+                ? "h-10 rounded-full pl-0 pr-1"
+                : "size-10 justify-center rounded-full px-0 py-0"
+              : "rounded-md px-2 py-1.5 hover:bg-sunken",
           )}
         >
-          <Avatar name={user.name} src={user.avatarUrl} size="sm" />
+          <Avatar name={user.name} src={user.avatarUrl} size={chevron ? "md" : "sm"} />
+          {collapsed && chevron && (
+            <ChevronDown className="size-3.5 shrink-0 text-ink-subtle" aria-hidden />
+          )}
           {!collapsed && (
             <>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-base font-medium text-instrument-ink">
+                <span className="block truncate text-base font-medium text-ink">
                   {user.name}
                 </span>
-                <span className="block truncate text-xs text-instrument-muted">
+                <span className="block truncate text-xs text-ink-subtle">
                   {ROLE_LABEL[user.role]}
                 </span>
               </span>
-              <ChevronDown className="size-3.5 shrink-0 text-instrument-muted" aria-hidden />
+              <ChevronDown className="size-3.5 shrink-0 text-ink-subtle" aria-hidden />
             </>
           )}
         </button>

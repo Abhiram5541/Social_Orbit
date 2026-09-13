@@ -316,9 +316,21 @@ const SearchPage = z.object({
  * channel metadata and surfaces a lot of dormant accounts, while the channels
  * behind high-view videos are by construction active and real.
  */
+export interface DiscoveryOptions {
+  videoCategoryId?: string;
+  regionCode?: string;
+  /** BCP-47 language YouTube should favour; a place search in Telugu or Kannada finds local creators a national ranking buries. */
+  relevanceLanguage?: string;
+  /** `viewCount` finds the biggest channels on a topic; `relevance` finds the ones the query is actually about. */
+  order?: "viewCount" | "relevance";
+  /** ISO timestamp — restricts to uploads after it, which keeps dormant channels out of a sweep. */
+  publishedAfter?: string;
+  limit?: number;
+}
+
 export async function discoverChannelIds(
   query: string,
-  options: { videoCategoryId?: string; regionCode?: string; limit?: number } = {},
+  options: DiscoveryOptions = {},
 ): Promise<string[]> {
   const { items } = await call(
     "search",
@@ -326,10 +338,12 @@ export async function discoverChannelIds(
       part: "snippet",
       q: query,
       type: "video",
-      order: "viewCount",
+      order: options.order ?? "viewCount",
       maxResults: String(Math.min(50, options.limit ?? 50)),
       ...(options.videoCategoryId ? { videoCategoryId: options.videoCategoryId } : {}),
       ...(options.regionCode ? { regionCode: options.regionCode } : {}),
+      ...(options.relevanceLanguage ? { relevanceLanguage: options.relevanceLanguage } : {}),
+      ...(options.publishedAfter ? { publishedAfter: options.publishedAfter } : {}),
     },
     SearchPage,
   );

@@ -31,6 +31,11 @@ export function shared<T>(key: string, seed: () => T): T {
   return store.get(key) as T;
 }
 
+/** Installs `value` as the one instance of `key`, replacing any seed already made. */
+export function replaceShared<T>(key: string, value: T): void {
+  registry().set(key, value);
+}
+
 /** Test seam: drops everything so a suite can start from the seed again. */
 export function __resetSharedStore(): void {
   registry().clear();

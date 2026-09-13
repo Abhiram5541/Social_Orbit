@@ -4,10 +4,11 @@ import {
   discoverChannelIds,
   fetchChannels,
   fetchRecentVideos,
+  type DiscoveryOptions,
 } from "@/server/connectors/youtube";
 import {
   ingestedRecords,
-  touchIngested,
+  upsertAccounts,
   upsertIngested,
   upsertViewHistory,
   type IngestedRecord,
@@ -103,12 +104,19 @@ const CATEGORY_QUERIES: Record<Category, { q: string; videoCategoryId?: string }
 
 export const HARVEST_CATEGORIES = Object.keys(CATEGORY_QUERIES) as Category[];
 
+/** One discovery search: the phrase, plus whatever narrows YouTube's ranking. */
+export type DiscoveryQuery = DiscoveryOptions & { q: string };
+
+/** Every category query as a flat list, for a rotation that walks them one at a time. */
+export const CATEGORY_PLAN: DiscoveryQuery[] = Object.values(CATEGORY_QUERIES).flat();
+
 /** `search.list` is 100 units; everything else is 1. */
 const SEARCH_COST = 100;
 
 export interface HarvestProgress {
   stage: "discovering" | "reading" | "done";
-  category?: Category;
+  /** The category, or the query phrase when the caller supplied its own. */
+  group?: string;
   discovered: number;
   ingested: number;
   quotaUnitsSpent: number;
@@ -129,18 +137,29 @@ export interface HarvestReport {
  * YouTube ranks, duplicates across categories are common, and a channel that
  * hides its subscriber count is refused rather than guessed at. Reaching 380 of
  * 400 is a normal outcome and not an error.
+ *
+ * `queries` replaces the category plan with the caller's own searches — the
+ * way a place is swept, since no category query will ever surface "creators
+ * in Rajahmundry". Each query is its own commit group: a quota that runs out
+ * on the ninth search keeps the eight already paid for.
  */
 export async function harvest(
   options: {
     target?: number;
     videosPerChannel?: number;
     categories?: Category[];
+    queries?: DiscoveryQuery[];
     onProgress?: (progress: HarvestProgress) => void;
   } = {},
 ): Promise<HarvestReport> {
   const target = options.target ?? 400;
   const videosPerChannel = options.videosPerChannel ?? 50;
-  const categories = options.categories ?? HARVEST_CATEGORIES;
+  const groups: { label: string; queries: DiscoveryQuery[] }[] = options.queries
+    ? options.queries.map((query) => ({ label: query.q, queries: [query] }))
+    : (options.categories ?? HARVEST_CATEGORIES).map((category) => ({
+        label: category,
+        queries: CATEGORY_QUERIES[category],
+      }));
   const report: HarvestReport = {
     discovered: 0,
     ingested: 0,
@@ -158,15 +177,13 @@ export async function harvest(
   const queue: string[] = [];
 
   try {
-    for (const category of categories) {
+    for (const { label, queries } of groups) {
       if (report.ingested + queue.length >= target) break;
 
-      for (const query of CATEGORY_QUERIES[category]) {
-        options.onProgress?.({ stage: "discovering", category, ...counters(report) });
+      for (const { q, ...narrowing } of queries) {
+        options.onProgress?.({ stage: "discovering", group: label, ...counters(report) });
 
-        const ids = await discoverChannelIds(query.q, {
-          videoCategoryId: query.videoCategoryId,
-        });
+        const ids = await discoverChannelIds(q, narrowing);
         report.quotaUnitsSpent += SEARCH_COST;
 
         for (const id of ids) {
@@ -178,10 +195,10 @@ export async function harvest(
         if (report.ingested + queue.length >= target) break;
       }
 
-      // Committed per category so an interruption keeps what it paid for.
+      // Committed per group so an interruption keeps what it paid for.
       const taken = queue.splice(0, Math.max(0, target - report.ingested));
       if (taken.length > 0) {
-        options.onProgress?.({ stage: "reading", category, ...counters(report) });
+        options.onProgress?.({ stage: "reading", group: label, ...counters(report) });
         await readAndStore(taken, videosPerChannel, report);
       }
     }
@@ -339,19 +356,19 @@ export async function refreshStale(
 }
 
 /** Records that the platform has stopped answering for these channels. */
-function markUnavailable(channelIds: string[]): void {
+async function markUnavailable(channelIds: string[]): Promise<void> {
   const data = ingestedRecords();
   const gone = new Set(channelIds);
   const at = new Date().toISOString();
-  let changed = false;
+  const changed: RawAccount[] = [];
 
   for (const account of data.accounts) {
     if (gone.has(account.platformAccountId) && !account.unavailableSince) {
       account.unavailableSince = at;
-      changed = true;
+      changed.push(account);
     }
   }
-  if (changed) touchIngested();
+  await upsertAccounts(changed);
 }
 
 export interface HistoryBackfillReport {
@@ -414,7 +431,7 @@ export async function backfillViewHistory(
       // One playlistItems page and one videos call per fifty uploads.
       report.quotaUnitsSpent += 2 * Math.max(1, Math.ceil(videos.length / 50));
 
-      upsertViewHistory(
+      await upsertViewHistory(
         account.influencerId,
         videos.map((video) => ({
           influencerId: account.influencerId,
@@ -464,7 +481,7 @@ async function readAndStore(
   const returned = new Set(channels.map((channel) => channel.channelId));
   const vanished = channelIds.filter((id) => !returned.has(id));
   if (vanished.length > 0) {
-    markUnavailable(vanished);
+    await markUnavailable(vanished);
     for (const id of vanished) {
       report.skipped.push({ channelId: id, reason: "No longer returned by the platform." });
     }
@@ -488,12 +505,12 @@ async function readAndStore(
         continue;
       }
       // Whatever was read so far is still worth keeping.
-      upsertIngested(records);
+      await upsertIngested(records);
       report.ingested += records.length;
       throw error;
     }
   }
 
-  upsertIngested(records);
+  await upsertIngested(records);
   report.ingested += records.length;
 }

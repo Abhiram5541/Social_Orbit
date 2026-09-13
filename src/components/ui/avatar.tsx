@@ -10,6 +10,7 @@ const SIZES = {
   md: "size-10 text-base",
   lg: "size-14 text-md",
   xl: "size-20 text-stat-lg",
+  "2xl": "size-24 text-title",
 } as const;
 
 /*
@@ -34,6 +35,7 @@ const MARK_SIZES: Record<keyof typeof SIZES, string> = {
   md: "size-4",
   lg: "size-5",
   xl: "size-6",
+  "2xl": "size-7",
 };
 
 function tintOf(name: string): string {
@@ -72,7 +74,7 @@ export function Avatar({
           // than a 403 — so every creator avatar rendered as a broken image.
           referrerPolicy="no-referrer"
           className={cn(
-            "rounded-full border border-line bg-sunken object-cover",
+            "rounded-full bg-sunken object-cover ring-2 ring-surface",
             SIZES[size],
           )}
         />
@@ -81,7 +83,7 @@ export function Avatar({
           aria-hidden
           // Joined rather than cn(): tailwind-merge reads the non-t-shirt size
           // classes (text-stat-lg) as colours and would drop the tint.
-          className={`grid place-items-center rounded-full border border-line font-semibold ${tintOf(name)} ${SIZES[size]}`}
+          className={`grid place-items-center rounded-full font-display font-bold ${tintOf(name)} ${SIZES[size]}`}
         >
           {initials(name)}
         </span>

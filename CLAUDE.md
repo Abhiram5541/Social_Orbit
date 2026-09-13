@@ -68,10 +68,10 @@ Every client-owned artifact (`shortlists`, `campaigns`, `saved influencers`, `ap
 Manager, Analytics Manager) belong to the platform org and read across tenants.
 DPR §12 describes only the internal role set; the client/tenant layer sits alongside it.
 
-**D2 — Frontend-first build order.** No database in this phase. All reads and writes go
-through `src/server/repositories/*`, which currently resolve against a clearly isolated
-development dataset (`src/server/data/`). PostgreSQL replaces the driver behind the same
-interfaces later without touching a single component or route handler. Social platform
+**D2 — Frontend-first build order.** *(PostgreSQL landed: see D29.)* All reads and
+writes go through `src/server/repositories/*`, which resolve against the record set in
+`src/server/data/`. The driver behind it is the JSON file (`development`) or PostgreSQL
+(`postgres`); neither is visible to a component or route handler. Social platform
 connectors are implemented against their real API shapes but return
 `ConnectorUnavailable` until credentials are supplied.
 
@@ -170,7 +170,8 @@ profile's metric strip is wired through it; extend it to any figure a user might
 defend in a meeting.
 
 **D23 — The chrome is the instrument; the work is printed on paper set inside it.**
-This replaces D21's tonal scheme and reverses it. The rail, the topbar, the mobile
+*(Superseded by D31, which returns the chrome to light and keeps the dark material for one
+feature card per screen.)* This replaces D21's tonal scheme and reverses it. The rail, the topbar, the mobile
 drawer, the marketing hero and the marketing footer are one graphite housing
 (`--color-instrument`); the workspace inside them is warm paper (`--color-canvas`,
 #f6f4f1), and white is reserved for panels where measurement happens.
@@ -200,6 +201,7 @@ What follows from it, and is intended:
   scarcity is the whole mechanism — a gold mark can then only mean "this was read".
 
 **D24 — Two typefaces, split by what a thing *is* rather than by size.**
+*(Superseded by D31: Plus Jakarta Sans and Inter now fill the same two roles.)*
 Space Grotesk sets every heading and every numeral; Instrument Sans sets interface text.
 Montserrat is dropped.
 
@@ -218,7 +220,7 @@ in the numeric voice too: an axis in the interface face beside a metric strip in
 numeric one is a seam nobody names and everybody feels.
 
 **D25 — Radius rises with the size of the element, and elevation is declared once.**
-The ladder is 4 / 6 / 8 / 10 / 14 / 18px — micro-tag, input, button, tile, panel,
+*(Ladder superseded by D31; the principle stands.)* The ladder is 4 / 6 / 8 / 10 / 14 / 18px — micro-tag, input, button, tile, panel,
 housing. A single radius everywhere is the tell of a system that picked a number instead
 of making a decision, and a panel that curves less than the chip inside it stops reading
 as a container. Pills are for small controls only.
@@ -251,6 +253,141 @@ title. Same words, same information, no decorative row — and with the section 
 visible in the rail's active item, a second copy of it above the title was pure
 duplication. Caps micro-labels remain correct where they name a *group of data*
 ("Content themes", "Audience risk"); they are wrong as a label on a heading.
+
+**D31 — The product is soft, light and green; the dark card is the feature, not the frame.**
+*(Supersedes D23, D24 and D25. D21's grouping rule and D18/D19's composition rules
+still stand.)* The chrome was inverted back to light: the rail is white, the topbar is
+transparent on the canvas with a white pill search, and the work sits on a pale
+green-grey ground (`--color-canvas`, #f2f5f3) as white, borderless, generously rounded
+cards. Depth is tonal; a card carries a whisper of shadow (`.card-shadow`), never a
+hairline under a shadow.
+
+The reason: the graphite housing made the product read as an instrument for engineers,
+and the people who buy it are marketing teams. The reference direction — soft ground,
+white rounded cards, one green, prominent avatars, pill controls — is the visual language
+those buyers already trust, and the product's actual differentiators (provenance,
+deterministic scores, honest empty states) survive the re-skin untouched.
+
+What follows from it, and is intended:
+
+- **One green.** `--color-brand` (#17804a, 4.97:1 with white) marks actions, the active
+  route, focus and the score arc, *and* is the hue of a measured positive. On this
+  product "good" and "go" are the same reading. Verified provenance stays blue so it is
+  never confused with a positive.
+- **The instrument tokens kept their names and changed material.** `--color-instrument`
+  is now deep forest (#173a2f) and `Instrument` renders as a rounded feature card inside
+  the page gutter rather than a full-bleed band. Twenty files that used the graphite
+  inherited the new material with no edit. It is still capped at one per screen.
+- **Radius rose.** 6 / 10 / 12 / 16 / 20 / 28px — chip, input, control, tile, card,
+  feature card. Buttons, tabs and segmented controls are pills. The primary button is
+  green with a soft green glow (`--shadow-brand`); ink is not a button colour.
+- **Two voices, still.** Plus Jakarta Sans sets headings and every numeral (it ships
+  `tnum`, so D5's tabular-figure reasoning is satisfied); Inter carries interface text.
+  Weights 500–800 and 400–700 respectively; `font-extrabold` is now legitimate on titles.
+- **Metric tiles may carry an icon coin.** `Metric` takes `icon` and `iconTone`, drawn
+  as a soft tinted circle-square beside the figure — the reference KPI tile. Still one
+  card divided by rules, never a tray of separate boxes.
+- **The application is one rounded object on the page.** `AppShell` draws a
+  `rounded-3xl` frame (`--color-canvas`) on a darker ground (`--color-ground`), and
+  everything lives inside it: a white pill topbar (wordmark, the first five
+  destinations as a centred tab strip, search / alerts / avatar as round controls),
+  an icon-only rail (`IconRail`, active icon a filled green circle, sign-out at the
+  foot) and the page. Below `lg` the rail and tabs give way to the labelled drawer.
+  Cards are flat white — `--shadow-card` is transparent — because a white card on
+  the frame's grey needs no edge.
+- **The creator profile uses the dashboard's composition**
+  (`src/components/profile/profile-bento.tsx`, helpers in
+  `intelligence/bento-card.tsx`). Name heavy and handle light in the header, a
+  refreshed-at pill and the actions beside it; then the same three columns: the
+  score on the green card over a small engagement card, the column chart with a
+  Components / Uploads toggle (uploads plot views as a share of the best one, and
+  the bubble prints the real figure), similar creators as the table, and on the
+  right the follower figure over the history curve — drawn only when the series is
+  sufficient, otherwise the building-history state — then data confidence with the
+  source mix. The tabs sit below for depth. The graphite `HealthPanel` is no
+  longer rendered on this page.
+- **The dashboard follows the reference composition.** Three columns: the score
+  printed on a green "card" (the roster's median health) over a small engagement
+  card; the column chart with a Health / Confidence pill toggle (`ColumnsToggle`,
+  hatched context, solid top bar with a value bubble, dotted axis); the roster as
+  a table spanning both; and a right column with combined audience over an
+  `AreaCurve` (cumulative reach, smallest creator first — not a time series, and
+  labelled so) with Discover / Compare buttons, then data confidence with a
+  shortlist avatar stack. Signals and campaigns sit on the second screen. Chart
+  shapes are hand-rolled SVG in `src/components/charts/bento.tsx` — a dashboard
+  card never imports Recharts. The area fill is the product's one gradient, and it
+  belongs to a chart, not a surface.
+- **Discovery browses as cards, and filters sit beside the search.** `ResultCards`
+  is the default result view — avatar, name, category chips, health, and the three
+  first-pass figures — with a row of quick-sort pills over it and a Cards/Table
+  toggle for the comparison pass. The table is unchanged and still the mobile stack
+  below `lg`. There is no filter rail: a Filters popover (columns, stays open while
+  facets are toggled) from `lg`, a sheet below it, at every width.
+- **Floating layers never live inside a clipping ancestor.** Tooltips render into
+  `document.body` with fixed coordinates from the anchor's viewport rect (closed on
+  scroll rather than repositioned); menus and popovers use the platform top layer.
+  The navigation rail scrolls internally and the profile table scrolls horizontally,
+  and neither may cut off what a control opens.
+- **The rail is fixed, the topbar is a sticky band.** `IconRail` is
+  `position: fixed`, its left edge following the centred frame, its height the
+  window below the topbar; a flow spacer holds its column. The topbar sits in a
+  canvas-coloured sticky band carrying the frame's top padding, so scrolled content
+  passes behind it rather than through the gap above the pill.
+- **Metric labels are sentence case.** Caps micro-labels stay for section eyebrows;
+  a KPI tile beside an icon coin reads as the references do, in a small regular label.
+- **The marketing site inherited the palette and was not redesigned.** Its hero and
+  footer are now deep forest rather than graphite. A light marketing redesign is a
+  separate piece of work.
+
+**D30 — The database feeds itself: two daily jobs, one clock, one bookkeeping row each.**
+`src/server/services/daily-jobs.ts`. `snapshot` re-reads every account not read today
+(`refreshStale`, staleness-ordered) — the only way a growth history is built. `discover`
+runs the next slice of a fixed rotation (`ROTATION`: the 32 category queries, then the
+place plans in `discovery-plan.ts`), the slice derived from the date rather than a stored
+cursor so two runners pick the same queries. Each job records the UTC day it ran in
+`job_runs`, so a timer and a cron cannot double-spend; a snapshot pass cut short by time
+or by its channel cap is *not* recorded, so the next tick continues it.
+
+The clock is in-process — `startScheduler()` from `instrumentation.ts`, a quarter-hour
+tick that runs whatever today still owes once the hour has passed — because a
+long-lived server needs no second piece of infrastructure to have a schedule, and a
+laptop asleep at 09:00 catches up on waking. It is opt-in (`SOCIALORBIT_DAILY_JOBS=true`)
+and needs a YouTube key: nothing spends quota by surprise. Vercel has no long-lived
+process, so `vercel.json` calls the same two functions through the cron routes instead.
+Discovery is capped per day (`SOCIALORBIT_DISCOVERY_SEARCHES_PER_DAY`, default 10 ≈ 1,500
+units) so the snapshot pass (~2 units per account) and operators always have quota left.
+
+**D29 — Postgres is the durable copy; the process still reads from memory.**
+Every read path scores raw rows synchronously on request, and D2 promised the database
+would slot in without touching a component or route handler. So the Postgres driver
+(`src/server/data/postgres.ts`) does exactly that and no more: the record set is loaded
+once per server start (`src/instrumentation.ts` → `warmIngestedStore`) and every store
+mutation is written through in order, in one transaction, as the delta it made. The
+store's write functions now return promises and their callers await them, so a route
+does not answer before the row exists.
+
+Rows are `jsonb` beside the two columns writes are addressed by — the row key and the
+owner a set is replaced under — one mapping for nine kinds. Promote a field to a column
+the first time a query needs an index on it; move reads to queries when the working set
+stops fitting (~10k creators). A Postgres with no creators imports `.data/ingested.json`
+on first boot, so switching drivers is a one-line env change. Shortlists, campaigns,
+users and API keys are still process memory — the influencer database is what grows,
+and it went first.
+
+**D28 — A city is a mention, not a field.**
+No public platform API exposes a location finer than country, so "creators in
+Hyderabad" cannot be observed — but the creator's own text can be read. `placeMentions`
+(`src/server/analytics/place-mentions.ts`) is derived at read time from the channel
+title, description and upload titles: a bio mention counts on its own, uploads need two,
+and a Pakistani channel's "Hyderabad" is not tagged as the Indian one. It is rendered as
+*Mentions*, never as a location, and free-text search matches it. Derived rather than
+stored so the creators ingested before it existed are covered without a backfill.
+
+Place sweeps use the harvest's `queries` mode (`scripts/harvest-places.mjs`): searches
+phrased as a local would write them, ranked by relevance rather than views, restricted
+to India and to channels active in the last eighteen months, in the local script where
+that is what local creators write in. A query surfacing a channel is *not* evidence of
+where it is from — only the text rule above tags a place.
 
 **D21 — The chrome is the ground, the work is the figure.** *(Superseded by D23, which
 keeps this conclusion and reverses its materials: navigation still recedes behind the
@@ -369,7 +506,7 @@ a floor the composite cannot pull below.
 | Charts | Recharts + hand-rolled SVG for sparklines | Palette validated with the dataviz six-check validator |
 | Icons | lucide-react | Stitch used Material Symbols; not carried over |
 | Testing | Vitest (unit/service), Playwright (E2E) | |
-| Persistence | *(deferred)* PostgreSQL + Drizzle | Repository interfaces already written against it |
+| Persistence | PostgreSQL via `pg`, behind the same in-memory read model (D29) | `docker compose up -d` locally; Drizzle deferred until a second migration exists |
 | Queue | *(deferred)* Redis + BullMQ | |
 
 ---
@@ -490,19 +627,19 @@ feature, not decoration — it is what separates SocialOrbit from a directory.
 Design language: **Modern Corporate Minimalism** — a high-density analytical surface that
 should read like a financial terminal. Authoritative, quiet, precise.
 
-- Depth comes from 1px borders and tonal layering, not shadows. Shadows only for
-  overlays that genuinely float.
+- Depth is tonal: white cards on the green-grey canvas, with a whisper of shadow. No
+  hairline under a shadow (D31).
 - Compose with bands and splits before objects (D18). A screen that is a grid of
   identical bordered cards has no hierarchy, and adding a hierarchy afterwards by
   changing type sizes does not create one.
-- Intelligence Blue is for intent — actions, active state, focus. Never large fills,
-  never decoration.
+- The brand green is for intent — actions, active state, focus — and for measured
+  growth. Never decoration.
 - Colour on data means something: emerald = growth, amber = caution, rose = risk. A chart
   series that carries no meaning gets a neutral.
-- Every numeric uses Geist Mono with tabular figures so columns align.
+- Every numeric uses the display face with tabular figures (`.font-num`) so columns align.
 - Density is compact by default. 8px table row padding. Whitespace separates groups, not
   rows.
-- No gradients, no glassmorphism, no decorative charts, no hero sections inside the app.
+- No gradient fills, no glassmorphism, no decorative charts. One feature card per screen.
 - Every screen implements loading, empty, error and partial-data states. A blank screen
   is a bug.
 - Charts that lack sufficient history render an explicit "building history" state — this

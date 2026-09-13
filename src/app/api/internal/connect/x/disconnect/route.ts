@@ -20,7 +20,7 @@ export async function POST() {
     );
     if (!account) throw new ApiFailure("not_found", "No tracked X account for this creator.");
 
-    disconnectX(user.influencerId, account.id);
+    await disconnectX(user.influencerId, account.id);
     return NextResponse.json({ disconnected: true });
   });
 }

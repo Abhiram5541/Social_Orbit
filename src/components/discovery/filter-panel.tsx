@@ -94,7 +94,7 @@ export function FilterPanel({
     <div className={cn("flex flex-col", className)}>
       {/* Sticky, because the rail scrolls on its own: Reset has to stay
           reachable from the bottom of a nine-group filter list. */}
-      <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-line bg-surface px-4 py-2.5">
+      <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-rule bg-surface px-4 py-2.5">
         <div className="min-w-0">
           <Eyebrow>Filters</Eyebrow>
           <p className="text-sm text-ink-subtle">Combine with AND</p>

@@ -36,7 +36,7 @@ function componentTone(value: number, tone: ScoreTone, invert: boolean): string 
   // to prevent.
   if (invert ? value >= 70 : value < 50) return "bg-critical";
   if (invert ? value >= 50 : value < 70) return "bg-caution";
-  return tone === "instrument" ? "bg-instrument-muted" : "bg-neutral-metric";
+  return tone === "instrument" ? "bg-brand-lift" : "bg-brand";
 }
 
 export function ScoreRing({
@@ -63,11 +63,11 @@ export function ScoreRing({
   // Below this the ticks collapse into a grey smudge and read as noise.
   const dialed = size >= 80;
 
-  const track = tone === "instrument" ? "stroke-instrument-line" : "stroke-line";
+  const track = tone === "instrument" ? "stroke-instrument-line" : "stroke-brand-soft";
   const arc = tone === "instrument" ? "stroke-brand-glow" : "stroke-brand";
   const numeral = tone === "instrument" ? "text-instrument-ink" : "text-ink";
   const unit = tone === "instrument" ? "text-instrument-muted" : "text-ink-subtle";
-  const ticks = tone === "instrument" ? "text-brass-lift/55" : "text-brass/40";
+  const ticks = tone === "instrument" ? "text-brass-lift/55" : "text-brass/45";
 
   return (
     <div
@@ -181,7 +181,7 @@ export function ScoreBar({
   const pct = value === null ? 0 : Math.max(raw, 1.5);
   const labelColour = tone === "instrument" ? "text-instrument-muted" : "text-ink-muted";
   const valueColour = tone === "instrument" ? "text-instrument-ink" : "text-ink";
-  const trackColour = tone === "instrument" ? "bg-instrument-line" : "bg-line";
+  const trackColour = tone === "instrument" ? "bg-instrument-line" : "bg-sunken-strong";
 
   return (
     <div className={cn("grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1", className)}>
@@ -204,7 +204,7 @@ export function ScoreBar({
       </span>
       <div
         className={cn(
-          "col-span-2 h-1 overflow-hidden rounded-sm",
+          "col-span-2 h-1.5 overflow-hidden rounded-full",
           // An unmeasured component gets a hatched track rather than an empty
           // one. Empty reads as "a bar that failed to render"; hatched reads as
           // "there is nothing to draw here", which is what is true.
@@ -218,7 +218,7 @@ export function ScoreBar({
       >
         {measured && (
           <div
-            className={cn("animate-extend h-full rounded-sm", componentTone(raw, tone, invert))}
+            className={cn("animate-extend h-full rounded-full", componentTone(raw, tone, invert))}
             style={
               {
                 width: `${pct}%`,

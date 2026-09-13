@@ -322,7 +322,7 @@ export async function ingestYouTubeChannel(
     observation.recentContent,
     observation.provenance.collectedAt,
   );
-  upsertIngested([record]);
+  await upsertIngested([record]);
 
   return {
     influencerId: record.influencer.id,
@@ -465,7 +465,7 @@ export async function ingestXAccount(input: string, postLimit = 50): Promise<Ing
     observation.recentContent,
     observation.provenance.collectedAt,
   );
-  upsertIngested([record]);
+  await upsertIngested([record]);
 
   return {
     influencerId: record.influencer.id,

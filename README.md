@@ -49,6 +49,14 @@ which is gitignored — it is a database, not source, and it is rebuildable from
 connectors. A fresh deployment therefore starts empty and every screen renders its empty
 state. That is correct behaviour, not a broken deploy.
 
+**Ship the data with a CLI deploy.** `.vercelignore` lets `.data/ingested.json.gz` through,
+and `next.config.ts` traces it into every function, so `npx vercel --prod` from a machine
+holding the database deploys with it. Under the Postgres driver, refresh the file first:
+
+```bash
+npm run data:export && npm run data:pack
+```
+
 **A serverless filesystem is read-only.** Ingestion running on Vercel keeps its records in
 the function's memory and logs a warning that they were not persisted; they vanish when the
 instance is recycled. Ingest locally, or attach the PostgreSQL driver, for anything durable.

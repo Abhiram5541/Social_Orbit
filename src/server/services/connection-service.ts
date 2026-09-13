@@ -141,8 +141,8 @@ export async function completeConnection(
     grantedAt: new Date().toISOString(),
     needsReauth: false,
   };
-  upsertGrant(grant);
-  markConnected(verified.influencerId, account.id, true);
+  await upsertGrant(grant);
+  await markConnected(verified.influencerId, account.id, true);
 
   return {
     influencerId: verified.influencerId,
@@ -177,7 +177,7 @@ async function fetchOwnChannel(
 }
 
 /** Flips the stored account and creator onto the connected/verified path. */
-function markConnected(influencerId: string, accountId: string, connected: boolean): void {
+async function markConnected(influencerId: string, accountId: string, connected: boolean): Promise<void> {
   const data = readRecords();
   const influencer = data.influencers.find((item) => item.id === influencerId);
   const accounts = data.accounts.filter((item) => item.influencerId === influencerId);
@@ -185,7 +185,7 @@ function markConnected(influencerId: string, accountId: string, connected: boole
   const snapshot = data.snapshots.find((item) => item.accountId === accountId);
   if (!influencer || accounts.length === 0 || !snapshot) return;
 
-  upsertIngested([
+  await upsertIngested([
     {
       influencer: { ...influencer, isConnected: connected, identityMatched: connected },
       accounts: accounts.map((item) =>
@@ -204,9 +204,9 @@ function markConnected(influencerId: string, accountId: string, connected: boole
   ]);
 }
 
-export function disconnect(influencerId: string, accountId: string): void {
-  removeGrant(accountId);
-  markConnected(influencerId, accountId, false);
+export async function disconnect(influencerId: string, accountId: string): Promise<void> {
+  await removeGrant(accountId);
+  await markConnected(influencerId, accountId, false);
 }
 
 /**
@@ -226,13 +226,13 @@ export async function accessTokenFor(accountId: string): Promise<string | null> 
   }
 
   if (!grant.sealedRefreshToken) {
-    upsertGrant({ ...grant, needsReauth: true });
+    await upsertGrant({ ...grant, needsReauth: true });
     return null;
   }
 
   try {
     const renewed = await refreshAccessToken(openToken(grant.sealedRefreshToken));
-    upsertGrant({
+    await upsertGrant({
       ...grant,
       sealedAccessToken: sealToken(renewed.accessToken),
       expiresAt: renewed.expiresAt,
@@ -242,7 +242,7 @@ export async function accessTokenFor(accountId: string): Promise<string | null> 
   } catch {
     // Revocation is the usual cause. Record it so the creator is asked to
     // reconnect rather than the platform retrying a dead credential forever.
-    upsertGrant({ ...grant, needsReauth: true });
+    await upsertGrant({ ...grant, needsReauth: true });
     return null;
   }
 }

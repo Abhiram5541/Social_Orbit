@@ -179,17 +179,17 @@ export default async function AdminOverviewPage() {
           bandTone={needsHuman > 0 ? "caution" : "positive"}
           explanation={
             <>
-              <span className="font-num text-ink">
+              <span className="font-num font-semibold text-instrument-ink">
                 {formatCompact(stats.totalInfluencers)}
               </span>{" "}
               creators are indexed from{" "}
-              <span className="font-num text-ink">{liveConnectors.length}</span> live{" "}
+              <span className="font-num font-semibold text-instrument-ink">{liveConnectors.length}</span> live{" "}
               {plural(liveConnectors.length, "adapter")}, holding{" "}
-              <span className="font-num text-ink">
+              <span className="font-num font-semibold text-instrument-ink">
                 {formatCompact(stats.totalContent)}
               </span>{" "}
               indexed items and{" "}
-              <span className="font-num text-ink">
+              <span className="font-num font-semibold text-instrument-ink">
                 {formatCompact(stats.totalSnapshots)}
               </span>{" "}
               historical snapshots that are never overwritten. Confidence is capped for an
@@ -199,8 +199,9 @@ export default async function AdminOverviewPage() {
           }
           aside={
             <div>
-              <p className="label-caps-sm mb-2 text-ink-subtle">Pipeline stages</p>
+              <p className="label-caps-sm mb-2 text-instrument-muted">Pipeline stages</p>
               <DistributionRows
+                onInstrument
                 rows={pipeline.map((stage) => ({
                   label: stage.label,
                   value: stage.value,
@@ -270,7 +271,7 @@ export default async function AdminOverviewPage() {
           </Notice>
         )}
 
-        <Split cols="lead" className="overflow-hidden rounded-xl border border-line bg-surface">
+        <Split cols="lead" className="overflow-hidden rounded-xl bg-surface card-shadow">
           <div className="min-w-0">
             <PanelHead>
               <PanelTitle>What needs a human</PanelTitle>
@@ -415,7 +416,7 @@ export default async function AdminOverviewPage() {
           </PanelFoot>
         </Panel>
 
-        <Split cols="even" className="overflow-hidden rounded-xl border border-line bg-surface">
+        <Split cols="even" className="overflow-hidden rounded-xl bg-surface card-shadow">
           <div className="min-w-0">
             <PanelHead>
               <PanelTitle as="h3">Coverage by category</PanelTitle>

@@ -108,9 +108,9 @@ export function HeroSignal({
   const labelInk = dark ? "text-instrument-muted" : "text-ink-subtle";
   const figureInk = dark ? "text-instrument-ink" : "text-ink";
   const bodyInk = dark ? "text-instrument-muted" : "text-ink-muted";
-  const trackBg = dark ? "bg-instrument-line" : "bg-sunken-strong";
-  const trackFill = dark ? "bg-brand-lift" : "bg-ink";
-  const barFill = dark ? "bg-instrument-muted" : "bg-neutral-metric";
+  const trackBg = dark ? "bg-instrument-line" : "bg-brand-soft";
+  const trackFill = dark ? "bg-brand-lift" : "bg-brand";
+  const barFill = dark ? "bg-instrument-muted" : "bg-brand/70";
 
   return (
     <div
@@ -276,10 +276,15 @@ export function Metric({
   footnote,
   provenance,
   tone = "default",
+  icon: Icon,
+  iconTone = "brand",
   className,
 }: {
   label: React.ReactNode;
   value: React.ReactNode;
+  /** A lucide icon drawn in a soft tinted coin beside the figure. */
+  icon?: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+  iconTone?: "brand" | "teal" | "caution" | "critical" | "inferred" | "neutral";
   delta?: number | null;
   deltaSuffix?: string;
   invertDelta?: boolean;
@@ -292,9 +297,28 @@ export function Metric({
   className?: string;
 }) {
   return (
-    <div className={cn("min-w-0 px-4 py-4", className)}>
+    <div className={cn("flex min-w-0 gap-3.5 px-5 py-5", className)}>
+      {Icon && (
+        <span
+          aria-hidden
+          className={cn(
+            "grid size-10 shrink-0 place-items-center rounded-lg",
+            {
+              brand: "bg-brand-soft text-brand-ink",
+              teal: "bg-tint-teal-soft text-tint-teal",
+              caution: "bg-caution-soft text-caution",
+              critical: "bg-critical-soft text-critical",
+              inferred: "bg-inferred-soft text-inferred",
+              neutral: "bg-sunken text-ink-muted",
+            }[iconTone],
+          )}
+        >
+          <Icon className="size-[1.125rem]" aria-hidden />
+        </span>
+      )}
+      <div className="min-w-0 flex-1">
       <dt className="flex items-center gap-1.5">
-        <span className="label-caps-sm truncate text-ink-subtle">{label}</span>
+        <span className="truncate text-sm font-medium text-ink-subtle">{label}</span>
         {provenance && <ProvenanceMark provenance={provenance} />}
       </dt>
       <dd className="mt-1.5">
@@ -302,10 +326,10 @@ export function Metric({
           className={cn(
             "font-num block leading-none",
             tone === "lead"
-              ? "text-metric font-medium text-ink"
+              ? "text-metric font-bold text-ink"
               : tone === "muted"
-                ? "text-stat font-medium text-ink-muted"
-                : "text-stat font-medium text-ink",
+                ? "text-stat font-bold text-ink-muted"
+                : "text-stat font-bold text-ink",
           )}
         >
           {value ?? NO_VALUE}
@@ -329,6 +353,7 @@ export function Metric({
           </div>
         )}
       </dd>
+      </div>
     </div>
   );
 }

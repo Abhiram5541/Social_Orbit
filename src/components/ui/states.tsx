@@ -66,7 +66,7 @@ export function CardSkeleton({ className }: { className?: string }) {
     <div
       role="status"
       aria-label="Loading"
-      className={cn("rounded-xl border border-line bg-surface p-4", className)}
+      className={cn("rounded-xl bg-surface card-shadow p-4", className)}
     >
       <Skeleton className="h-3 w-24" />
       <Skeleton className="mt-3 h-7 w-32" />
@@ -130,7 +130,7 @@ export function EmptyState({
       )}
     >
       {Icon && (
-        <div className="grid size-11 place-items-center rounded-xl border border-line bg-surface text-ink-subtle">
+        <div className="grid size-11 place-items-center rounded-xl bg-surface card-shadow text-ink-subtle">
           <Icon className="size-5" aria-hidden />
         </div>
       )}

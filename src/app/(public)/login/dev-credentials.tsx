@@ -39,7 +39,7 @@ export function DevCredentials({
   onSelect: (email: string, password: string) => void;
 }) {
   return (
-    <details className="rounded-lg border border-line bg-surface text-sm" open>
+    <details className="rounded-lg bg-surface card-shadow text-sm" open>
       <summary className="cursor-pointer select-none rounded-t-lg px-3 py-2 font-medium text-ink-muted transition-colors hover:bg-sunken hover:text-ink">
         Development accounts
       </summary>

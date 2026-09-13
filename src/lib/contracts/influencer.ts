@@ -206,6 +206,12 @@ export const InfluencerSummary = z.object({
   categories: z.array(Category),
   countryCode: z.string().nullable(),
   countryName: z.string().nullable(),
+  /**
+   * Places the creator's own channel text and upload titles keep naming.
+   * Derived from observed text, never from a platform location field — a
+   * mention, not a verified residence.
+   */
+  placeMentions: z.array(z.string()),
   languages: z.array(z.string()),
   activity: ActivityStatus,
   lastActiveAt: z.string().datetime().nullable(),

@@ -470,7 +470,7 @@ export default function LandingPage() {
             </ul>
           </div>
 
-          <div className="mt-8 overflow-hidden rounded-xl border border-line bg-surface">
+          <div className="mt-8 overflow-hidden rounded-xl bg-surface card-shadow">
             <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-rule px-5 py-3">
               <span className="label-caps text-ink-muted">
                 Data confidence against SocialOrbit Health

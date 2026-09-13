@@ -76,6 +76,12 @@ export function CreatorPreview({
                   {item.countryName}
                 </>
               )}
+              {item.placeMentions.length > 0 && (
+                <>
+                  <span aria-hidden> · </span>
+                  {item.placeMentions.join(", ")}
+                </>
+              )}
             </p>
             {item.categories.length > 0 && (
               <ul className="mt-2 flex flex-wrap gap-1">

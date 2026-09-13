@@ -140,7 +140,7 @@ export const Input = React.forwardRef<
       aria-invalid={field?.invalid || undefined}
       aria-required={field?.required || undefined}
       aria-describedby={props["aria-describedby"] ?? field?.describedBy}
-      className={cn("h-9", controlClasses(field?.invalid ?? false, className))}
+      className={cn("h-10", controlClasses(field?.invalid ?? false, className))}
       {...props}
     />
   );
@@ -253,7 +253,7 @@ export function SearchInput({
         data-focus-custom
         className={cn(
           CONTROL_BASE,
-          "h-9 border-line-strong pl-9 pr-8 focus:border-brand",
+          "h-10 rounded-full border-line-strong pl-9 pr-8 focus:border-brand",
           "[&::-webkit-search-cancel-button]:appearance-none",
         )}
         {...props}

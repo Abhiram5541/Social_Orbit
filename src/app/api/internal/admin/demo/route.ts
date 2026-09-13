@@ -11,13 +11,13 @@ import { removeDemoCreators, seedDemoCreators } from "@/server/services/demo-ser
 export async function POST() {
   return handler(async () => {
     await requirePermission("admin:ingestion");
-    return NextResponse.json(seedDemoCreators());
+    return NextResponse.json(await seedDemoCreators());
   });
 }
 
 export async function DELETE() {
   return handler(async () => {
     await requirePermission("admin:ingestion");
-    return NextResponse.json({ removed: removeDemoCreators() });
+    return NextResponse.json({ removed: await removeDemoCreators() });
   });
 }

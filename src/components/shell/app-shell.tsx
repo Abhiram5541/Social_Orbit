@@ -10,39 +10,9 @@ import type { SearchQuota } from "@/lib/contracts/search";
 import { visibleNav, WORKSPACE_HOME } from "@/lib/navigation";
 import { Sheet } from "@/components/ui/dialog";
 import { Wordmark } from "./logo";
-import { AccountMenu, OrgBlock, Sidebar, SidebarNav } from "./sidebar";
+import { AccountMenu, IconRail, OrgBlock, SidebarNav } from "./sidebar";
 import { Topbar } from "./topbar";
 import { CommandPalette } from "./command-palette";
-
-const COLLAPSE_KEY = "socialorbit.nav.collapsed";
-const COLLAPSE_EVENT = "socialorbit:nav-collapse";
-
-/**
- * The sidebar preference lives in localStorage, which the server cannot read.
- * `useSyncExternalStore` takes a separate server snapshot, so the first render
- * matches on both sides and the stored value applies immediately afterwards —
- * without the extra render pass a mount effect would cost.
- */
-function useCollapsedPreference(): boolean {
-  return React.useSyncExternalStore(
-    (onChange) => {
-      window.addEventListener(COLLAPSE_EVENT, onChange);
-      window.addEventListener("storage", onChange);
-      return () => {
-        window.removeEventListener(COLLAPSE_EVENT, onChange);
-        window.removeEventListener("storage", onChange);
-      };
-    },
-    () => {
-      try {
-        return window.localStorage.getItem(COLLAPSE_KEY) === "1";
-      } catch {
-        return false;
-      }
-    },
-    () => false,
-  );
-}
 
 export function AppShell({
   user,
@@ -56,20 +26,8 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const collapsed = useCollapsedPreference();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [paletteOpen, setPaletteOpen] = React.useState(false);
-
-  const toggleCollapsed = React.useCallback(() => {
-    try {
-      const next = window.localStorage.getItem(COLLAPSE_KEY) === "1" ? "0" : "1";
-      window.localStorage.setItem(COLLAPSE_KEY, next);
-    } catch {
-      /* storage unavailable — the preference simply is not remembered */
-    }
-    // Notify this tab; the storage event only fires in *other* tabs.
-    window.dispatchEvent(new Event(COLLAPSE_EVENT));
-  }, []);
 
   // Close the drawer whenever the route changes, including on back/forward.
   // Reset during render rather than in an effect: an effect would paint the
@@ -110,41 +68,39 @@ export function AppShell({
 
   const workspace = ROLE_WORKSPACE[user.role];
   const sections = React.useMemo(() => visibleNav(workspace, can), [workspace, can]);
+  // The topbar strip: the first five destinations in reading order. The rail
+  // carries all of them.
+  const tabs = React.useMemo(
+    () => sections.flatMap((section) => section.items).slice(0, 5),
+    [sections],
+  );
 
   return (
-    <div className="flex min-h-dvh">
+    // The shell: a rounded frame set on the page ground, the way the
+    // reference frames its whole application as one object.
+    <div className="min-h-dvh bg-ground p-2 sm:p-3">
       <a
         href="#main"
-        className="sr-only-focusable absolute left-3 top-3 z-50 rounded-md bg-brand px-3 py-2 text-base font-semibold text-white"
+        className="sr-only-focusable absolute left-3 top-3 z-50 rounded-full bg-brand px-4 py-2 text-base font-semibold text-white"
       >
         Skip to content
       </a>
 
-      <Sidebar
-        sections={sections}
-        collapsed={collapsed}
-        onToggleCollapsed={toggleCollapsed}
-        homeHref={WORKSPACE_HOME[workspace]}
-        user={user}
-      />
-
-      {/* The drawer is the rail, not a lighter copy of it: on a phone the
-          housing is the whole navigation surface, so it carries the same
-          graphite material, the same org block and the same account foot. */}
+      {/* The drawer is the rail: on a phone it carries the same wordmark,
+          org block and account foot, in the same white. */}
       <Sheet
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         title="Navigation"
-        tone="instrument"
       >
         <div className="flex h-full flex-col">
           <div className="px-4 pt-1">
             <Link
               href={WORKSPACE_HOME[workspace]}
-              className="inline-block rounded py-1"
+              className="inline-block rounded-md py-1"
               aria-label="SocialOrbit home"
             >
-              <Wordmark inverse />
+              <Wordmark />
             </Link>
           </div>
           <div className="pt-3">
@@ -157,25 +113,33 @@ export function AppShell({
               onNavigate={() => setDrawerOpen(false)}
             />
           </div>
-          <div className="shrink-0 border-t border-instrument-line p-3">
+          <div className="shrink-0 border-t border-rule p-3">
             <AccountMenu user={user} collapsed={false} />
           </div>
         </div>
       </Sheet>
 
-      <div className="bg-instrument flex min-w-0 flex-1 flex-col">
-        <Topbar
-          user={user}
-          quota={quota}
-          unreadCount={unreadCount}
-          onOpenNav={() => setDrawerOpen(true)}
-          onOpenSearch={() => setPaletteOpen(true)}
-        />
-        {/* The paper, set inside the housing. Everything above this line is
-            chrome; everything below it is the work. */}
-        <main id="main" className="min-w-0 flex-1 bg-canvas">
-          {children}
-        </main>
+      <div className="mx-auto flex min-h-[calc(100dvh-1.5rem)] max-w-[1680px] flex-col gap-4 rounded-3xl bg-canvas px-3 pb-3 sm:px-4 sm:pb-4">
+        {/* The sticky band carries the frame's top padding in the canvas
+            colour, so scrolled content passes behind it rather than through
+            the gap above the pill. */}
+        <div className="sticky top-0 z-30 bg-canvas pt-3 sm:pt-4">
+          <Topbar
+            user={user}
+            quota={quota}
+            tabs={tabs}
+            homeHref={WORKSPACE_HOME[workspace]}
+            unreadCount={unreadCount}
+            onOpenNav={() => setDrawerOpen(true)}
+            onOpenSearch={() => setPaletteOpen(true)}
+          />
+        </div>
+        <div className="flex min-w-0 flex-1 gap-4">
+          <IconRail sections={sections} />
+          <main id="main" className="min-w-0 flex-1 pb-4">
+            {children}
+          </main>
+        </div>
       </div>
 
       <CommandPalette
@@ -239,7 +203,7 @@ export function PageHeader({
   ];
 
   return (
-    <div className={cn("px-4 pb-5 pt-5 sm:px-6 sm:pt-6", className)}>
+    <div className={cn("px-1 pb-5 pt-2 sm:px-2", className)}>
       {trail.length > 0 && (
         <nav aria-label="Breadcrumb" className="mb-2">
           <ol className="flex flex-wrap items-center gap-1.5 text-sm text-ink-subtle">
@@ -281,7 +245,7 @@ export function PageHeader({
                 titleAs,
                 {
                   className:
-                    "font-display text-title font-bold tracking-display text-ink",
+                    "font-display text-title font-extrabold tracking-display text-ink sm:text-title-lg",
                 },
                 title,
               )}
@@ -314,13 +278,9 @@ export function PageHeader({
 }
 
 /**
- * The screen's first analysis surface, directly under the header.
- *
- * The header now sits on the warm canvas, so this band is the first white
- * object on the page — which is the hierarchy the product wants: paper is the
- * ground, white is where measurement happens. It is full-bleed rather than a
- * tray of floating tiles, because a row of separate cards is what made every
- * screen read as the same template.
+ * The screen's first analysis surface, directly under the header: one white
+ * card holding the supporting figures. One card, not a tray of tiles — the
+ * strip inside it divides with hairlines, so six figures read as one reading.
  */
 export function PageBand({
   className,
@@ -330,7 +290,7 @@ export function PageBand({
   return (
     <div
       className={cn(
-        "border-y border-line bg-surface",
+        "overflow-hidden rounded-xl bg-surface card-shadow",
         inset && "px-4 sm:px-6",
         className,
       )}
@@ -343,5 +303,5 @@ export function PageBody({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("px-4 py-5 sm:px-6 sm:py-6", className)} {...props} />;
+  return <div className={cn("px-0 py-1 sm:px-1", className)} {...props} />;
 }

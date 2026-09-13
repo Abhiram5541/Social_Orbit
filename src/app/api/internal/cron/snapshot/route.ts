@@ -1,66 +1,27 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { timingSafeEqual } from "node:crypto";
-import { errorResponse } from "@/server/auth/rbac";
-import { refreshStale } from "@/server/services/harvest-service";
-import { sendOpsEvent } from "@/server/services/notification-service";
+import { cronGate } from "@/server/auth/cron";
+import { runSnapshotJob } from "@/server/services/daily-jobs";
 
 /* ---------------------------------------------------------------------------
- * Daily snapshot job.
+ * Daily snapshot job, for a scheduler that calls over HTTP (Vercel Cron).
  *
  * A snapshot is an observation of a moment, and a growth trend is what you get
- * when enough of them accumulate on different days. Nobody is going to click
- * refresh on 627 creators every morning, so this is the thing that makes the
- * growth-pattern component reachable at all.
- *
- * Authenticated by a shared secret rather than a session: the caller is a
- * scheduler, not a person. Unsecured, it would be an endpoint any passer-by
- * could use to burn a day's API quota.
+ * when enough of them accumulate on different days. The job itself lives in
+ * daily-jobs.ts; this route only fits it inside a serverless time limit.
  * ------------------------------------------------------------------------ */
 
 /** Vercel caps a Hobby function at 60s; the job's own budget stays under it. */
 export const maxDuration = 60;
 
-function authorised(request: NextRequest): boolean {
-  const expected = process.env.CRON_SECRET?.trim();
-  if (!expected) return false;
-
-  // Vercel Cron sends `Authorization: Bearer <CRON_SECRET>`.
-  const header = request.headers.get("authorization") ?? "";
-  const given = header.startsWith("Bearer ") ? header.slice(7) : header;
-
-  const a = Buffer.from(given);
-  const b = Buffer.from(expected);
-  return a.length === b.length && timingSafeEqual(a, b);
-}
-
 export async function GET(request: NextRequest) {
-  if (!process.env.CRON_SECRET?.trim()) {
-    // Refusing beats running unauthenticated: this endpoint spends quota.
-    return errorResponse(
-      "connector_unavailable",
-      "CRON_SECRET is not set, so the scheduled snapshot job is disabled.",
-    );
-  }
-  if (!authorised(request)) {
-    return errorResponse("unauthenticated", "Invalid cron credentials.");
-  }
+  const refused = cronGate(request);
+  if (refused) return refused;
 
-  const report = await refreshStale({
-    // Comfortably inside maxDuration, leaving room for the final write.
-    budgetMs: 45_000,
-    maxChannels: 200,
-  });
-
-  // Announced on whichever channels are configured. Awaited because a
-  // serverless runtime freezes at return — a floating promise would be cut
-  // off mid-flight — but the job's success never depends on the announcement.
-  await sendOpsEvent("Daily snapshot", [
-    `${report.ingested} creators refreshed, ${report.quotaUnitsSpent} quota units spent.`,
-    report.remaining > 0
-      ? `${report.remaining} still carrying an older reading — tomorrow's pass starts with them.`
-      : "Every account holds a reading from today.",
-    ...(report.stoppedEarly ? [`Stopped early: ${report.stoppedEarly}`] : []),
-  ]);
+  // Comfortably inside maxDuration, leaving room for the final write. The job
+  // only records itself done when every due account was reached, so a cron
+  // that fires more than once a day keeps working through the rest.
+  const report = await runSnapshotJob(new Date(), { budgetMs: 45_000, maxChannels: 200 });
+  if (!report) return NextResponse.json({ ranAt: new Date().toISOString(), alreadyRanToday: true });
 
   return NextResponse.json({
     ranAt: new Date().toISOString(),
