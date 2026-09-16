@@ -22,7 +22,7 @@ import { RowList } from "@/components/ui/panel";
  * to act on it — which is the shape a finding actually has.
  *
  * A feed row is never decorative. Every one of these must be generated from
- * a measured change; there is no "welcome to SocialOrbit" row.
+ * a measured change; there is no "welcome to SENSO" row.
  * ------------------------------------------------------------------------ */
 
 export type InsightKind = "positive" | "caution" | "critical" | "neutral" | "brand";

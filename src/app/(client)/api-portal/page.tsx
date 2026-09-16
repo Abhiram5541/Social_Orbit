@@ -28,7 +28,7 @@ export default async function ApiPortalPage() {
         title="Developer API"
         description="Query the same canonical database the application runs on. Versioned, rate limited and scoped."
         meta={
-          <code className="text-sm text-ink-muted">https://api.socialorbit.io/v1</code>
+          <code className="text-sm text-ink-muted">https://senso360.com/api/v1</code>
         }
       />
       <PageBody className="space-y-4">
@@ -85,12 +85,12 @@ export default async function ApiPortalPage() {
             {/* Light specimen: the dark surface belongs to the score readout
                 alone, and code carries the mono texture from the base layer. */}
             <pre className="scroll-x rounded-lg border border-line bg-sunken px-3 py-2.5 text-sm leading-5 text-ink">
-              <code>{`curl https://api.socialorbit.io/v1/influencers?country=IN&health_min=75 \\
+              <code>{`curl https://senso360.com/api/v1/influencers?country=IN&health_min=75 \\
   -H "Authorization: Bearer so_live_••••••••"`}</code>
             </pre>
             <p>
               Every response carries{" "}
-              <code className="text-ink">x-socialorbit-api-version</code>. Errors use
+              <code className="text-ink">x-senso-api-version</code>. Errors use
               one shape: <code className="text-ink">{`{ "error": { "code", "message" } }`}</code>.
             </p>
             <dl>

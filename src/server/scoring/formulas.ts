@@ -12,7 +12,7 @@ import { confidenceBand, type DataConfidence, type RiskLevel } from "@/lib/contr
 import { clamp } from "@/server/analytics/metrics";
 
 /* ---------------------------------------------------------------------------
- * The SocialOrbit scoring engine — DPR §10.
+ * The SENSO scoring engine — DPR §10.
  *
  * Deterministic, versioned and reproducible. An LLM never sees this file's
  * output as an input to itself: AI may produce the *classification* inputs

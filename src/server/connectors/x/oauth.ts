@@ -6,7 +6,7 @@ import { ConnectorUnavailable } from "./x-connector";
  * X OAuth2 (PKCE) — the second source tier.
  *
  * Everything the app-only connector reads is public. This is what a creator
- * authorises: their own account, and the identity match that makes SocialOrbit
+ * authorises: their own account, and the identity match that makes SENSO
  * Verified mean something (Arch §2). X's own "verified" blue-check flag is a
  * different, weaker claim and must never stand in for this.
  *

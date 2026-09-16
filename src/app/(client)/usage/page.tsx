@@ -164,7 +164,7 @@ export default async function UsagePage() {
                 being built.
               </p>
               <LinkButton
-                href={`mailto:accounts@socialorbit.io?subject=${encodeURIComponent(
+                href={`mailto:accounts@senso360.com?subject=${encodeURIComponent(
                   `Plan change — ${user.orgName}`,
                 )}&body=${encodeURIComponent(
                   `Organisation: ${user.orgName}\nCurrent plan: ${plan.label}\n\nWhat we need:\n`,

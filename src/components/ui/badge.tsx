@@ -7,7 +7,9 @@ export type BadgeTone =
   | "positive"
   | "caution"
   | "critical"
-  | "inferred";
+  | "inferred"
+  /** Identity verified through OAuth — blue, so it never reads as a positive. */
+  | "verified";
 
 const TONES: Record<BadgeTone, string> = {
   neutral: "bg-sunken text-ink-muted border-line",
@@ -16,6 +18,7 @@ const TONES: Record<BadgeTone, string> = {
   caution: "bg-caution-soft text-caution border-caution-line",
   critical: "bg-critical-soft text-critical border-critical-line",
   inferred: "bg-inferred-soft text-inferred border-inferred-line",
+  verified: "bg-verified-soft text-verified border-verified-line",
 };
 
 /*
@@ -31,6 +34,7 @@ const ON_INSTRUMENT: Record<BadgeTone, string> = {
   caution: "border-caution/50 text-caution-line [--dot:var(--color-caution-line)]",
   critical: "border-critical/60 text-critical-line [--dot:var(--color-critical-line)]",
   inferred: "border-inferred/60 text-inferred-line [--dot:var(--color-inferred-line)]",
+  verified: "border-verified/60 text-verified-lift [--dot:var(--color-verified-lift)]",
 };
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {

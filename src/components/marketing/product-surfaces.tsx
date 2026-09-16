@@ -110,8 +110,8 @@ export function DossierMasthead() {
             {SPECIMEN_DOSSIER.market}
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            <Badge tone="brand" dot>
-              SocialOrbit Verified
+            <Badge tone="verified" dot>
+              SENSO Verified
             </Badge>
             <Badge tone="positive" dot>
               Low risk
@@ -125,7 +125,7 @@ export function DossierMasthead() {
           <ScoreRing value={SPECIMEN_DOSSIER.health} size={104} tone="instrument" />
           <div className="min-w-40 flex-1 space-y-3">
             <div>
-              <p className="label-caps text-instrument-muted">SocialOrbit Health</p>
+              <p className="label-caps text-instrument-muted">SENSO Health</p>
               <p className="mt-0.5 font-display text-stat font-bold leading-tight">Excellent</p>
             </div>
             <div className="space-y-2">
@@ -342,8 +342,8 @@ export function CreatorDossier() {
             {SPECIMEN_DOSSIER.categories.join(", ")}
           </p>
           <div className="mt-2.5 flex flex-wrap gap-1.5">
-            <Badge tone="brand" dot>
-              SocialOrbit Verified
+            <Badge tone="verified" dot>
+              SENSO Verified
             </Badge>
             <Badge tone="positive" dot>
               Low risk
@@ -358,7 +358,7 @@ export function CreatorDossier() {
         <div className="flex flex-wrap items-center gap-6">
           <ScoreRing value={SPECIMEN_DOSSIER.health} size={128} tone="instrument" />
           <div className="min-w-56 flex-1">
-            <p className="label-caps text-instrument-muted">SocialOrbit Health</p>
+            <p className="label-caps text-instrument-muted">SENSO Health</p>
             <p className="mt-1 text-stat-lg font-semibold leading-tight">Excellent</p>
             <p className="mt-1 text-sm text-instrument-muted">
               94th percentile of 412 technology creators in the 1M+ follower band.
@@ -495,7 +495,7 @@ export function ProvenanceDossier() {
         <dl className="divide-y divide-rule px-3 text-sm">
           <ProvenanceRow
             term="Method"
-            detail="Calculated by SocialOrbit from observed values using a published formula."
+            detail="Calculated by SENSO from observed values using a published formula."
           />
           <ProvenanceRow
             term="Source"
@@ -811,7 +811,7 @@ export function QualityCanvas({ className }: { className?: string }) {
     <figure
       className={cn("m-0", className)}
       role="img"
-      aria-label="Every scored creator plotted by SocialOrbit Health against the data confidence behind it. The mass sits mid-health on moderate confidence; a small group scores well on evidence too thin to rely on."
+      aria-label="Every scored creator plotted by SENSO Health against the data confidence behind it. The mass sits mid-health on moderate confidence; a small group scores well on evidence too thin to rely on."
     >
       <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" aria-hidden>
         {ticks.map((tick) => (
@@ -860,7 +860,7 @@ export function QualityCanvas({ className }: { className?: string }) {
           fontSize={11}
           fill="var(--color-ink-subtle)"
         >
-          SocialOrbit Health
+          SENSO Health
         </text>
         <text
           x={-(PAD.top + plotH / 2)}

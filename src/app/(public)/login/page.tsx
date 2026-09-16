@@ -66,7 +66,7 @@ export default async function LoginPage({
               with stated uncertainty, sweeping in like the real one does. */}
           <InstrumentPanel />
           <h1 className="font-display text-title font-bold tracking-display text-instrument-ink">
-            Every number on a SocialOrbit profile can tell you where it came from.
+            Every number on a SENSO profile can tell you where it came from.
           </h1>
           <ul className="space-y-4">
             <Pitch
@@ -85,7 +85,7 @@ export default async function LoginPage({
         </div>
 
         <p className="relative text-sm text-instrument-subtle">
-          © {new Date().getFullYear()} SocialOrbit. Influencer intelligence platform.
+          © {new Date().getFullYear()} SENSO. Influencer intelligence platform.
         </p>
       </section>
 
@@ -100,7 +100,7 @@ export default async function LoginPage({
               Sign in
             </h2>
             <p className="text-base text-ink-muted">
-              Use your SocialOrbit workspace account.
+              Use your SENSO workspace account.
             </p>
           </div>
 
@@ -120,12 +120,12 @@ export default async function LoginPage({
             devPassword={
               process.env.NODE_ENV === "production"
                 ? process.env.DEV_SEED_PASSWORD
-                : (process.env.DEV_SEED_PASSWORD ?? "SocialOrbit-Dev-2026")
+                : (process.env.DEV_SEED_PASSWORD ?? "SENSO-Dev-2026")
             }
           />
 
           <p className="text-base text-ink-muted">
-            New to SocialOrbit?{" "}
+            New to SENSO?{" "}
             <Link href="/register" className="rounded font-medium text-brand-ink hover:underline">
               Create an account
             </Link>
@@ -159,7 +159,7 @@ function InstrumentPanel() {
       className="animate-rise overflow-hidden rounded-2xl bg-instrument-raised text-instrument-ink shadow-instrument"
     >
       <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-instrument-line-strong px-4 py-3">
-        <span className="label-caps text-instrument-muted">SocialOrbit Health</span>
+        <span className="label-caps text-instrument-muted">SENSO Health</span>
         <span className="label-caps-sm text-instrument-muted">
           Specimen — illustrative values
         </span>

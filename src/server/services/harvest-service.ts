@@ -2,7 +2,9 @@ import type { Category } from "@/lib/contracts/common";
 import {
   ConnectorUnavailable,
   discoverChannelIds,
+  fetchChannel,
   fetchChannels,
+  parseChannelInput,
   fetchRecentVideos,
   type DiscoveryOptions,
 } from "@/server/connectors/youtube";
@@ -273,6 +275,66 @@ export async function refreshStored(
     for (let i = 0; i < ids.length; i += 25) {
       await readAndStore(ids.slice(i, i + 25), options.videosPerChannel ?? 50, report);
     }
+  } catch (error) {
+    if (error instanceof ConnectorUnavailable) report.stoppedEarly = error.message;
+    else throw error;
+  }
+
+  return report;
+}
+
+/**
+ * Ingests channels named by an outside list — an open dataset, a client's own
+ * roster — rather than found by search. A seed is a channel id, an @handle or
+ * a youtube.com URL; the list is only used to *find* the channel, and every
+ * figure stored is then read from the platform, so nothing a dataset claims
+ * about a creator ever enters the database.
+ *
+ * Seeds already held, by id or by handle, are skipped before any call is made:
+ * an id costs nothing to skip and a handle would cost a unit to resolve.
+ * Resolution is committed in batches of fifty so a quota that runs out keeps
+ * what was already read.
+ */
+export async function ingestSeeds(
+  seeds: string[],
+  options: { videosPerChannel?: number } = {},
+): Promise<HarvestReport & { alreadyHeld: number }> {
+  const report = { discovered: 0, ingested: 0, skipped: [], quotaUnitsSpent: 0, stoppedEarly: null, alreadyHeld: 0 } as HarvestReport & { alreadyHeld: number };
+
+  const { accounts } = ingestedRecords();
+  const heldIds = new Set(accounts.map((account) => account.platformAccountId));
+  const heldHandles = new Set(accounts.map((account) => account.handle.toLowerCase()));
+  const queue: string[] = [];
+
+  try {
+    for (const seed of new Set(seeds.map((seed) => seed.trim()).filter(Boolean))) {
+      const ref = parseChannelInput(seed);
+      if (ref.kind === "id" ? heldIds.has(ref.value) : heldHandles.has(ref.value.replace(/^@/, "").toLowerCase())) {
+        report.alreadyHeld += 1;
+        continue;
+      }
+
+      let id = ref.kind === "id" ? ref.value : null;
+      if (!id) {
+        const channel = await fetchChannel(seed);
+        report.quotaUnitsSpent += 1;
+        if (!channel) {
+          report.skipped.push({ channelId: seed, reason: "No channel matched this handle." });
+          continue;
+        }
+        id = channel.channelId;
+      }
+      if (heldIds.has(id)) {
+        report.alreadyHeld += 1;
+        continue;
+      }
+      heldIds.add(id);
+      queue.push(id);
+      report.discovered += 1;
+
+      if (queue.length === 50) await readAndStore(queue.splice(0), options.videosPerChannel ?? 50, report);
+    }
+    if (queue.length > 0) await readAndStore(queue, options.videosPerChannel ?? 50, report);
   } catch (error) {
     if (error instanceof ConnectorUnavailable) report.stoppedEarly = error.message;
     else throw error;

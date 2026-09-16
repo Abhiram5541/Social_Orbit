@@ -105,8 +105,8 @@ export async function sendEmail(options: {
 
 /**
  * HMAC-SHA256 over the exact bytes being sent, so a receiver can verify the
- * payload came from SocialOrbit and was not altered. The signature goes in
- * `X-SocialOrbit-Signature` as `sha256=<hex>` — the shape GitHub and Stripe
+ * payload came from SENSO and was not altered. The signature goes in
+ * `X-SENSO-Signature` as `sha256=<hex>` — the shape GitHub and Stripe
  * receivers already know how to check.
  */
 export function signPayload(body: string): string | null {
@@ -125,7 +125,7 @@ export async function deliverWebhook(url: string, event: unknown): Promise<boole
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-SocialOrbit-Signature": signature,
+        "X-SENSO-Signature": signature,
       },
       body,
     });

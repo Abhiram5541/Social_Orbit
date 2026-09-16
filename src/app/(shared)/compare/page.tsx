@@ -137,7 +137,7 @@ export default async function ComparePage({
           aria-label="Health scores side by side"
         >
           <header className="flex flex-wrap items-center justify-between gap-3 border-b border-instrument-line px-4 py-2.5">
-            <h2 className="label-caps text-instrument-muted">SocialOrbit Health</h2>
+            <h2 className="label-caps text-instrument-muted">SENSO Health</h2>
             <span className="font-num text-xs text-instrument-muted">
               {profiles[0].health.formulaVersion}
             </span>
@@ -157,7 +157,7 @@ export default async function ComparePage({
                       value={profile.healthScore}
                       size={96}
                       tone="instrument"
-                      label={`${profile.displayName}: SocialOrbit Health`}
+                      label={`${profile.displayName}: SENSO Health`}
                     />
                     <Link
                       href={`/influencers/${profile.id}`}
@@ -247,7 +247,7 @@ export default async function ComparePage({
               <Tbody>
                 {/* The product's own measurements lead; identity and platform
                     figures follow as the evidence beneath them. */}
-                <Section label="SocialOrbit scores" span={profiles.length + 1} />
+                <Section label="SENSO scores" span={profiles.length + 1} />
                 <NumericRow
                   label="Health score"
                   profiles={profiles}

@@ -71,7 +71,7 @@ export function CostEfficiencyPanel({ profile }: { profile: InfluencerProfile })
 
         <p className="text-xs leading-5 text-ink-muted">
           Derived from the modelled earnings range and this creator&apos;s own observed median
-          views, not from a rate card. SocialOrbit does not hold this creator&apos;s asking
+          views, not from a rate card. SENSO does not hold this creator&apos;s asking
           rate, and they have not quoted one — treat these as an order of magnitude, not a
           price.
         </p>

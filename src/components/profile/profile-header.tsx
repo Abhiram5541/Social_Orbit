@@ -17,8 +17,8 @@ import { RefreshButton } from "./refresh-button";
 
 const VERIFICATION: Record<VerificationStatus, { label: string; tone: BadgeTone; note: string }> = {
   verified: {
-    label: "SocialOrbit Verified",
-    tone: "brand",
+    label: "SENSO Verified",
+    tone: "verified",
     note: "Account connected through OAuth and identity-matched.",
   },
   pending: {

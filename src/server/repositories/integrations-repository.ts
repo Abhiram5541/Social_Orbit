@@ -1,7 +1,7 @@
 import { connectorStatuses, type ConnectorState } from "./ops-repository";
 
 /* ---------------------------------------------------------------------------
- * The integrations catalog — everything SocialOrbit connects to, or intends
+ * The integrations catalog — everything SENSO connects to, or intends
  * to, in one honestly-graded list.
  *
  * The same rule as the connector grid (ops-repository): status is derived

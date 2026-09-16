@@ -19,7 +19,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
 import { Instrument } from "@/components/ui/panel";
-import { OrbitMark } from "@/components/shell/logo";
+import { SensoMark } from "@/components/shell/logo";
 import { AreaCurve } from "@/components/charts/bento";
 import { ColumnsToggle } from "@/components/charts/columns-toggle";
 import { CardHead, RoundLink, SplitFigure } from "@/components/intelligence/bento-card";
@@ -128,8 +128,8 @@ export function HealthGreenCard({ profile }: { profile: InfluencerProfile }) {
           />
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2">
-              <OrbitMark className="size-6 [&_rect]:fill-white/20" />
-              <span className="font-display text-base font-bold">SocialOrbit</span>
+              <SensoMark tile={false} className="size-6" />
+              <span className="font-display text-base font-bold">SENSO</span>
             </span>
             <span className="rounded-full bg-white/15 px-2.5 py-1 label-caps-sm text-white">
               {measured ? HEALTH_BAND_LABEL[health.band].split(" ")[0] : "Unscored"}
@@ -576,7 +576,7 @@ export function AiCard({ profile }: { profile: InfluencerProfile }) {
           <Sparkles className="size-5" aria-hidden />
         </span>
         <div>
-          <p className="font-display text-base font-bold text-instrument-ink">SocialOrbit AI</p>
+          <p className="font-display text-base font-bold text-instrument-ink">SENSO AI</p>
           <p className="text-xs text-instrument-muted">Interprets the score. Never sets it.</p>
         </div>
         <Badge tone="inferred" onInstrument className="ml-auto">

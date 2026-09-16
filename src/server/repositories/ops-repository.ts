@@ -24,7 +24,8 @@ export interface DatabaseStats {
   lowConfidenceProfiles: number;
   conflictedProfiles: number;
   byPlatform: { platform: Platform; accounts: number; followers: number }[];
-  byCategory: { category: string; count: number }[];
+  /** `category` is null for creators whose platform topics map to nothing (D14). */
+  byCategory: { category: string | null; count: number }[];
   byCountry: { country: string; count: number }[];
 }
 
@@ -66,7 +67,7 @@ export function databaseStats(now: Date = new Date()): DatabaseStats {
     lowConfidenceProfiles: summaries.filter((summary) => summary.confidence < 50).length,
     conflictedProfiles: data.influencers.filter((raw) => raw.conflictCount > 0).length,
     byPlatform: [...platformTotals].map(([platform, totals]) => ({ platform, ...totals })),
-    byCategory: tally(data.influencers.map((raw) => raw.categories[0])).map(
+    byCategory: tally(data.influencers.map((raw) => raw.categories[0] ?? null)).map(
       ([category, count]) => ({ category, count }),
     ),
     byCountry: tally(data.influencers.map((raw) => raw.countryName)).map(([country, count]) => ({
@@ -320,14 +321,14 @@ export interface AuditEntry {
  */
 const AUDIT: AuditEntry[] = [
   { id: "aud_012", at: "2026-08-26T08:31:00.000Z", actor: "owner@northwind.example", action: "auth.login", target: "session", detail: "Password sign-in succeeded", ip: "203.0.113.24" },
-  { id: "aud_011", at: "2026-08-26T07:12:00.000Z", actor: "admin@socialorbit.io", action: "scoring.config_read", target: "health-1.0.0", detail: "Viewed scoring weights", ip: "198.51.100.9" },
-  { id: "aud_010", at: "2026-08-26T06:05:00.000Z", actor: "analyst@socialorbit.io", action: "auth.login", target: "session", detail: "Password sign-in succeeded", ip: "198.51.100.14" },
-  { id: "aud_009", at: "2026-08-25T16:44:00.000Z", actor: "manager@socialorbit.io", action: "influencer.publish", target: "inf_0031", detail: "Draft approved and published after review", ip: "198.51.100.7" },
-  { id: "aud_008", at: "2026-08-25T16:40:00.000Z", actor: "manager@socialorbit.io", action: "verification.approve", target: "inf_0031", detail: "Identity match passed; SocialOrbit Verified issued", ip: "198.51.100.7" },
+  { id: "aud_011", at: "2026-08-26T07:12:00.000Z", actor: "admin@senso360.com", action: "scoring.config_read", target: "health-1.0.0", detail: "Viewed scoring weights", ip: "198.51.100.9" },
+  { id: "aud_010", at: "2026-08-26T06:05:00.000Z", actor: "analyst@senso360.com", action: "auth.login", target: "session", detail: "Password sign-in succeeded", ip: "198.51.100.14" },
+  { id: "aud_009", at: "2026-08-25T16:44:00.000Z", actor: "manager@senso360.com", action: "influencer.publish", target: "inf_0031", detail: "Draft approved and published after review", ip: "198.51.100.7" },
+  { id: "aud_008", at: "2026-08-25T16:40:00.000Z", actor: "manager@senso360.com", action: "verification.approve", target: "inf_0031", detail: "Identity match passed; SENSO Verified issued", ip: "198.51.100.7" },
   { id: "aud_007", at: "2026-08-25T11:18:00.000Z", actor: "member@northwind.example", action: "shortlist.item_add", target: "sl_q4_tech", detail: "Added inf_0017", ip: "203.0.113.51" },
   { id: "aud_006", at: "2026-08-24T09:02:00.000Z", actor: "hello@lumen.example", action: "auth.login", target: "session", detail: "Password sign-in succeeded", ip: "203.0.113.88" },
-  { id: "aud_005", at: "2026-08-23T14:20:00.000Z", actor: "admin@socialorbit.io", action: "api_key.revoke", target: "key_3f9a", detail: "Key revoked at customer request", ip: "198.51.100.9" },
-  { id: "aud_004", at: "2026-08-22T10:03:00.000Z", actor: "admin@socialorbit.io", action: "user.role_change", target: "usr_client_member", detail: "client_member granted (was none)", ip: "198.51.100.9" },
+  { id: "aud_005", at: "2026-08-23T14:20:00.000Z", actor: "admin@senso360.com", action: "api_key.revoke", target: "key_3f9a", detail: "Key revoked at customer request", ip: "198.51.100.9" },
+  { id: "aud_004", at: "2026-08-22T10:03:00.000Z", actor: "admin@senso360.com", action: "user.role_change", target: "usr_client_member", detail: "client_member granted (was none)", ip: "198.51.100.9" },
   { id: "aud_003", at: "2026-08-21T09:15:00.000Z", actor: "member@northwind.example", action: "shortlist.create", target: "sl_beauty_always_on", detail: "Shortlist created", ip: "203.0.113.51" },
   { id: "aud_002", at: "2026-08-20T18:41:00.000Z", actor: "system", action: "ingestion.dead_letter", target: "inf_0044:youtube", detail: "Refresh failed 5 times; moved to dead-letter queue", ip: "—" },
   { id: "aud_001", at: "2026-08-19T08:20:00.000Z", actor: "owner@northwind.example", action: "shortlist.item_add", target: "sl_q4_tech", detail: "Added inf_0017", ip: "203.0.113.24" },

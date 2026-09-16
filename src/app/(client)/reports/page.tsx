@@ -74,7 +74,7 @@ export default async function ReportsPage() {
       <PageHeader
         eyebrow="Activate"
         title="Reports"
-        description="Export what SocialOrbit holds, with the provenance intact — every figure states whether it was verified, observed, derived, estimated or AI-inferred. A number that leaves the platform without that context is a number someone will eventually misquote."
+        description="Export what SENSO holds, with the provenance intact — every figure states whether it was verified, observed, derived, estimated or AI-inferred. A number that leaves the platform without that context is a number someone will eventually misquote."
       />
       <PageBody className="space-y-4">
         <Notice tone="caution" title="Exports run from the record, not from here">

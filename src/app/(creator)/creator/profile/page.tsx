@@ -79,7 +79,7 @@ export default async function CreatorProfilePage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-base text-ink-muted">
-                Confidence measures how much SocialOrbit can vouch for your numbers — how
+                Confidence measures how much SENSO can vouch for your numbers — how
                 complete the record is, how much history exists, and how authoritative the
                 sources are. It is separate from your health score.
               </p>

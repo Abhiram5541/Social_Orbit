@@ -29,7 +29,7 @@ async function login() {
   const response = await fetch(`${APP_URL}/api/internal/auth/login`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ email: "admin@socialorbit.io", password: env.DEV_SEED_PASSWORD }),
+    body: JSON.stringify({ email: "admin@senso360.com", password: env.DEV_SEED_PASSWORD }),
   });
   if (!response.ok) throw new Error(`login failed: ${response.status} ${await response.text()}`);
   const cookie = response.headers.get("set-cookie");

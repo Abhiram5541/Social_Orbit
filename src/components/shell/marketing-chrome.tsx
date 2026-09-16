@@ -48,7 +48,7 @@ export function MarketingChrome({
         )}
       >
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-7 px-4 sm:px-6">
-          <Link href="/" className="rounded" aria-label="SocialOrbit home">
+          <Link href="/" className="rounded" aria-label="SENSO home">
             <Wordmark inverse={onDark} />
           </Link>
           <nav aria-label="Main" className="hidden md:block">
@@ -132,7 +132,7 @@ export function MarketingChrome({
         </div>
         <div className="border-t border-instrument-line">
           <p className="mx-auto max-w-6xl px-4 py-4 text-sm text-instrument-subtle sm:px-6">
-            © {new Date().getFullYear()} SocialOrbit. Data is collected from official platform
+            © {new Date().getFullYear()} SENSO. Data is collected from official platform
             APIs and authorized connections. Estimated and AI-inferred values are labelled as
             such throughout the product. Creators shown in marketing interfaces are
             illustrative; coverage figures are read live from the database.

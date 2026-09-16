@@ -91,7 +91,7 @@ describe("fetchAccount", () => {
 
   it("never surfaces X's own verified badge as anything but xVerifiedBadge", async () => {
     // The single easiest way to violate Arch §2: X's legacy/paid blue-check
-    // must never be read as SocialOrbit's OAuth-confirmed Verified status.
+    // must never be read as SENSO's OAuth-confirmed Verified status.
     mockBearerToken(fetchMock);
     fetchMock.mockResolvedValueOnce({
       ok: true,

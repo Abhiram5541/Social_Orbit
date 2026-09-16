@@ -40,7 +40,7 @@ const ACTIVITY_LABEL: Record<ActivityStatus, string> = {
 };
 
 const VERIFICATION_LABEL: Record<VerificationStatus, string> = {
-  verified: "SocialOrbit Verified",
+  verified: "SENSO Verified",
   pending: "Connection pending",
   unverified: "Unverified",
 };

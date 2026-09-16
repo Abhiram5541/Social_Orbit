@@ -42,7 +42,7 @@ function componentTone(value: number, tone: ScoreTone, invert: boolean): string 
 export function ScoreRing({
   value,
   size = 96,
-  label = "SocialOrbit Health",
+  label = "SENSO Health",
   tone = "light",
   animate = true,
   className,

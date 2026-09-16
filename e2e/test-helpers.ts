@@ -2,16 +2,16 @@ import { expect, type Locator, type Page, type APIRequestContext } from "@playwr
 
 /** Development seed accounts — see src/server/repositories/user-repository.ts. */
 export const ACCOUNTS = {
-  superAdmin: "admin@socialorbit.io",
-  manager: "manager@socialorbit.io",
-  analyst: "analyst@socialorbit.io",
+  superAdmin: "admin@senso360.com",
+  manager: "manager@senso360.com",
+  analyst: "analyst@senso360.com",
   clientOwner: "owner@northwind.example",
   clientMember: "member@northwind.example",
   freeClient: "hello@lumen.example",
-  creator: "creator@socialorbit.io",
+  creator: "creator@senso360.com",
 } as const;
 
-export const PASSWORD = process.env.DEV_SEED_PASSWORD ?? "SocialOrbit-Dev-2026";
+export const PASSWORD = process.env.DEV_SEED_PASSWORD ?? "SENSO-Dev-2026";
 
 /** Signs in through the real form, so the test exercises the actual flow. */
 export async function signIn(page: Page, email: string) {

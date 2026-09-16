@@ -96,7 +96,7 @@ export default async function AdminOverviewPage() {
       kind: "critical" as const,
       headline: `${conflicts.length} ${plural(conflicts.length, "profile")} ${conflicts.length === 1 ? "has" : "have"} sources that disagree`,
       evidence:
-        "Confidence stays reduced until a reviewer resolves them. SocialOrbit never silently picks a winner.",
+        "Confidence stays reduced until a reviewer resolves them. SENSO never silently picks a winner.",
       href: "/admin/anomalies",
       actionLabel: "Resolve",
     },
@@ -154,7 +154,7 @@ export default async function AdminOverviewPage() {
   return (
     <>
       <PageHeader
-        eyebrow="SocialOrbit platform"
+        eyebrow="SENSO platform"
         title="Platform overview"
         description="Database coverage, connector health and the queues that need a human."
         actions={
@@ -425,9 +425,13 @@ export default async function AdminOverviewPage() {
             <PanelBody>
               <DistributionRows
                 rows={stats.byCategory.slice(0, 8).map((row) => ({
+                  // A creator whose platform topics map to no category (D14)
+                  // is a real group too, and it was rendering as an unkeyed
+                  // row with no label.
                   label:
                     CATEGORY_LABEL[row.category as keyof typeof CATEGORY_LABEL] ??
-                    row.category,
+                    row.category ??
+                    "No category observed",
                   value: row.count,
                 }))}
                 total={stats.totalInfluencers}

@@ -9,7 +9,7 @@ export default function PrivacyPage() {
     <LegalPage
       eyebrow="Legal"
       title="Privacy"
-      summary="What SocialOrbit collects, where it comes from, how long it is kept, and how a creator can correct or remove it."
+      summary="What SENSO collects, where it comes from, how long it is kept, and how a creator can correct or remove it."
       updated="27 August 2026"
       sections={[
         {
@@ -23,7 +23,7 @@ export default function PrivacyPage() {
                 fact keeps its source, the time it was collected, and a confidence value.
               </p>
               <p>
-                SocialOrbit does not scrape private or platform-protected information, and does
+                SENSO does not scrape private or platform-protected information, and does
                 not use AI providers as a route to data a platform has not made available.
               </p>
             </>
@@ -34,13 +34,13 @@ export default function PrivacyPage() {
           body: (
             <>
               <p>
-                When a creator connects an account, SocialOrbit requests the narrowest scopes
+                When a creator connects an account, SENSO requests the narrowest scopes
                 that allow it to read that creator&apos;s own statistics. Access tokens are
                 encrypted at rest and are never sent to a browser.
               </p>
               <p>
                 Audience demographics come only from connected professional accounts. They are
-                visible to the creator and to SocialOrbit reviewers — never to clients browsing
+                visible to the creator and to SENSO reviewers — never to clients browsing
                 a public profile, and never through the API.
               </p>
             </>

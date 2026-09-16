@@ -22,7 +22,7 @@ export default async function VerificationPage() {
   const steps = [
     {
       label: "Create or claim your profile",
-      detail: "Your SocialOrbit record exists and you are signed in as its owner.",
+      detail: "Your SENSO record exists and you are signed in as its owner.",
       done: true,
     },
     {
@@ -33,13 +33,13 @@ export default async function VerificationPage() {
     {
       label: "Identity match",
       detail:
-        "SocialOrbit confirms the connected platform identity is the same account as the profile you claimed.",
+        "SENSO confirms the connected platform identity is the same account as the profile you claimed.",
       done: profile.verification === "verified",
     },
     {
       label: "Verified badge issued",
       detail:
-        "Your profile shows SocialOrbit Verified, and authorized first-party analytics become available.",
+        "Your profile shows SENSO Verified, and authorized first-party analytics become available.",
       done: profile.verification === "verified",
     },
   ];
@@ -49,7 +49,7 @@ export default async function VerificationPage() {
       <PageHeader
         eyebrow="My presence"
         title="Verification"
-        description="SocialOrbit Verified is issued only after an account connection and a successful identity match — never from public data."
+        description="SENSO Verified is issued only after an account connection and a successful identity match — never from public data."
         actions={
           <Badge
             tone={
@@ -61,7 +61,7 @@ export default async function VerificationPage() {
             }
           >
             {profile.verification === "verified"
-              ? "SocialOrbit Verified"
+              ? "SENSO Verified"
               : profile.verification === "pending"
                 ? "Pending checks"
                 : "Unverified"}
@@ -105,7 +105,7 @@ export default async function VerificationPage() {
               <div className="space-y-2">
                 <p className="flex items-center gap-2">
                   <BadgeCheck className="size-5 text-verified" aria-hidden />
-                  <span className="text-md font-semibold text-ink">SocialOrbit Verified</span>
+                  <span className="text-md font-semibold text-ink">SENSO Verified</span>
                 </p>
                 {matched && (
                   <dl>
@@ -133,7 +133,7 @@ export default async function VerificationPage() {
           <CardContent className="space-y-2 text-base text-ink-muted">
             <p>
               Brands filter by verification. An unverified profile is built from public data
-              alone: the numbers are real, but SocialOrbit cannot confirm you own the account,
+              alone: the numbers are real, but SENSO cannot confirm you own the account,
               and audience demographics are unavailable because no authorised source provides
               them.
             </p>

@@ -6,7 +6,7 @@ import { ConnectorUnavailable } from "./youtube-connector";
  *
  * Everything the API-key connector reads is public. This is what a creator
  * authorises: their own analytics, which is where audience demographics, watch
- * time and impressions live, and the identity match that makes SocialOrbit
+ * time and impressions live, and the identity match that makes SENSO
  * Verified mean something (Arch §2).
  *
  * Two scopes and no more. `youtube.readonly` confirms which channel consented;

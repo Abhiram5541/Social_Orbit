@@ -9,7 +9,7 @@ import { Delta, ProvenanceMark } from "./provenance";
 
 /* ---------------------------------------------------------------------------
  * The metric tile. Used across every dashboard, so it carries the whole
- * grammar of a SocialOrbit number: label, value, change, and where it came
+ * grammar of a SENSO number: label, value, change, and where it came
  * from — in that reading order, every time.
  * ------------------------------------------------------------------------ */
 

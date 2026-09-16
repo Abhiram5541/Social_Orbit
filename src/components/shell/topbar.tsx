@@ -55,7 +55,7 @@ export function Topbar({
       {/* One node, not a phone/desktop pair: two nodes toggled by media
           rules render stacked the moment a stylesheet is stale. On a phone
           only the tagline is dropped. */}
-      <Link href={homeHref} className="shrink-0 rounded-md" aria-label="SocialOrbit home">
+      <Link href={homeHref} className="shrink-0 rounded-md" aria-label="SENSO home">
         <Wordmark className="[&_.label-caps-sm]:hidden sm:[&_.label-caps-sm]:block" />
       </Link>
 

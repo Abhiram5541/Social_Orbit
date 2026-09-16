@@ -2,7 +2,7 @@
  * Cost efficiency — deterministic, and explicitly modelled.
  *
  * CPM, CPE and CPV are arithmetic over an assumed placement price, not
- * observations and not a rate card. SocialOrbit does not hold creator rates
+ * observations and not a rate card. SENSO does not hold creator rates
  * (CLAUDE.md D4), so every figure here is derived from the same modelled
  * earnings band the profile already labels as an estimate.
  *

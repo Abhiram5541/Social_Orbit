@@ -19,7 +19,7 @@ export default async function IntegrationsPage() {
       <PageHeader
         eyebrow="Trust & data"
         title="Integrations"
-        description="Everything SocialOrbit connects to, graded by what actually works today."
+        description="Everything SENSO connects to, graded by what actually works today."
       />
       <PageBody className="space-y-4">
         <Notice tone="info" title={`${live} of ${integrations.length} integrations are live`}>

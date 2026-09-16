@@ -39,7 +39,7 @@ import {
   Insight,
   InsightFeed,
 } from "@/components/intelligence/insight";
-import { OrbitMark } from "@/components/shell/logo";
+import { SensoMark } from "@/components/shell/logo";
 import {
   CardHead,
   RoundLink,
@@ -53,7 +53,7 @@ const BAND_READING: Record<
   { label: string; tone: "positive" | "brand" | "caution" | "critical" }
 > = {
   excellent: { label: "Excellent", tone: "positive" },
-  strong: { label: "Strong", tone: "brand" },
+  strong: { label: "Strong", tone: "positive" },
   fair: { label: "Fair", tone: "caution" },
   weak: { label: "Needs review", tone: "critical" },
 };
@@ -124,7 +124,7 @@ export default async function DashboardPage() {
                     <Panel>
                       <CardHead
                         title="Roster health"
-                        subtitle="Median SocialOrbit Health"
+                        subtitle="Median SENSO Health"
                         href="/shortlists"
                       />
                       <PanelBody className="pt-0">
@@ -135,9 +135,9 @@ export default async function DashboardPage() {
                           />
                           <div className="flex items-center justify-between">
                             <span className="flex items-center gap-2">
-                              <OrbitMark className="size-6 [&_rect]:fill-white/20" />
+                              <SensoMark tile={false} className="size-6" />
                               <span className="font-display text-base font-bold">
-                                SocialOrbit
+                                SENSO
                               </span>
                             </span>
                             <span className="rounded-full bg-white/15 px-2.5 py-1 label-caps-sm text-white">
@@ -435,7 +435,7 @@ export default async function DashboardPage() {
                       Nothing needs a decision
                     </p>
                     <p className="mt-1 max-w-md text-sm text-ink-muted">
-                      SocialOrbit is watching this roster for risk signals,
+                      SENSO is watching this roster for risk signals,
                       health falling below review threshold, dormancy, thin
                       confidence and stale observations. None are firing.
                     </p>
@@ -622,7 +622,7 @@ function FirstRun({ indexed }: { indexed: number }) {
                 variant="ghost"
                 className="text-instrument-ink hover:bg-instrument-raised hover:text-instrument-ink"
               >
-                How SocialOrbit scores
+                How SENSO scores
               </LinkButton>
             </div>
           </div>

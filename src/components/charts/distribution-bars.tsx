@@ -21,7 +21,8 @@ export type DistributionTone =
   | "caution"
   | "critical"
   | "neutral"
-  | "inferred";
+  | "inferred"
+  | "verified";
 
 export const BAR_TONE: Record<DistributionTone, string> = {
   positive: "bg-positive",
@@ -30,6 +31,7 @@ export const BAR_TONE: Record<DistributionTone, string> = {
   critical: "bg-critical",
   neutral: "bg-neutral-metric",
   inferred: "bg-inferred",
+  verified: "bg-verified",
 };
 
 /*
@@ -45,6 +47,7 @@ const BAR_TONE_INSTRUMENT: Record<DistributionTone, string> = {
   critical: "bg-critical-lift",
   neutral: "bg-instrument-muted",
   inferred: "bg-inferred-line",
+  verified: "bg-verified-lift",
 };
 
 export interface DistributionRow {

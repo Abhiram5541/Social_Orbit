@@ -14,7 +14,7 @@ import { InfoHint } from "@/components/ui/overlay";
 import { HEALTH_BAND_LABEL, RiskBadge, ScoreBar, ScoreRing } from "@/components/intelligence/score";
 
 /* ---------------------------------------------------------------------------
- * The SocialOrbit Health readout.
+ * The SENSO Health readout.
  *
  * This is the one dark surface in the product, and the one place the design
  * spends its boldness. The reasoning: a measurement reported with its own
@@ -52,7 +52,7 @@ export function HealthPanel({
     <section className="animate-rise relative overflow-hidden rounded-2xl bg-instrument text-instrument-ink shadow-instrument before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/8">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-instrument-line px-4 py-2.5">
         <div className="flex items-center gap-2">
-          <h2 className="label-caps text-instrument-muted">SocialOrbit Health</h2>
+          <h2 className="label-caps text-instrument-muted">SENSO Health</h2>
           <InfoHint label="How the health score is calculated">
             Nine weighted components, computed in backend code by formula{" "}
             {health.formulaVersion}. AI classifies some inputs; it never sets the score.

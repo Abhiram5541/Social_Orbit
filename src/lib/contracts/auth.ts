@@ -4,7 +4,7 @@ import { z } from "zod";
  * Identity, tenancy and permissions — DPR §12, decision D1 in CLAUDE.md
  *
  * Two kinds of organisation share one table: the single `platform` org that
- * SocialOrbit staff belong to, and any number of `client` orgs. The influencer
+ * SENSO staff belong to, and any number of `client` orgs. The influencer
  * database is global; everything a client creates is scoped to its org.
  * ------------------------------------------------------------------------ */
 

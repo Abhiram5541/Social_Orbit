@@ -171,6 +171,13 @@ describe("fetchChannel", () => {
     await expect(fetchChannel("@mkbhd")).rejects.toMatchObject({ reason: "credentials_missing" });
   });
 
+  it("reads a channel whose uploads playlist is gone as having no uploads", async () => {
+    // A 404 here is a fact about the channel, not an outage: it must not abort
+    // the batch of fifty channels being read behind it.
+    respond(404, { error: { message: "playlist not found", errors: [{ reason: "playlistNotFound" }] } });
+    await expect(fetchRecentVideos("UUgone")).resolves.toEqual([]);
+  });
+
   it("refuses to call the API without a key", async () => {
     vi.stubEnv("YOUTUBE_API_KEY", "");
     await expect(fetchChannel("@mkbhd")).rejects.toBeInstanceOf(ConnectorUnavailable);

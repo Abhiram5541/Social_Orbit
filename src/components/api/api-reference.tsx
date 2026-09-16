@@ -20,13 +20,13 @@ const ENDPOINTS = [
 const PARAMETERS = [
   { name: "country", type: "string[]", detail: "ISO 3166-1 alpha-2, comma separated." },
   { name: "language", type: "string[]", detail: "ISO 639-1, comma separated." },
-  { name: "category", type: "string[]", detail: "SocialOrbit taxonomy ids." },
+  { name: "category", type: "string[]", detail: "SENSO taxonomy ids." },
   { name: "platform", type: "string[]", detail: "youtube, instagram." },
   { name: "followers_min / followers_max", type: "integer", detail: "Audience size bounds." },
   { name: "engagement_min", type: "number", detail: "Minimum engagement rate, percent." },
-  { name: "health_min", type: "number", detail: "Minimum SocialOrbit Health score, 0–100." },
+  { name: "health_min", type: "number", detail: "Minimum SENSO Health score, 0–100." },
   { name: "campaign_fit_min", type: "number", detail: "Minimum campaign fit, 0–100." },
-  { name: "verified", type: "boolean", detail: "Restrict to SocialOrbit Verified creators." },
+  { name: "verified", type: "boolean", detail: "Restrict to SENSO Verified creators." },
   { name: "sort", type: "string", detail: "health_score_desc, followers_desc, engagement_desc." },
   { name: "page / page_size", type: "integer", detail: "Page defaults to 1; page_size to 25, max 100." },
 ];

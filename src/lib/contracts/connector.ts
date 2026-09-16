@@ -79,7 +79,7 @@ export const ProbedAccount = z.object({
   following: z.number().int(),
   postCount: z.number().int(),
   listedCount: z.number().int(),
-  /** X's own paid/legacy badge — NOT SocialOrbit Verified (Arch §2). */
+  /** X's own paid/legacy badge — NOT SENSO Verified (Arch §2). */
   xVerifiedBadge: z.boolean(),
   url: z.string(),
 });

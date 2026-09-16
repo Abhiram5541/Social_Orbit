@@ -1,22 +1,23 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   SocialOrbit design tokens
+   SENSO design tokens
 
    The product answers "should I work with this creator?" — a decision made
    by marketing teams, not by engineers. Four decisions carry that reading:
 
-   1. THE CANVAS IS SOFT, AND THE WORK FLOATS ON IT. A pale green-grey ground
+   1. THE CANVAS IS SOFT, AND THE WORK FLOATS ON IT. A pale violet-grey ground
       with white, borderless, generously rounded cards set on it. Structure is
       tonal: a card is white *because* the ground is not, so no hairline is
       needed to say where it ends. The chrome (rail, topbar) is the same white
       as the cards — it is furniture in the same room, not a housing around it.
 
-   2. ONE GREEN, SPENT ON INTENT AND ON GROWTH. The brand green marks actions,
-      the active route, focus and the score arc. It is also the colour of a
-      measured positive — deliberately: on this product "good" and "go" are
-      the same reading. Deep forest (`--color-instrument`) is the one dark
-      material, used for the single feature card a screen is allowed.
+   2. ONE VIOLET, SPENT ON INTENT. The brand violet — the mark's purple —
+      marks actions, the active route, focus and the score arc, and nothing
+      it measures: a positive reading is green, caution amber, risk rose, so
+      a control never looks like a result. Deep violet (`--color-instrument`,
+      the mark's tile) is the one dark material, used for the single feature
+      card a screen is allowed.
 
    3. RADIUS IS LARGE AND RISES WITH SIZE. 6 / 10 / 12 / 16 / 20 / 28px —
       chip, input, button, tile, card, feature card. Controls are pills.
@@ -78,51 +79,56 @@
   --tracking-tight: -0.015em;
 
   /* --- Workspace -------------------------------------------------------
-     A soft green-grey ground; white where the work is. */
+     A soft violet-grey ground, tinted from the mark's tile; white where the
+     work is. */
   /* The frame: the page ground the rounded shell sits on, then the shell's
      own fill, then white where the work is. Three steps, no lines. */
-  --color-ground: #e4e7e5;
-  --color-canvas: #f2f3f2;
+  --color-ground: #e6e3ec;
+  --color-canvas: #f3f2f6;
   --color-surface: #ffffff;
-  --color-sunken: #f4f6f5;
-  --color-sunken-strong: #e8ece9;
+  --color-sunken: #f5f4f8;
+  --color-sunken-strong: #e9e6ef;
 
-  --color-line: #e6ebe8;
-  --color-line-strong: #d3dad5;
+  --color-line: #e7e4ee;
+  --color-line-strong: #d6d1e0;
   /* The rule used *inside* a card to separate rows. Lighter than any edge. */
-  --color-rule: #eef1ef;
+  --color-rule: #efedf4;
 
   /* Three-step text ramp. Every step clears WCAG AA against surface, canvas
-     and sunken — measured: 14.9, 6.3 and 4.9 worst case. */
-  --color-ink: #14201a;
-  --color-ink-muted: #4f5b55;
-  --color-ink-subtle: #5f6c65;
-  --color-ink-inverse: #f6f9f7;
+     and sunken — measured: 16.3, 7.5 and 5.7 worst case. */
+  --color-ink: #17122a;
+  --color-ink-muted: #524a66;
+  --color-ink-subtle: #635b78;
+  --color-ink-inverse: #f7f5fb;
 
-  /* --- Instrument: the deep-forest feature card ------------------------
-     The one dark material. It no longer wraps the page; it is a rounded card
-     a screen may use once, for its headline reading. Token names are kept
-     from the graphite era so every consumer inherited the new material. */
-  --color-instrument: #173a2f;
-  --color-instrument-deep: #112c24;
-  --color-instrument-raised: #1f4a3c;
-  --color-instrument-line: #275846;
-  --color-instrument-line-strong: #33705a;
-  --color-instrument-ink: #f2f8f4;
-  --color-instrument-muted: #a9c7b7;
-  --color-instrument-subtle: #8fb3a1;
+  /* --- Instrument: the deep-violet feature card ------------------------
+     The one dark material — the tile the SENSO mark sits on. It does not
+     wrap the page; it is a rounded card a screen may use once, for its
+     headline reading. Token names are kept from the graphite era so every
+     consumer inherited the new material. */
+  --color-instrument: #1a0a2e;
+  --color-instrument-deep: #120722;
+  --color-instrument-raised: #261441;
+  --color-instrument-line: #342052;
+  --color-instrument-line-strong: #4a3175;
+  --color-instrument-ink: #f5f1fb;
+  --color-instrument-muted: #b7a8d8;
+  --color-instrument-subtle: #9a8bbf;
 
-  /* --- Accent: the green ------------------------------------------------
-     Actions, active route, focus, the score arc. 4.97:1 with white text. */
-  --color-brand: #17804a;
-  --color-brand-active: #156d3c;
-  --color-brand-soft: #e5f4eb;
-  --color-brand-softer: #f1f9f4;
-  --color-brand-line: #bfe3cd;
-  --color-brand-ink: #146b3b;
-  /* On the deep-forest card. */
-  --color-brand-lift: #7fd6a2;
-  --color-brand-glow: #5fcf8f;
+  /* --- Accent: the violet -----------------------------------------------
+     The mark's purple. Actions, active route, focus, the score arc.
+     6.86:1 with white text. A measured positive is *not* this hue any more:
+     "go" is violet, "good" stays green, so a button can never be mistaken
+     for a reading. */
+  --color-brand: #5b2cf0;
+  --color-brand-active: #4c22cc;
+  --color-brand-soft: #ece6fd;
+  --color-brand-softer: #f4f1fe;
+  --color-brand-line: #cfc0f9;
+  --color-brand-ink: #4a1fc4;
+  /* On the deep-violet card. */
+  --color-brand-lift: #b28cff;
+  --color-brand-glow: #8f6bff;
 
   /* --- Brass: measurement, and nothing else ------------------------------
      The dial's tick ring and the verification seal. Never a control. */
@@ -150,24 +156,29 @@
   --color-critical-line: #f5c3cc;
   --color-critical-lift: #f78a9c;
 
-  --color-neutral-metric: #55635c;
+  --color-neutral-metric: #5b5470;
 
   /* --- Provenance: how a fact came to exist ------------------------------
-     Verified stays blue so it is never confused with a positive reading. */
+     Verified stays blue so it is never confused with a positive reading.
+     Inferred moved from violet to teal when violet became the brand: an
+     AI-derived badge must never read as an action. */
   --color-verified: #2b62d9;
+  --color-verified-soft: #e7eefc;
+  --color-verified-line: #bdd1f6;
+  --color-verified-lift: #9dbcff;
   --color-observed: #167243;
-  --color-inferred: #6d45c9;
-  --color-inferred-soft: #f0ebfc;
-  --color-inferred-line: #d6c6f4;
+  --color-inferred: #0e7490;
+  --color-inferred-soft: #e3f4f8;
+  --color-inferred-line: #b5dfe9;
   --color-estimated: #a1600a;
 
   /* --- Chart series -----------------------------------------------------
-     Fixed order, never cycled. Green, deep teal, warm orange — three is the
-     ceiling; comparison renders side-by-side. */
-  --color-series-1: #1f9457;
-  --color-series-2: #2c5f72;
-  --color-series-3: #d9822b;
-  --color-grid: #e6ebe8;
+     Fixed order, never cycled. Violet, deep teal, warm orange — the mark's
+     three families; three is the ceiling and comparison renders side-by-side. */
+  --color-series-1: #5b2cf0;
+  --color-series-2: #1d6a7a;
+  --color-series-3: #d9782a;
+  --color-grid: #e7e4ee;
 
   /* --- Decorative tints: avatar identity only ---------------------------- */
   --color-tint-slate: #4a5a6b;
@@ -188,19 +199,19 @@
   /* --- Elevation ---------------------------------------------------------
      Cards are borderless; depth is tonal against the canvas, and a card that
      floats gets a wide, soft, low-alpha shadow rather than a hairline. */
-  --shadow-raised: 0 1px 2px 0 rgb(20 40 30 / 0.04);
+  --shadow-raised: 0 1px 2px 0 rgb(26 10 46 / 0.04);
   /* Flat: a white card on the shell's grey needs no shadow to have an edge. */
   --shadow-card: 0 0 0 0 transparent;
-  --shadow-lifted: 0 2px 6px -2px rgb(20 40 30 / 0.08), 0 14px 32px -12px rgb(20 40 30 / 0.14);
-  --shadow-popover: 0 0 0 1px rgb(20 40 30 / 0.05), 0 6px 12px -4px rgb(20 40 30 / 0.08),
-    0 20px 40px -12px rgb(20 40 30 / 0.16);
-  --shadow-overlay: 0 0 0 1px rgb(20 40 30 / 0.06), 0 12px 24px -8px rgb(20 40 30 / 0.12),
-    0 36px 72px -20px rgb(20 40 30 / 0.28);
-  --shadow-instrument: 0 4px 12px -4px rgb(17 44 36 / 0.3), 0 24px 48px -16px rgb(17 44 36 / 0.4);
+  --shadow-lifted: 0 2px 6px -2px rgb(26 10 46 / 0.08), 0 14px 32px -12px rgb(26 10 46 / 0.14);
+  --shadow-popover: 0 0 0 1px rgb(26 10 46 / 0.05), 0 6px 12px -4px rgb(26 10 46 / 0.08),
+    0 20px 40px -12px rgb(26 10 46 / 0.16);
+  --shadow-overlay: 0 0 0 1px rgb(26 10 46 / 0.06), 0 12px 24px -8px rgb(26 10 46 / 0.12),
+    0 36px 72px -20px rgb(26 10 46 / 0.28);
+  --shadow-instrument: 0 4px 12px -4px rgb(18 7 34 / 0.3), 0 24px 48px -16px rgb(18 7 34 / 0.4);
   --shadow-chrome-raised: inset 0 1px 0 0 rgb(255 255 255 / 0.08);
-  /* The brand pill: a coloured glow under a green button, the way the
+  /* The brand pill: a coloured glow under a violet button, the way the
      references light a primary action. */
-  --shadow-brand: 0 1px 2px rgb(23 128 74 / 0.2), 0 8px 20px -8px rgb(23 128 74 / 0.45);
+  --shadow-brand: 0 1px 2px rgb(91 44 240 / 0.2), 0 8px 20px -8px rgb(91 44 240 / 0.45);
 
   /* --- Layout constants ------------------------------------------------- */
   --spacing-sidebar: 16rem;
@@ -306,7 +317,7 @@
     outline: none;
   }
 
-  /* On the deep-forest card the brand green does not clear contrast; the
+  /* On the deep-violet card the brand violet does not clear contrast; the
      lift variant exists for exactly this surface. */
   .bg-instrument :focus-visible,
   .bg-instrument-deep :focus-visible {
@@ -616,7 +627,7 @@
     );
   }
 
-  /* A cursor-tracked green wash on a dark surface. The component sets --mx
+  /* A cursor-tracked violet wash on a dark surface. The component sets --mx
      and --my on pointer move; with no pointer the element is simply inert. */
   .pointer-glow::before {
     content: "";
@@ -626,7 +637,7 @@
     opacity: 0;
     background: radial-gradient(
       18rem circle at var(--mx, 50%) var(--my, 0%),
-      rgb(95 207 143 / 0.18),
+      rgb(143 107 255 / 0.18),
       transparent 65%
     );
     transition: opacity var(--duration-base) var(--ease-out-quick);
@@ -668,7 +679,7 @@
 
   dialog::backdrop {
     opacity: 0;
-    background-color: rgb(17 44 36 / 0.4);
+    background-color: rgb(18 7 34 / 0.4);
     backdrop-filter: blur(3px);
     transition:
       opacity var(--duration-base) var(--ease-out-quick),

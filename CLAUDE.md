@@ -1,4 +1,4 @@
-# SocialOrbit — Project Instructions
+# SENSO — Project Instructions
 
 Influencer intelligence, verification, analytics and API platform. This file is the
 permanent orientation document: read it before touching anything.
@@ -338,6 +338,48 @@ What follows from it, and is intended:
 - **The marketing site inherited the palette and was not redesigned.** Its hero and
   footer are now deep forest rather than graphite. A light marketing redesign is a
   separate piece of work.
+
+**D34 — Production is one Hostinger VPS, not Vercel.**
+`srv1082984.hstgr.cloud` (168.231.120.57), Ubuntu 24.04 with CloudPanel. The app runs
+as the `senso` site user under PM2 on port 3005 (`pm2-senso` systemd unit), behind
+CloudPanel's nginx with a Let's Encrypt certificate; PostgreSQL 16 is native
+(`senso` database, restored from the local dump on 2026-09-16 with 4,138 creators).
+Secrets live only in `/home/senso/htdocs/srv1082984.hstgr.cloud/.env.production.local`
+and are never synced. `scripts/deploy-vps.sh` rsyncs the working tree, builds on the
+server and restarts. The in-process scheduler (D30) runs there, so `vercel.json`'s
+crons are dormant until a Vercel deployment exists again. Move to the real domain by
+adding a CloudPanel site for it and updating `APP_URL` and the OAuth redirect URIs.
+
+**D33 — The palette is the mark's: violet for intent, the tile for the feature card.**
+*(Amends D31's "one green".)* `--color-brand` is now the logo's purple (#5b2cf0,
+6.86:1 with white), `--color-instrument` its tile (#1a0a2e), and the ground, canvas,
+lines and ink are violet-tinted greys rather than green-grey. Two consequences are
+deliberate. First, "go" and "good" are no longer the same hue: a measured positive
+stays green, so the "Strong" health band and the "Good" confidence band moved from
+`brand` to `positive`, and a control can never be mistaken for a reading. Second,
+`inferred` moved from violet to teal (#0e7490) — an AI-derived badge sharing the
+action colour would have looked like something to click. `verified` gained soft /
+line / lift steps and a `Badge` and bar tone of its own, so the SENSO Verified chip
+is blue as §8 always intended rather than borrowed from the brand. Chart series are
+violet, deep teal, warm orange — the mark's three families. Semantic hues, brass and
+the shape and type systems are untouched.
+
+**D32 — The product is SENSO; the codebase's internals still say socialorbit.**
+Renamed 2026-09-16, five days before launch. Everything a person can see says SENSO:
+copy, metadata, the wordmark, the `SENSO Verified` / `SENSO Health` labels, the seed
+accounts (`admin@senso360.com`), the public API headers (`x-senso-api-version`,
+`X-SENSO-Signature`), the API base URL and the mailto addresses. The mark is
+`SensoMark` in `src/components/shell/logo.tsx` — an SVG tracing of the supplied
+logo, so it is crisp at rail size and is also the favicon (`src/app/icon.svg`,
+`apple-icon.png`). The original raster belongs at `public/brand/senso-mark.png`.
+
+Deliberately *not* renamed, because each is a deploy-time identifier whose only
+audience is this codebase and renaming it risks the launch for no visible gain:
+the `SOCIALORBIT_*` env vars, the `so_session` cookie, the `socialorbit-postgres`
+container and its volume, the `socialorbit.dev.store` registry symbol, the
+`docs/` blueprints and the product-rule tables in this file. Rename them after
+launch, together, or never. The domain is `senso360.com` (Hostinger, registered 2026-09-16); the public
+API is served from it at `/api/v1` rather than from an `api.` subdomain.
 
 **D30 — The database feeds itself: two daily jobs, one clock, one bookkeeping row each.**
 `src/server/services/daily-jobs.ts`. `snapshot` re-reads every account not read today

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1250 1250">
+  <defs>
+    <linearGradient id="top" x1="330" y1="330" x2="920" y2="330" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffa41c"/><stop offset="1" stop-color="#ff2d6a"/></linearGradient>
+    <linearGradient id="bottom" x1="920" y1="920" x2="330" y2="920" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#1fd6ff"/><stop offset="1" stop-color="#5a26ff"/></linearGradient>
+    <linearGradient id="legA" x1="430" y1="460" x2="640" y2="660" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5a1fe0"/><stop offset="1" stop-color="#bf4cf0"/></linearGradient>
+    <linearGradient id="legB" x1="820" y1="790" x2="610" y2="590" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff1f66"/><stop offset="1" stop-color="#ff6f7e"/></linearGradient>
+  </defs>
+  <rect x="105" y="105" width="1040" height="1040" rx="185" fill="#1a0a2e"/>
+  <path stroke="#1a0a2e" stroke-width="26" stroke-linejoin="miter" fill="url(#legA)" d="M 564 432 L 672 576 L 591 684 L 412 446 Z"/>
+  <path stroke="#1a0a2e" stroke-width="26" stroke-linejoin="miter" fill="url(#legB)" d="M 686 818 L 578 674 L 659 566 L 838 804 Z"/>
+  <path fill="url(#top)" d="M 505 270 H 920 L 822 400 H 580 Q 540 400 564 432 L 412 446 C 334 342 315 270 505 270 Z"/>
+  <path fill="url(#bottom)" d="M 745 980 L 330 980 L 428 850 L 670 850 Q 710 850 686 818 L 838 804 C 916 908 935 980 745 980 Z"/>
+</svg>

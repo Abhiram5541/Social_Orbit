@@ -23,7 +23,7 @@ export default async function CreatorAnalyticsPage() {
       <PageHeader
         eyebrow="Performance"
         title="Your analytics"
-        description="Everything SocialOrbit holds about your account, including data only you and SocialOrbit reviewers can see."
+        description="Everything SENSO holds about your account, including data only you and SENSO reviewers can see."
       />
       <PageBody className="space-y-4">
         {profile.audience.available && (

@@ -72,7 +72,7 @@ export default async function CreatorOverviewPage() {
       kind: "caution" as const,
       headline: "Brands cannot see who your audience is",
       evidence:
-        "Audience demographics come only from a creator-authorised professional account. SocialOrbit does not estimate them from public data, so the section stays empty until you authorise it.",
+        "Audience demographics come only from a creator-authorised professional account. SENSO does not estimate them from public data, so the section stays empty until you authorise it.",
       href: "/creator/connections",
       actionLabel: "Authorise",
     },
@@ -112,7 +112,7 @@ export default async function CreatorOverviewPage() {
       <PageHeader
         eyebrow="Creator portal"
         title="Overview"
-        description="This is what brands see when they open your SocialOrbit profile."
+        description="This is what brands see when they open your SENSO profile."
         actions={
           <LinkButton href={`/influencers/${profile.id}`} className="gap-1.5">
             Preview public profile
@@ -150,7 +150,7 @@ export default async function CreatorOverviewPage() {
               headline. */}
           <section className="relative overflow-hidden rounded-2xl bg-instrument text-instrument-ink shadow-instrument before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/8">
             <header className="flex flex-wrap items-center justify-between gap-3 border-b border-instrument-line px-4 py-2.5">
-              <h2 className="label-caps text-instrument-muted">Your SocialOrbit Health</h2>
+              <h2 className="label-caps text-instrument-muted">Your SENSO Health</h2>
               <span className="font-num text-xs text-instrument-muted">
                 {profile.health.formulaVersion}
               </span>
@@ -319,7 +319,7 @@ export default async function CreatorOverviewPage() {
             <PanelHead>
               <PanelTitle>Your best-performing content</PanelTitle>
               <span className="text-sm text-ink-muted">
-                By observed views, across what SocialOrbit has indexed
+                By observed views, across what SENSO has indexed
               </span>
             </PanelHead>
             {topContent.length === 0 ? (

@@ -27,7 +27,7 @@ import { RelativeTime } from "@/components/ui/relative-time";
 /* ---------------------------------------------------------------------------
  * Provenance display — CLAUDE.md §8.
  *
- * This is the component that stops SocialOrbit from being a directory. A
+ * This is the component that stops SENSO from being a directory. A
  * number the YouTube API returned and a number a model guessed must never look
  * the same, so every surfaced value can carry its own tier, freshness and
  * confidence.
@@ -56,7 +56,7 @@ const FACT_KIND: Record<
     short: "D",
     icon: Sigma,
     className: "text-ink-muted",
-    explain: "Calculated by SocialOrbit from observed values using a published formula.",
+    explain: "Calculated by SENSO from observed values using a published formula.",
   },
   estimated: {
     label: "Estimated",
@@ -302,7 +302,7 @@ const TIER_LABEL: Record<SourceTier, string> = {
   licensed_provider: "Licensed data provider",
   public_research: "Permitted public research",
   ai_inference: "AI classification",
-  manual_entry: "SocialOrbit operator",
+  manual_entry: "SENSO operator",
 };
 
 /** Tier 1 is the strongest claim; the scale is what makes a tier meaningful. */

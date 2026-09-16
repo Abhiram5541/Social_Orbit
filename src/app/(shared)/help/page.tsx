@@ -22,7 +22,7 @@ const SCORING_TOPICS = [
   },
   {
     title: "What the provenance marks mean",
-    body: "Verified means confirmed through the creator's own authorised connection. Observed means measured through an official platform API. Derived means calculated by SocialOrbit from observed values. Estimated means modelled — treat it as a range. AI inferred means classified by a model from source material, never a platform measurement.",
+    body: "Verified means confirmed through the creator's own authorised connection. Observed means measured through an official platform API. Derived means calculated by SENSO from observed values. Estimated means modelled — treat it as a range. AI inferred means classified by a model from source material, never a platform measurement.",
   },
 ];
 
@@ -33,7 +33,7 @@ const OPERATIONAL_TOPICS = [
   },
   {
     title: "Why some audience data is unavailable",
-    body: "Demographics require the creator to connect a professional account and authorise access. SocialOrbit does not estimate demographics from public data, because there is no defensible way to do it. An unavailable breakdown is stated as unavailable rather than filled in.",
+    body: "Demographics require the creator to connect a professional account and authorise access. SENSO does not estimate demographics from public data, because there is no defensible way to do it. An unavailable breakdown is stated as unavailable rather than filled in.",
   },
   {
     title: "How verification is granted",
@@ -77,7 +77,7 @@ export default async function HelpPage() {
     <>
       <PageHeader
         title="Help"
-        description="How SocialOrbit's numbers are produced, and what they do and do not claim."
+        description="How SENSO's numbers are produced, and what they do and do not claim."
       />
       <PageBody className="max-w-3xl space-y-4">
         <Card>

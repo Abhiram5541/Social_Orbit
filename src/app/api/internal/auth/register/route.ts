@@ -6,7 +6,7 @@ import { checkRateLimit } from "@/server/services/rate-limit";
 
 /**
  * Registration is accepted and queued for review rather than provisioning a
- * workspace immediately — SocialOrbit grants access to the influencer database,
+ * workspace immediately — SENSO grants access to the influencer database,
  * so an account is not self-serve in the way a note-taking app is.
  *
  * ponytail: no persistence yet; the account request is logged and the response

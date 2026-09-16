@@ -108,8 +108,8 @@ export function CreatorPreview({
           <div className="flex flex-wrap gap-1.5">
             <RiskBadge level={item.risk} />
             {item.verification === "verified" ? (
-              <Badge tone="brand" dot>
-                SocialOrbit Verified
+              <Badge tone="verified" dot>
+                SENSO Verified
               </Badge>
             ) : (
               <Badge tone="neutral">Not identity-verified</Badge>

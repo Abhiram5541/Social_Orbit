@@ -83,7 +83,7 @@ export const SearchQuery = z.object({
   authenticityMin: z.coerce.number().min(0).max(100).optional(),
   campaignFitMin: z.coerce.number().min(0).max(100).optional(),
 
-  /** SocialOrbit ROI model, not a universal claim — DPR §11.3. */
+  /** SENSO ROI model, not a universal claim — DPR §11.3. */
   roiCategory: z.enum(["high", "medium", "any"]).optional(),
 
   sort: SortKey.default("relevance"),

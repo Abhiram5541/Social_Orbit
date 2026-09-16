@@ -128,7 +128,7 @@ export function ApiKeyPanel({
           <EmptyState
             icon={KeyRound}
             title="No API keys yet"
-            description="Create a key to query the SocialOrbit database programmatically. Keys are hashed at rest, so the secret is shown only once."
+            description="Create a key to query the SENSO database programmatically. Keys are hashed at rest, so the secret is shown only once."
             action={
               canWrite ? (
                 <Button size="sm" variant="primary" onClick={() => setCreating(true)}>
@@ -304,7 +304,7 @@ export function ApiKeyPanel({
         open={Boolean(secret)}
         onClose={() => setSecret(null)}
         title="Copy your API key now"
-        description="This is the only time it will be shown. SocialOrbit stores a hash, not the key."
+        description="This is the only time it will be shown. SENSO stores a hash, not the key."
         footer={
           <Button variant="primary" onClick={() => setSecret(null)}>
             I have stored it

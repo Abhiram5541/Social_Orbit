@@ -14,14 +14,14 @@ export const dynamic = "force-dynamic";
 const STEPS = [
   {
     heading: "The creator claims their profile",
-    body: "A creator signs up and claims the SocialOrbit record that represents them. Claiming alone grants nothing — it only establishes who is asking.",
+    body: "A creator signs up and claims the SENSO record that represents them. Claiming alone grants nothing — it only establishes who is asking.",
   },
   {
     heading: "They connect a platform account",
-    body: "The creator completes the platform's own OAuth consent screen. SocialOrbit requests the narrowest scopes that let it read that creator's statistics, and stores the resulting tokens encrypted. Tokens are never sent to a browser.",
+    body: "The creator completes the platform's own OAuth consent screen. SENSO requests the narrowest scopes that let it read that creator's statistics, and stores the resulting tokens encrypted. Tokens are never sent to a browser.",
   },
   {
-    heading: "SocialOrbit matches the identity",
+    heading: "SENSO matches the identity",
     body: "The connected platform identity is compared against the claimed profile. If the connected account is not the account on the profile, verification fails and no badge is issued.",
   },
   {
@@ -38,7 +38,7 @@ export default async function VerificationHelpPage() {
     <>
       <PageHeader
         title="How verification works"
-        description="What SocialOrbit Verified means, and what it deliberately does not mean."
+        description="What SENSO Verified means, and what it deliberately does not mean."
         breadcrumbs={[{ label: "Help", href: "/help" }, { label: "Verification" }]}
         actions={
           isCreator ? (
@@ -89,7 +89,7 @@ export default async function VerificationHelpPage() {
           </CardHeader>
           <CardContent className="space-y-3 text-base leading-6 text-ink-muted">
             <p>
-              <span className="font-semibold text-ink">SocialOrbit Verified</span> — an account
+              <span className="font-semibold text-ink">SENSO Verified</span> — an account
               is connected and the identity match passed. Authorized first-party metrics are
               available and confidence is higher.
             </p>
@@ -100,7 +100,7 @@ export default async function VerificationHelpPage() {
             </p>
             <p>
               <span className="font-semibold text-ink">Unverified</span> — the profile is built
-              from public platform data. The numbers are real measurements, but SocialOrbit
+              from public platform data. The numbers are real measurements, but SENSO
               cannot confirm who owns the account, and audience demographics are unavailable
               because no authorised source provides them.
             </p>

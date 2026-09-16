@@ -40,7 +40,7 @@ const STAGES = [
     icon: KeyRound,
     title: "OAuth consent",
     detail:
-      "The creator authorised SocialOrbit against their own account. First-party analytics become readable.",
+      "The creator authorised SENSO against their own account. First-party analytics become readable.",
   },
   {
     icon: ShieldQuestion,
@@ -50,7 +50,7 @@ const STAGES = [
   },
   {
     icon: BadgeCheck,
-    title: "SocialOrbit Verified",
+    title: "SENSO Verified",
     detail:
       "Issued only after a successful match. Public data can never produce this status.",
   },
@@ -101,7 +101,7 @@ export default async function Page() {
               <CompositionBar
                 onInstrument
                 segments={[
-                  { label: "Verified", value: verified, tone: "brand" },
+                  { label: "Verified", value: verified, tone: "verified" },
                   { label: "Connected, awaiting match", value: connected, tone: "caution" },
                   { label: "Not connected", value: unverified, tone: "neutral" },
                 ]}

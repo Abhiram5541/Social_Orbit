@@ -45,6 +45,7 @@ const DOT_FILL: Record<DistributionTone, string> = {
   critical: "var(--color-critical)",
   neutral: "var(--color-neutral-metric)",
   inferred: "var(--color-inferred)",
+  verified: "var(--color-verified)",
 };
 
 /**

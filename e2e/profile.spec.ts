@@ -9,13 +9,13 @@ test.describe("influencer profile", () => {
   });
 
   test("shows the score, its formula version and its confidence separately", async ({ page }) => {
-    await expect(page.getByRole("heading", { name: "SocialOrbit Health" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Health score" })).toBeVisible();
     // Any published formula version, not a fixed one: the guarantee is that a
     // score says which formula produced it, and pinning the literal makes every
     // legitimate recalibration look like a regression.
     await expect(page.getByText(/health-\d+\.\d+\.\d+/).first()).toBeVisible();
     // Confidence must be its own readout, not folded into the score.
-    await expect(page.getByText("Data confidence")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Data confidence" })).toBeVisible();
   });
 
   test("says plainly that no model has classified this creator", async ({ page }) => {
@@ -24,9 +24,8 @@ test.describe("influencer profile", () => {
     // state to assert. The panel-labelling assertions ("AI interpretation",
     // "an explanation of stored measurements, not a source of them") belong
     // here again once an AI provider credential exists.
-    await page.getByRole("tab", { name: "Overview" }).click();
-    await expect(page.getByText("No AI enrichment for this creator yet")).toBeVisible();
-    await expect(page.getByText(/AI explains scores here, it never produces them/)).toBeVisible();
+    await expect(page.getByText("No interpretation yet")).toBeVisible();
+    await expect(page.getByText(/The AI layer has not run for this creator/)).toBeVisible();
   });
 
   test("every tab opens and renders a panel", async ({ page }) => {

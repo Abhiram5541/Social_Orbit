@@ -18,7 +18,7 @@ import {
 } from "@/components/marketing/product-surfaces";
 
 export const metadata: Metadata = {
-  title: "SocialOrbit — Influencer Intelligence",
+  title: "SENSO — Influencer Intelligence",
   description:
     "Find the creators worth betting your brand on. Discovery, evaluation, verification and campaign measurement for marketing teams — with evidence behind every important number.",
 };
@@ -69,7 +69,7 @@ const DISCOVER_OUTCOMES = [
   },
   {
     title: "Sort on the score, not the follower count",
-    body: "SocialOrbit Health is a deterministic composite of nine weighted components, not a popularity rank.",
+    body: "SENSO Health is a deterministic composite of nine weighted components, not a popularity rank.",
   },
 ];
 
@@ -158,7 +158,7 @@ export default function LandingPage() {
               Find the creators worth betting your brand on.
             </h1>
             <p className="mt-6 max-w-xl text-md leading-7 text-instrument-muted">
-              SocialOrbit gives marketing teams an intelligence layer for discovering,
+              SENSO gives marketing teams an intelligence layer for discovering,
               evaluating and measuring creators — with evidence behind every important
               number.
             </p>
@@ -219,7 +219,7 @@ export default function LandingPage() {
           after this demonstrates a stop on it. It is also the seam: graphite
           above, paper below. */}
       <nav
-        aria-label="How SocialOrbit works"
+        aria-label="How SENSO works"
         className="border-b border-line bg-sunken"
       >
         <ol className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-2 gap-y-1 px-4 py-4 sm:px-6">
@@ -263,7 +263,7 @@ export default function LandingPage() {
               ))}
             </dl>
             <p className="mt-7 measure text-sm text-ink-subtle">
-              Live from the SocialOrbit database as this page rendered. Collected from
+              Live from the SENSO database as this page rendered. Collected from
               official platform APIs and creator-authorised accounts — no prohibited
               scraping, and no purchased list.
             </p>
@@ -423,7 +423,7 @@ export default function LandingPage() {
             </h2>
             <p className="mt-4 text-md leading-6 text-ink-muted">
               Select talent from a shortlist, record the agreed rate, set a tracking
-              hashtag, and SocialOrbit attributes what each creator actually delivered.
+              hashtag, and SENSO attributes what each creator actually delivered.
             </p>
           </div>
 
@@ -438,7 +438,7 @@ export default function LandingPage() {
 
           <p className="mt-8 max-w-3xl text-base text-ink-muted">
             A creator&apos;s campaign performance is scored separately from their
-            SocialOrbit Health — the first answers &ldquo;how did they do for us?&rdquo;,
+            SENSO Health — the first answers &ldquo;how did they do for us?&rdquo;,
             the second &ldquo;who are they?&rdquo;. The two are never merged, and both
             carry their own formula version.
           </p>
@@ -458,7 +458,7 @@ export default function LandingPage() {
             <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-muted">
               {[
                 ["bg-positive", "Excellent"],
-                ["bg-brand", "Strong"],
+                ["bg-positive", "Strong"],
                 ["bg-caution", "Fair"],
                 ["bg-critical", "Needs review"],
               ].map(([dot, label]) => (
@@ -473,7 +473,7 @@ export default function LandingPage() {
           <div className="mt-8 overflow-hidden rounded-xl bg-surface card-shadow">
             <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-rule px-5 py-3">
               <span className="label-caps text-ink-muted">
-                Data confidence against SocialOrbit Health
+                Data confidence against SENSO Health
               </span>
               <span className="text-sm text-ink-subtle">
                 Every scored profile in the cohort

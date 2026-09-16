@@ -16,7 +16,7 @@ conflict by default, and each conflict is resolved on its own merits rather than
   *"how did this creator perform?"* They work in the client workspace: discovery, profile
   dossiers, comparison, shortlists, campaigns, reports, usage, API portal. Two roles:
   `client_owner` (adds billing and API keys) and `client_member`.
-- **SocialOrbit platform staff.** `super_admin`, `manager` and `analytics_manager` maintain
+- **SENSO platform staff.** `super_admin`, `manager` and `analytics_manager` maintain
   the shared influencer database and the trust layer: connectors, ingestion runs, AI jobs,
   verification review, anomaly queue, benchmarks, orgs, audit, system config. Their work is
   queue- and evidence-driven, not exploratory.
@@ -29,7 +29,7 @@ decision, or a claim about themselves — so none of the three surfaces is decor
 
 ## Product Purpose
 
-SocialOrbit maintains a proprietary, continuously refreshed influencer database and turns
+SENSO maintains a proprietary, continuously refreshed influencer database and turns
 it into decision support. It answers two questions with numbers a user can defend in a
 meeting: *should I work with this creator*, and *how did this creator perform for my
 campaign*.
@@ -39,7 +39,7 @@ historical snapshots → deterministic analytics → AI enrichment (explanation 
 classification only) → explainable scoring → advanced search → role dashboards → external
 v1 API.
 
-Success is a user acting on a SocialOrbit figure and being able to show where it came from.
+Success is a user acting on a SENSO figure and being able to show where it came from.
 
 ## Positioning
 
@@ -120,7 +120,7 @@ Confirmed constraints:
 
 ## Brand Commitments
 
-- **Name:** SocialOrbit. Descriptor: "Influencer Intelligence".
+- **Name:** SENSO. Descriptor: "Influencer Intelligence".
 - **Mark:** an orbit — a body, its path, and a satellite on that path, creators moving
   around a brand. Drawn in code (`src/components/shell/logo.tsx`) rather than imported, so
   it inherits colour and stays crisp at rail size. This is the real, binding mark.
@@ -147,7 +147,7 @@ Confirmed constraints:
 - The plan **structure** on `/pricing` is committed product fact: Free (5 searches/month,
   2 seats, no campaigns/API/exports), Growth (500 searches, 10 seats, 50,000 API
   requests/month, all features), Enterprise (unlimited searches and seats, all features).
-- The source documents: `docs/SocialOrbit_Influencer_Intelligence_Platform_DPR.docx` and
+- The source documents: `docs/SENSO_Influencer_Intelligence_Platform_DPR.docx` and
   `docs/Influencer_Platform_Architecture.docx`.
 
 **Absent — future work must not fabricate any of these:**

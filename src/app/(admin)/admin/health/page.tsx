@@ -119,7 +119,7 @@ export default async function SystemHealthPage() {
               <dl>
                 <DataRow label="Published profiles" value={stats.published} />
                 <DataRow label="Awaiting review" value={stats.inReview} />
-                <DataRow label="SocialOrbit Verified" value={stats.verified} />
+                <DataRow label="SENSO Verified" value={stats.verified} />
                 <DataRow label="Connection pending" value={stats.connectionPending} />
                 <DataRow label="With authorized audience data" value={stats.withAuthorizedAudience} />
                 <DataRow label="Stale over 48h" value={stats.staleProfiles} />

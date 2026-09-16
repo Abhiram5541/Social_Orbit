@@ -23,7 +23,7 @@ import { ErrorState } from "@/components/ui/states";
  * the pipeline: what the platform reported, and what the deterministic
  * analytics engine derived from it. The two are labelled separately on purpose
  * — an operator checking a connector needs to see which numbers came off the
- * wire and which SocialOrbit computed.
+ * wire and which SENSO computed.
  *
  * It spends real daily quota, so it runs on submit and never on render.
  */

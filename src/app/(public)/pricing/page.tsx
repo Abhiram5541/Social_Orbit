@@ -8,7 +8,7 @@ import { Eyebrow } from "@/components/ui/card";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "SocialOrbit plans — search allowances, seats, campaigns and versioned API access.",
+    "SENSO plans — search allowances, seats, campaigns and versioned API access.",
 };
 
 /*
@@ -82,7 +82,7 @@ export default function PricingPage() {
           <h1 className="display-lg text-ink">Every plan sees the same numbers.</h1>
           <p className="text-md leading-6 text-ink-muted">
             Plans differ in how much you can search and what you can automate — never in the
-            quality of the data or in what SocialOrbit is willing to tell you about it.
+            quality of the data or in what SENSO is willing to tell you about it.
             Provenance, confidence and score components are on every profile at every tier.
           </p>
         </div>

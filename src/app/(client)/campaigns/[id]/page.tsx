@@ -189,7 +189,7 @@ export default async function CampaignDetailPage({
                       <span className="font-normal normal-case tracking-normal">
                         <InfoHint label="How campaign score relates to Health">
                           A creator&apos;s campaign performance is scored separately from
-                          their SocialOrbit Health — the first answers &ldquo;how did they
+                          their SENSO Health — the first answers &ldquo;how did they
                           do for us?&rdquo;, the second &ldquo;who are they?&rdquo;. The two
                           are never merged.
                         </InfoHint>
@@ -207,7 +207,7 @@ export default async function CampaignDetailPage({
             </Table>
           </TableWrap>
           <CardContent className="border-t border-line text-sm text-ink-muted">
-            Rates are values your team recorded. SocialOrbit does not hold creators&apos;
+            Rates are values your team recorded. SENSO does not hold creators&apos;
             asking rates and never infers them.
           </CardContent>
         </Card>
@@ -380,7 +380,7 @@ function CampaignInstrument({
           <h2 className="label-caps text-instrument-muted">Campaign delivery</h2>
           <InfoHint label="How these figures are attributed">
             Only posts carrying <span className="font-num">#{campaign.hashtag}</span> are
-            counted. Campaign performance is scored separately from SocialOrbit Health, and
+            counted. Campaign performance is scored separately from SENSO Health, and
             the two are never merged.
           </InfoHint>
         </div>

@@ -1,5 +1,5 @@
 ---
-name: SocialOrbit
+name: SENSO
 description: An instrument that publishes measurements — graphite housing, warm paper, one cobalt accent, brass reserved for what was measured.
 colors:
   canvas: "#f6f4f1"
@@ -125,11 +125,11 @@ components:
     padding: "0 12px"
 ---
 
-# Design System: SocialOrbit
+# Design System: SENSO
 
 ## Overview
 
-SocialOrbit is an instrument for deciding whether a number can be trusted before money
+SENSO is an instrument for deciding whether a number can be trusted before money
 is spent on it. The design has one thesis and everything follows from it:
 
 > **The chrome is the instrument. The work is printed on paper set inside it.**

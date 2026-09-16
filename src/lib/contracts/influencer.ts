@@ -27,7 +27,7 @@ export const SocialAccount = z.object({
   url: z.string().url(),
   /** True when this account drives the creator's headline metrics. */
   isPrimary: z.boolean(),
-  /** OAuth connected. Distinct from the creator being SocialOrbit Verified. */
+  /** OAuth connected. Distinct from the creator being SENSO Verified. */
   isConnected: z.boolean(),
   connectedAt: z.string().datetime().nullable(),
   /** Set when a connected token needs re-consent (DPR §21). */
@@ -242,7 +242,7 @@ const CostBand = z.object({ currency: z.string(), low: z.number(), high: z.numbe
 
 /**
  * Modelled cost efficiency. Every figure derives from the estimated rate band,
- * never from a rate card — SocialOrbit does not hold creator rates.
+ * never from a rate card — SENSO does not hold creator rates.
  */
 export const CostEfficiency = z.object({
   placementRate: CostBand.nullable(),

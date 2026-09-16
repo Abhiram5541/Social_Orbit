@@ -1,8 +1,8 @@
-# SocialOrbit
+# SENSO
 
 Influencer intelligence, verification, analytics and API platform.
 
-SocialOrbit maintains a proprietary influencer database and turns it into decision support:
+SENSO maintains a proprietary influencer database and turns it into decision support:
 *"should I work with this creator?"* and *"how did this creator perform for my campaign?"*
 
 What separates it from a directory is that **every number says where it came from**. A
@@ -75,7 +75,7 @@ never commit them:
 
 ### Development sign-ins
 
-All seed accounts share `DEV_SEED_PASSWORD` (default `SocialOrbit-Dev-2026`). The sign-in
+All seed accounts share `DEV_SEED_PASSWORD` (default `SENSO-Dev-2026`). The sign-in
 page lists them outside production.
 
 **These accounts include a super_admin and the default password is published right here, so
@@ -85,13 +85,13 @@ If you set it for a demo deployment, set it to something that is not in this fil
 
 | Email | Role | What it shows |
 | --- | --- | --- |
-| `admin@socialorbit.io` | Super Admin | Full platform operations |
-| `manager@socialorbit.io` | Manager | Influencer CRUD, verification review |
-| `analyst@socialorbit.io` | Analytics Manager | Analytics and queues, no user administration |
+| `admin@senso360.com` | Super Admin | Full platform operations |
+| `manager@senso360.com` | Manager | Influencer CRUD, verification review |
+| `analyst@senso360.com` | Analytics Manager | Analytics and queues, no user administration |
 | `owner@northwind.example` | Client Owner | Growth plan, API keys, billing |
 | `member@northwind.example` | Client Member | Same workspace, no billing or keys |
 | `hello@lumen.example` | Client Owner | **Free plan — exercises the 5-search limit** |
-| `creator@socialorbit.io` | Influencer | Creator portal and own analytics |
+| `creator@senso360.com` | Influencer | Creator portal and own analytics |
 
 ---
 

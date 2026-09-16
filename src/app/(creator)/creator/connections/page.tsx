@@ -56,7 +56,7 @@ export default async function ConnectionsPage({
       <PageHeader
         eyebrow="My presence"
         title="Connected accounts"
-        description="Connecting an account is how you become SocialOrbit Verified and how first-party analytics become available."
+        description="Connecting an account is how you become SENSO Verified and how first-party analytics become available."
       />
       <PageBody className="space-y-4">
         {outcome.connection === "connected" && (
@@ -77,8 +77,8 @@ export default async function ConnectionsPage({
         )}
 
         <Notice tone="info" icon={ShieldCheck} title="What connecting does and does not do">
-          SocialOrbit requests the narrowest scopes that let it read your own statistics. Your
-          access tokens are encrypted at rest and never sent to a browser. SocialOrbit cannot
+          SENSO requests the narrowest scopes that let it read your own statistics. Your
+          access tokens are encrypted at rest and never sent to a browser. SENSO cannot
           post, message, or change anything on your account, and you can disconnect at any
           time — your public profile stays, your authorized analytics stop refreshing.
         </Notice>

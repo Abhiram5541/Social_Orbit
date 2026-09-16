@@ -101,7 +101,7 @@ export function categoriesFromTopics(topicUrls: string[]): Category[] {
  * channels, which put 458 of 627 harvested creators in one bucket. The
  * per-video `categoryId` is assigned by YouTube too, but is far better spread.
  *
- * Ids YouTube publishes that SocialOrbit has no equivalent for — News &
+ * Ids YouTube publishes that SENSO has no equivalent for — News &
  * Politics, Nonprofits, Travel-adjacent oddities — are left unmapped rather
  * than pushed into the nearest category.
  */

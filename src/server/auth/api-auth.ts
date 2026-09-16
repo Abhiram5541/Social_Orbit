@@ -125,7 +125,7 @@ export async function authenticateRequest(
 
 /** Adds the headers every /v1 response carries. */
 export function withApiHeaders(response: NextResponse, version = "1"): NextResponse {
-  response.headers.set("x-socialorbit-api-version", version);
+  response.headers.set("x-senso-api-version", version);
   response.headers.set("cache-control", "private, max-age=60");
   return response;
 }

@@ -8,7 +8,7 @@ export default function TermsPage() {
     <LegalPage
       eyebrow="Legal"
       title="Terms of service"
-      summary="What SocialOrbit provides, what it does not claim, and what you agree to when you use it."
+      summary="What SENSO provides, what it does not claim, and what you agree to when you use it."
       updated="27 August 2026"
       sections={[
         {
@@ -16,7 +16,7 @@ export default function TermsPage() {
           body: (
             <>
               <p>
-                SocialOrbit provides influencer intelligence: creator records assembled from
+                SENSO provides influencer intelligence: creator records assembled from
                 official platform APIs, from accounts creators have connected themselves, and
                 from permitted public research, together with analytics and scores calculated
                 from those records.

@@ -7,6 +7,7 @@ import {
   HARVEST_CATEGORIES,
   backfillViewHistory,
   harvest,
+  ingestSeeds,
   refreshStored,
 } from "@/server/services/harvest-service";
 
@@ -28,6 +29,8 @@ const Body = z.object({
   plan: z.enum(["places", "top"]).optional(),
   target: z.number().int().min(1).max(1000).default(400),
   videos: z.number().int().min(5).max(50).default(50),
+  /** Channel ids, @handles or URLs from an outside list — resolved, then read. */
+  seeds: z.array(z.string().trim().min(2).max(200)).min(1).max(200).optional(),
   /** Re-read channels already held instead of discovering new ones. */
   refresh: z.boolean().default(false),
   /** Read further back through a channel's uploads, storing a lean series. */
@@ -64,6 +67,12 @@ export async function POST(request: NextRequest) {
           limit: parsed.data.limit,
           uploads: parsed.data.uploads,
         }),
+      );
+    }
+
+    if (parsed.data.seeds) {
+      return NextResponse.json(
+        await ingestSeeds(parsed.data.seeds, { videosPerChannel: parsed.data.videos }),
       );
     }
 

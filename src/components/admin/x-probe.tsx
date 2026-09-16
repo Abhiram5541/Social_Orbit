@@ -123,7 +123,7 @@ function ProbeReadout({ result }: { result: XConnectorProbeResult }) {
         </a>
         <Badge tone="neutral">@{account.username}</Badge>
         {account.xVerifiedBadge && (
-          <Badge tone="neutral" title="X's own badge — not SocialOrbit Verified">
+          <Badge tone="neutral" title="X's own badge — not SENSO Verified">
             X badge
           </Badge>
         )}

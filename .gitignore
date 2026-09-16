@@ -64,3 +64,6 @@ next-env.d.ts
 
 # Local editor/agent settings that are personal to one machine.
 .claude/settings.local.json
+
+# seed import progress (per machine)
+scripts/seeds/*.cursor

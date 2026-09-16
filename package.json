@@ -1,5 +1,5 @@
 {
-  "name": "socialorbit",
+  "name": "senso",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -13,7 +13,8 @@
     "e2e": "playwright test",
     "audit": "playwright test e2e/audit --project=desktop --workers=1",
     "data:export": "node scripts/export-data.mjs",
-    "data:pack": "node scripts/pack-data.mjs"
+    "data:pack": "node scripts/pack-data.mjs",
+    "data:seeds": "node scripts/import-seeds.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.102.5",

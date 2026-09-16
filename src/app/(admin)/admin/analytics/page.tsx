@@ -32,14 +32,14 @@ export const dynamic = "force-dynamic";
 /** The scoring contract's own bands — never a second set invented for a chart. */
 const HEALTH_BANDS = [
   { label: "Excellent", range: "85–100", min: 85, max: 101, tone: "positive" },
-  { label: "Strong", range: "70–84", min: 70, max: 85, tone: "brand" },
+  { label: "Strong", range: "70–84", min: 70, max: 85, tone: "positive" },
   { label: "Fair", range: "50–69", min: 50, max: 70, tone: "caution" },
   { label: "Needs review", range: "0–49", min: 0, max: 50, tone: "critical" },
 ] as const;
 
 const CONFIDENCE_BANDS = [
   { label: "High", range: "90–100", min: 90, max: 101, tone: "positive" },
-  { label: "Good", range: "70–89", min: 70, max: 90, tone: "brand" },
+  { label: "Good", range: "70–89", min: 70, max: 90, tone: "positive" },
   { label: "Moderate", range: "50–69", min: 50, max: 70, tone: "caution" },
   { label: "Preliminary", range: "0–49", min: 0, max: 50, tone: "critical" },
 ] as const;
@@ -138,7 +138,7 @@ export default async function AnalyticsPage() {
 
       <Instrument className="py-8">
         <HeroSignal tone="instrument"
-          eyebrow="Database health · median SocialOrbit Health across every scored profile"
+          eyebrow="Database health · median SENSO Health across every scored profile"
           value={medianHealth}
           suffix="/100"
           band={modalHealth.label}
@@ -208,7 +208,7 @@ export default async function AnalyticsPage() {
             <div className="min-w-0">
               <PanelTitle>Quality against evidence</PanelTitle>
               <p className="mt-0.5 max-w-3xl text-sm text-ink-muted">
-                Every scored profile, plotted by its SocialOrbit Health against the data
+                Every scored profile, plotted by its SENSO Health against the data
                 confidence behind it. These are separate axes by design: a creator can be
                 excellent and barely observed at the same time, and folding one into the
                 other would hide exactly that case.
@@ -225,7 +225,7 @@ export default async function AnalyticsPage() {
                 tone: HEALTH_TONE[healthBand(summary.healthScore)] as DistributionTone,
                 detail: `${confidenceBand(summary.confidence)} confidence`,
               }))}
-              xLabel="SocialOrbit Health"
+              xLabel="SENSO Health"
               yLabel="Confidence"
               ariaLabel="Every scored creator plotted by health score against data confidence"
             />

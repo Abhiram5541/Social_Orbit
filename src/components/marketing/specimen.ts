@@ -76,7 +76,7 @@ export const SPECIMEN_FACETS = [
   {
     group: "Verification",
     options: [
-      ["SocialOrbit Verified", "2,046"],
+      ["SENSO Verified", "2,046"],
       ["Connection pending", "184"],
     ],
   },

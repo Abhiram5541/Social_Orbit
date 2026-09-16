@@ -30,12 +30,12 @@ const sans = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "SocialOrbit — Influencer Intelligence",
-    template: "%s · SocialOrbit",
+    default: "SENSO — Influencer Intelligence",
+    template: "%s · SENSO",
   },
   description:
     "Evidence-based influencer intelligence: verified creator profiles, deterministic scoring, audience quality signals and campaign performance measurement.",
-  applicationName: "SocialOrbit",
+  applicationName: "SENSO",
   robots: { index: false, follow: false },
 };
 
@@ -44,7 +44,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   // Duplicates --color-canvas in globals.css by value — Next metadata cannot
   // read a CSS custom property. Change both together.
-  themeColor: "#e4e7e5",
+  themeColor: "#e6e3ec",
 };
 
 export default function RootLayout({

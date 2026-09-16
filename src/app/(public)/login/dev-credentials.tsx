@@ -20,13 +20,13 @@ export interface DevAccount {
 }
 
 export const DEV_ACCOUNTS: DevAccount[] = [
-  { email: "admin@socialorbit.io", role: "super_admin", note: "Full platform access" },
-  { email: "manager@socialorbit.io", role: "manager", note: "Influencer CRUD, verification review" },
-  { email: "analyst@socialorbit.io", role: "analytics_manager", note: "Analytics, no user admin" },
+  { email: "admin@senso360.com", role: "super_admin", note: "Full platform access" },
+  { email: "manager@senso360.com", role: "manager", note: "Influencer CRUD, verification review" },
+  { email: "analyst@senso360.com", role: "analytics_manager", note: "Analytics, no user admin" },
   { email: "owner@northwind.example", role: "client_owner", note: "Growth plan client" },
   { email: "member@northwind.example", role: "client_member", note: "Same workspace, no billing" },
   { email: "hello@lumen.example", role: "client_owner", note: "Free plan — 5 searches/month" },
-  { email: "creator@socialorbit.io", role: "influencer", note: "Creator portal" },
+  { email: "creator@senso360.com", role: "influencer", note: "Creator portal" },
 ];
 
 export function DevCredentials({

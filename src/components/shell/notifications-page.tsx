@@ -84,7 +84,7 @@ const SEVERITY_RANK: Record<NotificationItem["severity"], number> = {
 
 export function NotificationsList({
   items,
-  emptyDescription = "SocialOrbit watches the creators you track for dormancy, growth anomalies, engagement decline, stale data, brand-safety signals and expiring connections. You will hear from us when one of those fires.",
+  emptyDescription = "SENSO watches the creators you track for dormancy, growth anomalies, engagement decline, stale data, brand-safety signals and expiring connections. You will hear from us when one of those fires.",
 }: {
   items: NotificationItem[];
   /** The creator route re-voices this; the default speaks to clients. */

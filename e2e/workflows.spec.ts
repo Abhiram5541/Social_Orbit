@@ -147,7 +147,7 @@ test.describe("creator portal", () => {
     await signIn(page, ACCOUNTS.creator);
     await page.goto("/creator/analytics");
     await expect(page.getByRole("heading", { name: "Your analytics" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "SocialOrbit Health" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "SENSO Health" })).toBeVisible();
   });
 
   test("verification explains that it is never granted from public data", async ({ page }) => {

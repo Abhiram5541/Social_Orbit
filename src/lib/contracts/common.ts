@@ -3,7 +3,7 @@ import { z } from "zod";
 /* ---------------------------------------------------------------------------
  * Provenance — DPR §7.1, §16.1, §22
  *
- * Every fact SocialOrbit surfaces must say where it came from. This is the
+ * Every fact SENSO surfaces must say where it came from. This is the
  * product's differentiator, not metadata: a follower count read from the
  * YouTube Data API and a follower count an LLM inferred from a bio are not the
  * same claim, and the UI must never render them identically.
@@ -16,7 +16,7 @@ export const SourceTier = z.enum([
   "licensed_provider", // 3 — approved third-party data provider.
   "public_research", // 4 — permitted public-web content.
   "ai_inference", // 5 — model classification. Always labelled inferred.
-  "manual_entry", //     — entered by a SocialOrbit operator.
+  "manual_entry", //     — entered by a SENSO operator.
 ]);
 export type SourceTier = z.infer<typeof SourceTier>;
 
@@ -27,7 +27,7 @@ export type SourceTier = z.infer<typeof SourceTier>;
 export const FactKind = z.enum([
   "verified", // OAuth-confirmed first-party value
   "observed", // measured through an official API
-  "derived", // computed by SocialOrbit from observed values
+  "derived", // computed by SENSO from observed values
   "estimated", // modelled — must carry an explicit estimate label
   "inferred", // AI classification — must carry an AI label
 ]);

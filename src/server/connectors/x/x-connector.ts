@@ -176,7 +176,7 @@ const UserObject = z.object({
   profile_image_url: z.string().optional(),
   // X's legacy/paid blue-check flag. Deliberately named `xVerifiedBadge` (not
   // `verified`) everywhere past this schema so it can never be confused with
-  // SocialOrbit Verified, which is issued only after OAuth identity match
+  // SENSO Verified, which is issued only after OAuth identity match
   // (Arch §2). This is a much weaker claim — a paid subscription badge, not a
   // confirmed identity — and CRITICAL RULE 2 forbids writing it to
   // `isConnected` or `identityMatched` anywhere downstream.
@@ -318,7 +318,7 @@ export interface XAccount {
   following: number;
   postCount: number;
   listedCount: number;
-  /** X's own paid/legacy blue-check badge. NOT SocialOrbit Verified — see the
+  /** X's own paid/legacy blue-check badge. NOT SENSO Verified — see the
    *  comment on `UserObject.verified` above. Never write this to
    *  `isConnected` or `identityMatched`. */
   xVerifiedBadge: boolean;
@@ -490,7 +490,7 @@ export interface XObservation {
 
 /**
  * One collection pass: identity, account statistics and recent posts, stamped
- * with the provenance every SocialOrbit fact must carry (DPR §16.1).
+ * with the provenance every SENSO fact must carry (DPR §16.1).
  *
  * Confidence is 90, not 100: these are authoritative platform figures, but
  * read without OAuth, so nothing here is `verified` — only `observed`.

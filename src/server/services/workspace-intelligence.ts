@@ -82,7 +82,7 @@ export interface WorkspaceIntelligence {
  */
 const HEALTH_BANDS: { label: string; range: string; min: number; tone: BandTone }[] = [
   { label: "Excellent", range: "85–100", min: 85, tone: "positive" },
-  { label: "Strong", range: "70–84", min: 70, tone: "brand" },
+  { label: "Strong", range: "70–84", min: 70, tone: "positive" },
   { label: "Fair", range: "50–69", min: 50, tone: "caution" },
   { label: "Needs review", range: "0–49", min: 0, tone: "critical" },
 ];
@@ -167,7 +167,7 @@ function buildInsights(
       id: "health-weak",
       kind: "caution",
       figure: String(weak.length),
-      headline: `${weak.length} tracked ${plural(weak.length, "creator scores", "creators score")} below 60 on SocialOrbit Health`,
+      headline: `${weak.length} tracked ${plural(weak.length, "creator scores", "creators score")} below 60 on SENSO Health`,
       evidence: `Lowest is ${weak[0].displayName} at ${Math.round(weak[0].healthScore ?? 0)}. Health is deterministic and versioned — the components are on each profile.`,
       href: `/influencers/${weak[0].id}`,
       actionLabel: "Inspect",

@@ -188,7 +188,7 @@ export function ProfileTabs({
                       )}
                     </p>
                     <p className="mt-0.5 text-xs text-ink-muted">
-                      Modelled range, not a rate card. SocialOrbit does not hold this
+                      Modelled range, not a rate card. SENSO does not hold this
                       creator&apos;s asking rate.
                     </p>
                   </div>
@@ -326,7 +326,7 @@ export function ProfileTabs({
               <p className="border-t border-line pt-3 text-sm text-ink-muted">
                 Lower is safer on every bar. These are 0–100 risk <em>signals</em> derived
                 from measurable indicators.
-                SocialOrbit deliberately does not publish a &ldquo;% fake followers&rdquo;
+                SENSO deliberately does not publish a &ldquo;% fake followers&rdquo;
                 figure — no available data source supports that claim.
               </p>
             </CardContent>

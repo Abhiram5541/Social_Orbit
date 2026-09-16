@@ -29,7 +29,7 @@ const QUOTA_COST = {
 export class ConnectorUnavailable extends Error {
   constructor(
     readonly platform: "youtube",
-    readonly reason: "credentials_missing" | "quota_exceeded" | "forbidden" | "upstream_error",
+    readonly reason: "credentials_missing" | "quota_exceeded" | "forbidden" | "not_found" | "upstream_error",
     message: string,
   ) {
     super(message);
@@ -184,6 +184,9 @@ async function call<T extends z.ZodTypeAny>(
         credentialProblem ? "credentials_missing" : "forbidden",
         `YouTube rejected the request (${reason || response.status}): ${detail}`,
       );
+    }
+    if (response.status === 404) {
+      throw new ConnectorUnavailable("youtube", "not_found", `YouTube has no such resource: ${detail}`);
     }
     throw new ConnectorUnavailable("youtube", "upstream_error", `YouTube API error: ${detail}`);
   }
@@ -391,16 +394,25 @@ export async function fetchRecentVideos(
   let pageToken: string | undefined;
 
   while (ids.length < limit) {
-    const page = await call(
-      "playlistItems",
-      {
-        part: "contentDetails",
-        playlistId: uploadsPlaylistId,
-        maxResults: String(Math.min(50, limit - ids.length)),
-        ...(pageToken ? { pageToken } : {}),
-      },
-      PlaylistPage,
-    );
+    let page;
+    try {
+      page = await call(
+        "playlistItems",
+        {
+          part: "contentDetails",
+          playlistId: uploadsPlaylistId,
+          maxResults: String(Math.min(50, limit - ids.length)),
+          ...(pageToken ? { pageToken } : {}),
+        },
+        PlaylistPage,
+      );
+    } catch (error) {
+      // A channel whose uploads playlist YouTube no longer serves has no
+      // readable uploads — that is a fact about the channel, not an outage,
+      // and must not abort the fifty channels batched behind it.
+      if (error instanceof ConnectorUnavailable && error.reason === "not_found") return [];
+      throw error;
+    }
     ids.push(...page.items.map((entry) => entry.contentDetails.videoId));
     pageToken = page.nextPageToken;
     if (!pageToken) break;
@@ -534,7 +546,7 @@ export interface YouTubeObservation {
 
 /**
  * One collection pass: identity, channel statistics and recent uploads, stamped
- * with the provenance every SocialOrbit fact must carry (DPR §16.1).
+ * with the provenance every SENSO fact must carry (DPR §16.1).
  *
  * Confidence is 90, not 100: these are authoritative platform figures, but read
  * without OAuth, so nothing here is `verified` — only `observed`.

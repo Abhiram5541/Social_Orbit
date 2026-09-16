@@ -2,7 +2,7 @@ import { z } from "zod";
 import { RiskLevel } from "./common";
 
 /* ---------------------------------------------------------------------------
- * SocialOrbit scoring contracts — DPR §10, §26
+ * SENSO scoring contracts — DPR §10, §26
  *
  * Scores are computed by `src/server/scoring`, never by a model. Every stored
  * score carries the formula version and every component that produced it, so

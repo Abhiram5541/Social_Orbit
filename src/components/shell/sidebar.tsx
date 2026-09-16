@@ -215,7 +215,7 @@ export function OrgBlock({ user }: { user: SessionUser }) {
         <div className="px-2 pb-2">
           <p className="truncate text-base font-semibold text-ink">{user.orgName}</p>
           <p className="mt-0.5 text-sm text-ink-muted">
-            {user.orgKind === "platform" ? "SocialOrbit platform" : "Client organisation"}
+            {user.orgKind === "platform" ? "SENSO platform" : "Client organisation"}
             <span aria-hidden> · </span>
             <span className="text-ink">{plan.label} plan</span>
           </p>

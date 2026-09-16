@@ -8,7 +8,7 @@ import { readRecords } from "@/server/data/records";
  * Backed by the development driver today (see src/server/data/README.md); the
  * interface below is what the PostgreSQL implementation will satisfy.
  *
- * Multi-tenant model (CLAUDE.md D1): one `platform` org holds SocialOrbit
+ * Multi-tenant model (CLAUDE.md D1): one `platform` org holds SENSO
  * staff, and any number of `client` orgs hold customers. Creator accounts
  * belong to their own client-kind org so quota and billing have an owner.
  * ------------------------------------------------------------------------ */
@@ -37,7 +37,7 @@ export interface UserRecord {
 }
 
 const ORGS: Org[] = [
-  { id: "org_platform", name: "SocialOrbit", kind: "platform", plan: "enterprise", createdAt: "2025-01-08T00:00:00.000Z", seatsUsed: 3 },
+  { id: "org_platform", name: "SENSO", kind: "platform", plan: "enterprise", createdAt: "2025-01-08T00:00:00.000Z", seatsUsed: 3 },
   { id: "org_northwind", name: "Northwind Brands", kind: "client", plan: "growth", createdAt: "2026-02-14T00:00:00.000Z", seatsUsed: 6 },
   { id: "org_lumen", name: "Lumen Collective", kind: "client", plan: "free", createdAt: "2026-07-30T00:00:00.000Z", seatsUsed: 2 },
   { id: "org_creators", name: "Creator accounts", kind: "client", plan: "free", createdAt: "2025-01-08T00:00:00.000Z", seatsUsed: 1 },
@@ -49,9 +49,9 @@ const ORGS: Org[] = [
  * the development driver and are not created by the Postgres migration.
  */
 const DEV_USERS: Omit<UserRecord, "passwordHash">[] = [
-  { id: "usr_admin", email: "admin@socialorbit.io", name: "Priya Raghavan", avatarUrl: null, role: "super_admin", orgId: "org_platform", influencerId: null, createdAt: "2025-01-08T00:00:00.000Z", lastLoginAt: "2026-08-26T07:12:00.000Z", status: "active" },
-  { id: "usr_manager", email: "manager@socialorbit.io", name: "Daniel Okoye", avatarUrl: null, role: "manager", orgId: "org_platform", influencerId: null, createdAt: "2025-03-19T00:00:00.000Z", lastLoginAt: "2026-08-25T16:40:00.000Z", status: "active" },
-  { id: "usr_analyst", email: "analyst@socialorbit.io", name: "Hana Sato", avatarUrl: null, role: "analytics_manager", orgId: "org_platform", influencerId: null, createdAt: "2025-06-02T00:00:00.000Z", lastLoginAt: "2026-08-26T06:05:00.000Z", status: "active" },
+  { id: "usr_admin", email: "admin@senso360.com", name: "Rahul Vithala", avatarUrl: null, role: "super_admin", orgId: "org_platform", influencerId: null, createdAt: "2025-01-08T00:00:00.000Z", lastLoginAt: "2026-08-26T07:12:00.000Z", status: "active" },
+  { id: "usr_manager", email: "manager@senso360.com", name: "Abhiram Vemuri", avatarUrl: null, role: "manager", orgId: "org_platform", influencerId: null, createdAt: "2025-03-19T00:00:00.000Z", lastLoginAt: "2026-08-25T16:40:00.000Z", status: "active" },
+  { id: "usr_analyst", email: "analyst@senso360.com", name: "Hana Sato", avatarUrl: null, role: "analytics_manager", orgId: "org_platform", influencerId: null, createdAt: "2025-06-02T00:00:00.000Z", lastLoginAt: "2026-08-26T06:05:00.000Z", status: "active" },
   { id: "usr_client_owner", email: "owner@northwind.example", name: "Marcus Whitfield", avatarUrl: null, role: "client_owner", orgId: "org_northwind", influencerId: null, createdAt: "2026-02-14T00:00:00.000Z", lastLoginAt: "2026-08-26T08:31:00.000Z", status: "active" },
   { id: "usr_client_member", email: "member@northwind.example", name: "Ines Duarte", avatarUrl: null, role: "client_member", orgId: "org_northwind", influencerId: null, createdAt: "2026-03-02T00:00:00.000Z", lastLoginAt: "2026-08-25T11:18:00.000Z", status: "active" },
   { id: "usr_free_client", email: "hello@lumen.example", name: "Tomas Berg", avatarUrl: null, role: "client_owner", orgId: "org_lumen", influencerId: null, createdAt: "2026-07-30T00:00:00.000Z", lastLoginAt: "2026-08-24T09:02:00.000Z", status: "active" },
@@ -60,7 +60,7 @@ const DEV_USERS: Omit<UserRecord, "passwordHash">[] = [
   // fixed id to point at and the link is resolved at load time instead. The
   // account is a development sign-in for exercising the portal — it is not a
   // claim that this person holds the channel.
-  { id: "usr_creator", email: "creator@socialorbit.io", name: "Creator Portal Demo", avatarUrl: null, role: "influencer", orgId: "org_creators", influencerId: null, createdAt: "2026-05-11T00:00:00.000Z", lastLoginAt: "2026-08-26T05:55:00.000Z", status: "active" },
+  { id: "usr_creator", email: "creator@senso360.com", name: "Creator Portal Demo", avatarUrl: null, role: "influencer", orgId: "org_creators", influencerId: null, createdAt: "2026-05-11T00:00:00.000Z", lastLoginAt: "2026-08-26T05:55:00.000Z", status: "active" },
 ];
 
 /** Lowest id in the database, so the portal opens on the same creator each run. */
@@ -91,7 +91,7 @@ async function load(): Promise<UserRecord[]> {
     return users;
   }
 
-  const hash = await hashPassword(configured ?? "SocialOrbit-Dev-2026");
+  const hash = await hashPassword(configured ?? "SENSO-Dev-2026");
   const creatorId = firstCreatorId();
   users = DEV_USERS.map((user) => ({
     ...user,

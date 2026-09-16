@@ -23,7 +23,7 @@ export async function GET(
       profile.audience = {
         available: false,
         reason:
-          "Authorized audience analytics are visible to the creator and to SocialOrbit reviewers only.",
+          "Authorized audience analytics are visible to the creator and to SENSO reviewers only.",
         countries: [],
         languages: [],
         ageBands: [],

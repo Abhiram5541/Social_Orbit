@@ -54,7 +54,7 @@ export function Avatar({
   name: string;
   src?: string | null;
   size?: keyof typeof SIZES;
-  /** Renders the SocialOrbit Verified mark — only ever for `verified`. */
+  /** Renders the SENSO Verified mark — only ever for `verified`. */
   verification?: VerificationStatus;
   className?: string;
 }) {
@@ -91,13 +91,13 @@ export function Avatar({
       {verification === "verified" && (
         <span
           className="absolute -bottom-0.5 -right-0.5 grid place-items-center rounded-full bg-surface"
-          title="SocialOrbit Verified"
+          title="SENSO Verified"
         >
           {/* Scales with the avatar: a fixed 16px mark covered a third of the
               small size and shrank to a speck on the profile header. */}
           <BadgeCheck
             className={cn("text-verified", MARK_SIZES[size])}
-            aria-label="SocialOrbit Verified"
+            aria-label="SENSO Verified"
           />
         </span>
       )}

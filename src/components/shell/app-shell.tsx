@@ -98,7 +98,7 @@ export function AppShell({
             <Link
               href={WORKSPACE_HOME[workspace]}
               className="inline-block rounded-md py-1"
-              aria-label="SocialOrbit home"
+              aria-label="SENSO home"
             >
               <Wordmark />
             </Link>

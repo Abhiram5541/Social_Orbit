@@ -48,7 +48,7 @@ export default async function InfluencerProfilePage({
   const discoveryHome = discoveryHomeFor(user.orgKind);
 
   // Authorized audience analytics are first-party creator data. Clients see the
-  // public profile; the creator and SocialOrbit reviewers see the audience
+  // public profile; the creator and SENSO reviewers see the audience
   // breakdown (DPR §22). The route handler applies the identical rule.
   const maySeeAudience =
     user.orgKind === "platform" || user.influencerId === id;
@@ -60,7 +60,7 @@ export default async function InfluencerProfilePage({
           audience: {
             available: false,
             reason:
-              "Authorized audience analytics are visible to the creator and to SocialOrbit reviewers only.",
+              "Authorized audience analytics are visible to the creator and to SENSO reviewers only.",
             countries: [],
             languages: [],
             ageBands: [],

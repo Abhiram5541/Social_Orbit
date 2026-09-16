@@ -787,7 +787,7 @@ export function toProfile(id: string, now: Date = new Date()): InfluencerProfile
         available: false,
         reason:
           "Audience demographics require the creator to connect a professional account. " +
-          "SocialOrbit does not estimate demographics from public data.",
+          "SENSO does not estimate demographics from public data.",
         countries: [],
         languages: [],
         ageBands: [],

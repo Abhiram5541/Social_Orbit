@@ -3,7 +3,7 @@ import { CATEGORY_LABEL, Category, PLATFORM_LABEL, Platform } from "@/lib/contra
 import { handler } from "@/server/auth/rbac";
 import { authenticateRequest, withApiHeaders } from "@/server/auth/api-auth";
 
-/** GET /v1/categories — the SocialOrbit taxonomy, plus supported platforms. */
+/** GET /v1/categories — the SENSO taxonomy, plus supported platforms. */
 export async function GET(request: NextRequest) {
   return handler(async () => {
     const auth = await authenticateRequest(request, "influencers:read");

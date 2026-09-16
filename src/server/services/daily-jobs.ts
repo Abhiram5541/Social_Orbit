@@ -100,15 +100,7 @@ export async function runSnapshotJob(
   const maxChannels = options.maxChannels ?? 5_000;
   const report = await refreshStale({ budgetMs: options.budgetMs ?? 40 * 60_000, maxChannels });
 
-  // A pass cut short — by its time budget, or by its channel cap with accounts
-  // still owed — is not today's run; the next tick or cron call continues it.
-  // Anything else is: done, or the quota is gone for the day. (Not simply
-  // "remaining === 0": a channel that hides its subscriber count is refused on
-  // every read, and would keep the job re-running all day.)
-  const cutShort =
-    report.stoppedEarly?.startsWith("Time budget") ||
-    (report.discovered === maxChannels && report.remaining > 0);
-  if (!cutShort) await recordRun({ name: "snapshot", ranOn: day, report });
+  if (!snapshotCutShort(report, maxChannels)) await recordRun({ name: "snapshot", ranOn: day, report });
 
   await sendOpsEvent("Daily snapshot", [
     `${report.ingested} creators refreshed, ${report.quotaUnitsSpent} quota units spent.`,
@@ -118,6 +110,22 @@ export async function runSnapshotJob(
     ...(report.stoppedEarly ? [`Stopped early: ${report.stoppedEarly}`] : []),
   ]);
   return report;
+}
+
+/**
+ * A pass cut short — by its time budget, by an unreachable API, or by its
+ * channel cap with accounts still owed — is not today's run; the next tick or
+ * cron call continues it. Anything else is: done, or the quota is gone for the
+ * day. (Not simply "remaining === 0": a channel that hides its subscriber
+ * count is refused on every read, and would keep the job re-running all day.)
+ */
+export function snapshotCutShort(
+  report: Pick<StaleRefreshReport, "stoppedEarly" | "discovered" | "remaining">,
+  maxChannels: number,
+): boolean {
+  const stopped = report.stoppedEarly;
+  if (stopped && !stopped.includes("quota exhausted")) return true;
+  return report.discovered === maxChannels && report.remaining > 0;
 }
 
 /** Runs today's slice of the discovery rotation. */

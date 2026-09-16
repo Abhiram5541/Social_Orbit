@@ -211,7 +211,7 @@ function buildFacets(items: InfluencerSummary[]): SearchFacet[] {
     {
       key: "verification",
       buckets: toBuckets(verification, (v) =>
-        v === "verified" ? "SocialOrbit Verified" : v === "pending" ? "Connection pending" : "Unverified",
+        v === "verified" ? "SENSO Verified" : v === "pending" ? "Connection pending" : "Unverified",
       ),
     },
   ];
