@@ -36,7 +36,9 @@ export const metadata: Metadata = {
   description:
     "Evidence-based influencer intelligence: verified creator profiles, deterministic scoring, audience quality signals and campaign performance measurement.",
   applicationName: "SENSO",
-  robots: { index: false, follow: false },
+  metadataBase: new URL("https://senso360.com"),
+  // The marketing site is indexable; every signed-in route group sets
+  // `robots: noindex` in its own layout.
 };
 
 export const viewport: Viewport = {

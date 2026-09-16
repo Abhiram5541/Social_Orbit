@@ -1,5 +1,7 @@
 import type { OrgKind, Plan, Role, SessionUser } from "@/lib/contracts/auth";
 import { hashPassword, verifyPassword, equaliseTiming } from "@/server/auth/password";
+import { appRows, persist } from "@/server/data/app-store";
+import { postgresDriver } from "@/server/data/postgres";
 import { readRecords } from "@/server/data/records";
 
 /* ---------------------------------------------------------------------------
@@ -70,8 +72,12 @@ function firstCreatorId(): string | null {
 
 let users: UserRecord[] | null = null;
 
-async function load(): Promise<UserRecord[]> {
-  if (users) return users;
+/**
+ * The seed accounts with their password hash resolved — what the Postgres
+ * store is primed with on a database that holds no users yet, and what the
+ * development driver serves directly.
+ */
+export async function seedUsers(): Promise<UserRecord[]> {
 
   // These accounts include a super_admin, and the fallback password below is
   // published in the README. Seeding them in production with a well-known
@@ -87,26 +93,97 @@ async function load(): Promise<UserRecord[]> {
       "[auth] DEV_SEED_PASSWORD is not set, so no development sign-ins were created. " +
         "Set it to enable them, or attach a real user store.",
     );
-    users = [];
-    return users;
+    return [];
   }
 
   const hash = await hashPassword(configured ?? "SENSO-Dev-2026");
   const creatorId = firstCreatorId();
-  users = DEV_USERS.map((user) => ({
+  return DEV_USERS.map((user) => ({
     ...user,
     influencerId: user.role === "influencer" ? creatorId : user.influencerId,
     passwordHash: hash,
   }));
+}
+
+export const seedOrgs = (): Org[] => [...ORGS];
+
+async function load(): Promise<UserRecord[]> {
+  // Under Postgres the rows were installed at boot by `warmAppStore`.
+  if (postgresDriver()) return appRows<UserRecord>("users", () => []);
+  users ??= await seedUsers();
   return users;
 }
 
+function orgs(): Org[] {
+  return postgresDriver() ? appRows<Org>("orgs", () => []) : ORGS;
+}
+
 export async function findOrg(orgId: string): Promise<Org | null> {
-  return ORGS.find((org) => org.id === orgId) ?? null;
+  return orgs().find((org) => org.id === orgId) ?? null;
 }
 
 export async function listOrgs(): Promise<Org[]> {
-  return [...ORGS];
+  return [...orgs()];
+}
+
+/** A new organisation. Seats count the users created into it. */
+export async function createOrg(input: { name: string; kind: OrgKind; plan: Plan }): Promise<Org> {
+  const org: Org = {
+    id: `org_${Date.now().toString(36)}`,
+    name: input.name.trim(),
+    kind: input.kind,
+    plan: input.plan,
+    createdAt: new Date().toISOString(),
+    seatsUsed: 0,
+  };
+  orgs().push(org);
+  persist("orgs", [org]);
+  return org;
+}
+
+/**
+ * A new sign-in. The password is hashed here and never stored; the caller
+ * decides how the person learns it. Rejects a duplicate address rather than
+ * silently returning the existing account — that would let one client's
+ * admin attach a user to their org by guessing an email in another.
+ */
+export async function createUser(input: {
+  email: string;
+  name: string;
+  role: Role;
+  orgId: string;
+  password: string;
+}): Promise<UserRecord> {
+  const org = await findOrg(input.orgId);
+  if (!org) throw new Error("No such organisation.");
+  if (await findUserByEmail(input.email)) throw new Error("An account with that email already exists.");
+
+  const user: UserRecord = {
+    id: `usr_${Date.now().toString(36)}`,
+    email: input.email.trim().toLowerCase(),
+    name: input.name.trim(),
+    avatarUrl: null,
+    role: input.role,
+    orgId: org.id,
+    influencerId: null,
+    passwordHash: await hashPassword(input.password),
+    createdAt: new Date().toISOString(),
+    lastLoginAt: null,
+    status: "active",
+  };
+  (await load()).push(user);
+  org.seatsUsed += 1;
+  persist("users", [user]);
+  persist("orgs", [org]);
+  return user;
+}
+
+/** Replaces a user's password. For an admin reset; the old one is not needed. */
+export async function setUserPassword(userId: string, password: string): Promise<void> {
+  const user = (await load()).find((entry) => entry.id === userId);
+  if (!user) throw new Error("No such user.");
+  user.passwordHash = await hashPassword(password);
+  persist("users", [user]);
 }
 
 export async function findUserByEmail(email: string): Promise<UserRecord | null> {

@@ -1,6 +1,6 @@
 import { PLAN_CONFIG, type Plan } from "@/lib/contracts/auth";
 import type { SearchQuota } from "@/lib/contracts/search";
-import { shared } from "@/server/data/process-store";
+import { appRows, persist } from "@/server/data/app-store";
 
 /* ---------------------------------------------------------------------------
  * Usage metering — Architecture doc §3.
@@ -18,14 +18,20 @@ import { shared } from "@/server/data/process-store";
 export type UsageMetric = "influencer_search" | "api_request" | "export" | "report";
 
 interface Counter {
+  /** `${orgId}:${metric}` — the row key, so the store can address it. */
+  id: string;
   count: number;
   periodStart: string;
 }
 
-const counters = shared("usage-counters", () => new Map<string, Counter>());
+const counters = () => appRows<Counter>("usage", () => []);
 
 function key(orgId: string, metric: UsageMetric): string {
   return `${orgId}:${metric}`;
+}
+
+function find(id: string): Counter | undefined {
+  return counters().find((counter) => counter.id === id);
 }
 
 /** Calendar-month billing period. Returned in UTC so it is unambiguous. */
@@ -41,7 +47,7 @@ export function getUsage(
   now: Date = new Date(),
 ): number {
   const { start } = currentPeriod(now);
-  const record = counters.get(key(orgId, metric));
+  const record = find(key(orgId, metric));
   // A counter from a previous period is stale, not zero-by-accident.
   if (!record || record.periodStart !== start.toISOString()) return 0;
   return record.count;
@@ -53,12 +59,15 @@ export function incrementUsage(
   now: Date = new Date(),
 ): number {
   const { start } = currentPeriod(now);
-  const existing = counters.get(key(orgId, metric));
+  const id = key(orgId, metric);
+  const existing = find(id);
   const next: Counter =
     existing && existing.periodStart === start.toISOString()
-      ? { count: existing.count + 1, periodStart: existing.periodStart }
-      : { count: 1, periodStart: start.toISOString() };
-  counters.set(key(orgId, metric), next);
+      ? { id, count: existing.count + 1, periodStart: existing.periodStart }
+      : { id, count: 1, periodStart: start.toISOString() };
+  if (existing) Object.assign(existing, next);
+  else counters().push(next);
+  persist("usage", [next]);
   return next.count;
 }
 
@@ -87,5 +96,5 @@ export function hasQuota(quota: SearchQuota): boolean {
 
 /** Test seam so quota behaviour can be exercised without a restart. */
 export function __resetUsage(): void {
-  counters.clear();
+  counters().length = 0;
 }

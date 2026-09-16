@@ -4,6 +4,10 @@ import { WORKSPACE_HOME } from "@/lib/navigation";
 import { getSession } from "@/server/auth/session";
 import { quotaFor } from "@/server/repositories/usage-repository";
 import { AppShell } from "@/components/shell/app-shell";
+import type { Metadata } from "next";
+
+/** Signed-in workspace: never indexed. */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 /**
  * The client workspace. Session and workspace are resolved on the server, so

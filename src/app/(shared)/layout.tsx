@@ -2,6 +2,10 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/server/auth/session";
 import { quotaFor } from "@/server/repositories/usage-repository";
 import { AppShell } from "@/components/shell/app-shell";
+import type { Metadata } from "next";
+
+/** Signed-in workspace: never indexed. */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 /**
  * Routes every signed-in role can reach, whatever workspace they belong to —

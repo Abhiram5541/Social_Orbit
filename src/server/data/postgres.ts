@@ -172,6 +172,14 @@ export async function writeJobRun(run: JobRun): Promise<void> {
   );
 }
 
+/** A query against the workspace-state table (see app-store.ts). */
+export function appStateQuery<R extends object = Record<string, unknown>>(
+  text: string,
+  params: unknown[] = [],
+): Promise<{ rows: R[] }> {
+  return db().query<R>(text, params);
+}
+
 export async function countInfluencersStored(): Promise<number> {
   const { rows } = await db().query<{ n: string }>(`SELECT count(*) AS n FROM influencers`);
   return Number(rows[0]?.n ?? 0);

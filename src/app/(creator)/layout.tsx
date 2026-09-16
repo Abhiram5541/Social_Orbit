@@ -3,6 +3,10 @@ import { ROLE_WORKSPACE } from "@/lib/contracts/auth";
 import { WORKSPACE_HOME } from "@/lib/navigation";
 import { getSession } from "@/server/auth/session";
 import { AppShell } from "@/components/shell/app-shell";
+import type { Metadata } from "next";
+
+/** Signed-in workspace: never indexed. */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 /** The creator portal. A creator only ever sees their own record here. */
 export default async function CreatorLayout({ children }: { children: React.ReactNode }) {

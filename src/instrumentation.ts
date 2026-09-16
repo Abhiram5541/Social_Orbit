@@ -11,6 +11,22 @@ export async function register(): Promise<void> {
   const { warmIngestedStore } = await import("@/server/data/ingested-store");
   await warmIngestedStore();
 
+  // Workspace state — users, orgs, shortlists, campaigns, API keys, usage —
+  // after the creators, because the seed rows point at creator ids.
+  const { warmAppStore } = await import("@/server/data/app-store");
+  const { seedUsers, seedOrgs } = await import("@/server/repositories/user-repository");
+  const { seedWorkspace } = await import("@/server/repositories/workspace-repository");
+  const { seedApiKeys } = await import("@/server/repositories/api-key-repository");
+  const users = await seedUsers();
+  await warmAppStore({
+    users: () => users,
+    orgs: seedOrgs,
+    shortlists: seedWorkspace.shortlists,
+    campaigns: seedWorkspace.campaigns,
+    api_keys: seedApiKeys,
+    usage: () => [],
+  });
+
   // Daily snapshots and discovery, when this server is the one meant to run
   // them (SOCIALORBIT_DAILY_JOBS=true). Vercel uses the cron routes instead.
   const { startScheduler } = await import("@/server/services/daily-jobs");

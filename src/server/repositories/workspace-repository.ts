@@ -8,7 +8,7 @@ import type {
   ShortlistItem,
 } from "@/lib/contracts/campaign";
 import { ApiFailure, assertTenantAccess } from "@/server/auth/rbac";
-import { shared } from "@/server/data/process-store";
+import { appRows, persist } from "@/server/data/app-store";
 import { readRecords } from "@/server/data/records";
 import { toSummary } from "./influencer-repository";
 import { EPOCH } from "@/server/data/records";
@@ -183,8 +183,13 @@ function seedCreatorIds(): (index: number) => string | null {
   return (index) => ids[index] ?? null;
 }
 
-const SHORTLISTS = shared("shortlists", () => seedShortlists(seedCreatorIds()));
-const CAMPAIGNS = shared("campaigns", () => seedCampaigns(seedCreatorIds()));
+/** Read through a function: under Postgres the array is installed at boot, after this module loads. */
+const shortlists = () => appRows<ShortlistRow>("shortlists", () => seedShortlists(seedCreatorIds()));
+const campaigns = () => appRows<CampaignRow>("campaigns", () => seedCampaigns(seedCreatorIds()));
+export const seedWorkspace = {
+  shortlists: () => seedShortlists(seedCreatorIds()),
+  campaigns: () => seedCampaigns(seedCreatorIds()),
+};
 
 /* --- Shortlists --------------------------------------------------------- */
 
@@ -202,13 +207,13 @@ function toShortlist(row: ShortlistRow): Shortlist {
 }
 
 export function listShortlists(user: SessionUser): Shortlist[] {
-  return SHORTLISTS.filter((row) =>
+  return shortlists().filter((row) =>
     user.orgKind === "platform" ? true : row.orgId === user.orgId,
   ).map(toShortlist);
 }
 
 export function getShortlist(user: SessionUser, id: string): ShortlistDetail | null {
-  const row = SHORTLISTS.find((entry) => entry.id === id);
+  const row = shortlists().find((entry) => entry.id === id);
   if (!row) return null;
   assertTenantAccess(user, row.orgId);
 
@@ -264,7 +269,8 @@ export function createShortlist(
     createdByName: user.name,
     items: [],
   };
-  SHORTLISTS.push(row);
+  shortlists().push(row);
+  persist("shortlists", [row]);
   return toShortlist(row);
 }
 
@@ -274,7 +280,7 @@ export function addToShortlist(
   influencerId: string,
   note?: string,
 ): ShortlistDetail {
-  const row = SHORTLISTS.find((entry) => entry.id === shortlistId);
+  const row = shortlists().find((entry) => entry.id === shortlistId);
   if (!row) throw new ApiFailure("not_found", "That shortlist does not exist.");
   assertTenantAccess(user, row.orgId);
 
@@ -292,6 +298,7 @@ export function addToShortlist(
     addedByName: user.name,
   });
   row.updatedAt = new Date().toISOString();
+  persist("shortlists", [row]);
   return getShortlist(user, shortlistId)!;
 }
 
@@ -300,13 +307,14 @@ export function removeFromShortlist(
   shortlistId: string,
   influencerId: string,
 ): ShortlistDetail {
-  const row = SHORTLISTS.find((entry) => entry.id === shortlistId);
+  const row = shortlists().find((entry) => entry.id === shortlistId);
   if (!row) throw new ApiFailure("not_found", "That shortlist does not exist.");
   assertTenantAccess(user, row.orgId);
 
   const index = row.items.findIndex((item) => item.influencerId === influencerId);
   if (index >= 0) row.items.splice(index, 1);
   row.updatedAt = new Date().toISOString();
+  persist("shortlists", [row]);
   return getShortlist(user, shortlistId)!;
 }
 
@@ -316,7 +324,7 @@ export function setShortlistNote(
   influencerId: string,
   note: string | null,
 ): ShortlistDetail {
-  const row = SHORTLISTS.find((entry) => entry.id === shortlistId);
+  const row = shortlists().find((entry) => entry.id === shortlistId);
   if (!row) throw new ApiFailure("not_found", "That shortlist does not exist.");
   assertTenantAccess(user, row.orgId);
 
@@ -324,6 +332,7 @@ export function setShortlistNote(
   if (!item) throw new ApiFailure("not_found", "That creator is not on this shortlist.");
   item.note = note?.trim() ? note.trim() : null;
   row.updatedAt = new Date().toISOString();
+  persist("shortlists", [row]);
   return getShortlist(user, shortlistId)!;
 }
 
@@ -424,13 +433,13 @@ function toCampaignSummary(row: CampaignRow): CampaignSummary {
 }
 
 export function listCampaigns(user: SessionUser): CampaignSummary[] {
-  return CAMPAIGNS.filter((row) =>
+  return campaigns().filter((row) =>
     user.orgKind === "platform" ? true : row.orgId === user.orgId,
   ).map(toCampaignSummary);
 }
 
 export function getCampaign(user: SessionUser, id: string): CampaignDetail | null {
-  const row = CAMPAIGNS.find((entry) => entry.id === id);
+  const row = campaigns().find((entry) => entry.id === id);
   if (!row) return null;
   assertTenantAccess(user, row.orgId);
 
@@ -506,7 +515,7 @@ export function createCampaign(
 ): CampaignSummary {
   // A tracking hashtag must be unique within the org, or two campaigns would
   // silently attribute each other's posts.
-  const clash = CAMPAIGNS.find(
+  const clash = campaigns().find(
     (row) =>
       row.orgId === user.orgId &&
       row.hashtag.toLowerCase() === input.hashtag.toLowerCase() &&
@@ -544,13 +553,14 @@ export function createCampaign(
         agreedRate: null,
       })),
   };
-  CAMPAIGNS.push(row);
+  campaigns().push(row);
+  persist("campaigns", [row]);
   return toCampaignSummary(row);
 }
 
 /** Creator ids on a shortlist, for pre-filling a campaign. */
 export function shortlistMemberIds(user: SessionUser, shortlistId: string): string[] {
-  const row = SHORTLISTS.find((entry) => entry.id === shortlistId);
+  const row = shortlists().find((entry) => entry.id === shortlistId);
   if (!row) return [];
   assertTenantAccess(user, row.orgId);
   return row.items.map((item) => item.influencerId);

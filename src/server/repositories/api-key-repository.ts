@@ -3,7 +3,7 @@ import type { Plan, SessionUser } from "@/lib/contracts/auth";
 import { PLAN_CONFIG } from "@/lib/contracts/auth";
 import type { ApiKeyView, ApiScope } from "@/lib/contracts/api-key";
 import { ApiFailure, assertTenantAccess } from "@/server/auth/rbac";
-import { shared } from "@/server/data/process-store";
+import { appRows, persist } from "@/server/data/app-store";
 
 export type { ApiKeyView, ApiScope };
 
@@ -86,7 +86,8 @@ const SEED_KEYS: ApiKeyRecord[] = [
   },
 ];
 
-const KEYS = shared("api-keys", () => [...SEED_KEYS]);
+const keys = () => appRows<ApiKeyRecord>("api_keys", () => [...SEED_KEYS]);
+export const seedApiKeys = () => [...SEED_KEYS];
 
 function toView(record: ApiKeyRecord): ApiKeyView {
   // The hash never leaves this module.
@@ -97,7 +98,7 @@ function toView(record: ApiKeyRecord): ApiKeyView {
 }
 
 export function listApiKeys(user: SessionUser): ApiKeyView[] {
-  return KEYS.filter((key) =>
+  return keys().filter((key) =>
     user.orgKind === "platform" ? true : key.orgId === user.orgId,
   ).map(toView);
 }
@@ -107,7 +108,7 @@ export function createApiKey(
   user: SessionUser,
   input: { name: string; scopes: ApiScope[]; ipAllowlist?: string[] },
 ): { key: ApiKeyView; raw: string } {
-  const active = KEYS.filter((key) => key.orgId === user.orgId && !key.revokedAt);
+  const active = keys().filter((key) => key.orgId === user.orgId && !key.revokedAt);
   if (active.length >= 10) {
     throw new ApiFailure(
       "conflict",
@@ -129,15 +130,17 @@ export function createApiKey(
     ipAllowlist: input.ipAllowlist ?? [],
     scopes: input.scopes,
   };
-  KEYS.push(record);
+  keys().push(record);
+  persist("api_keys", [record]);
   return { key: toView(record), raw };
 }
 
 export function revokeApiKey(user: SessionUser, id: string): ApiKeyView {
-  const record = KEYS.find((key) => key.id === id);
+  const record = keys().find((key) => key.id === id);
   if (!record) throw new ApiFailure("not_found", "No such API key.");
   assertTenantAccess(user, record.orgId);
   record.revokedAt ??= new Date().toISOString();
+  persist("api_keys", [record]);
   return toView(record);
 }
 
@@ -150,7 +153,7 @@ export function rotateApiKey(
   user: SessionUser,
   id: string,
 ): { key: ApiKeyView; raw: string } {
-  const record = KEYS.find((key) => key.id === id);
+  const record = keys().find((key) => key.id === id);
   if (!record) throw new ApiFailure("not_found", "No such API key.");
   assertTenantAccess(user, record.orgId);
 
@@ -160,6 +163,7 @@ export function rotateApiKey(
     ipAllowlist: record.ipAllowlist,
   });
   record.revokedAt = new Date().toISOString();
+  persist("api_keys", [record]);
   return created;
 }
 
@@ -184,7 +188,7 @@ export function authenticateApiKey(
   const candidate = Buffer.from(hashKey(raw), "hex");
   let matched: ApiKeyRecord | null = null;
 
-  for (const record of KEYS) {
+  for (const record of keys()) {
     const stored = Buffer.from(record.hash, "hex");
     if (stored.length !== candidate.length) continue;
     if (timingSafeEqual(stored, candidate) && !record.revokedAt) matched = record;
@@ -192,6 +196,7 @@ export function authenticateApiKey(
 
   if (!matched) return null;
   matched.lastUsedAt = new Date().toISOString();
+  persist("api_keys", [matched]);
 
   return {
     keyId: matched.id,

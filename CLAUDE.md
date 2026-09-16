@@ -412,9 +412,15 @@ Rows are `jsonb` beside the two columns writes are addressed by — the row key 
 owner a set is replaced under — one mapping for nine kinds. Promote a field to a column
 the first time a query needs an index on it; move reads to queries when the working set
 stops fitting (~10k creators). A Postgres with no creators imports `.data/ingested.json`
-on first boot, so switching drivers is a one-line env change. Shortlists, campaigns,
-users and API keys are still process memory — the influencer database is what grows,
-and it went first.
+on first boot, so switching drivers is a one-line env change. Workspace state —
+users, orgs, shortlists, campaigns, API keys, usage counters — followed on 2026-09-16
+through `src/server/data/app-store.ts`: one `app_state (kind, id, data jsonb)` table,
+loaded into the process at boot after the creators, each mutation queued through as
+the row it changed (memory stays the read model; a crash inside the queue loses one
+write). A kind with no rows is primed from its seed once, so the seed function stops
+being the source from the second boot. Accounts are created by a super admin through
+`POST /api/internal/admin/users` (with an org, or into one) — public registration is
+still an enquiry, not an account.
 
 **D28 — A city is a mention, not a field.**
 No public platform API exposes a location finer than country, so "creators in
