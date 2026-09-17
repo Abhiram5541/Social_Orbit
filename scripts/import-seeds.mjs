@@ -12,7 +12,11 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
  * the quota resets) picks up where the last one stopped; `--from N` overrides
  * it and `--limit N` caps the seeds one run may spend on.
  *
- * Usage: node scripts/import-seeds.mjs [file] [--from N] [--limit N]
+ * `--platform instagram` sends usernames to the Instagram ingest route, ten a
+ * request (one Business Discovery call each against 200 an hour); anything
+ * after `#` on a seed line is a note and is not sent.
+ *
+ * Usage: node scripts/import-seeds.mjs [file] [--platform youtube|instagram] [--from N] [--limit N]
  * Needs the app on APP_URL and the seed admin password in the env file.
  */
 
@@ -31,12 +35,13 @@ const from = args.includes("--from")
   ? Number(args[args.indexOf("--from") + 1]) || 0
   : Number(existsSync(cursorFile) ? readFileSync(cursorFile, "utf8") : 0) || 0;
 const limit = args.includes("--limit") ? Number(args[args.indexOf("--limit") + 1]) || Infinity : Infinity;
-const BATCH = 100;
+const platform = args.includes("--platform") ? args[args.indexOf("--platform") + 1] : "youtube";
+const BATCH = platform === "instagram" ? 10 : 100;
 
 const seeds = readFileSync(file, "utf8")
   .split("\n")
-  .map((line) => line.trim())
-  .filter((line) => line && !line.startsWith("#"));
+  .map((line) => line.replace(/#.*$/, "").trim())
+  .filter(Boolean);
 
 async function login() {
   const response = await fetch(`${APP_URL}/api/internal/auth/login`, {
@@ -61,12 +66,29 @@ if (from >= seeds.length) {
 
 for (let i = from; i < Math.min(seeds.length, from + limit); i += BATCH) {
   const started = Date.now();
-  const response = await fetch(`${APP_URL}/api/internal/connectors/youtube/harvest`, {
-    method: "POST",
-    headers: { "content-type": "application/json", cookie },
-    body: JSON.stringify({ seeds: seeds.slice(i, i + BATCH), videos: 50 }),
-  });
-  const report = await response.json();
+  const slice = seeds.slice(i, i + BATCH);
+  const response = await fetch(
+    `${APP_URL}/api/internal/connectors/${platform === "instagram" ? "instagram/ingest" : "youtube/harvest"}`,
+    {
+      method: "POST",
+      headers: { "content-type": "application/json", cookie },
+      body: JSON.stringify(
+        platform === "instagram" ? { accounts: slice.join("\n"), posts: 50 } : { seeds: slice, videos: 50 },
+      ),
+    },
+  );
+  const raw = await response.json();
+  // The two routes report differently; fold Instagram's into the harvest shape.
+  const report =
+    platform === "instagram" && response.ok
+      ? {
+          alreadyHeld: 0,
+          ingested: raw.ingested,
+          skipped: raw.results.filter((r) => !r.ok),
+          quotaUnitsSpent: raw.quotaUnitsSpent,
+          stoppedEarly: raw.stoppedEarly ?? null,
+        }
+      : raw;
   if (!response.ok) {
     console.error(`[${i}] HTTP ${response.status}`, report);
     process.exit(1);

@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
 
     const results: InstagramIngestOutcome[] = [];
     let quotaUnitsSpent = 0;
+    let stoppedEarly: string | null = null;
 
     for (const account of accounts) {
       try {
@@ -74,6 +75,7 @@ export async function POST(request: NextRequest) {
           // A dead token or the hourly rate limit will fail every remaining account
           // the same way. Stop rather than burn the list against it.
           results.push({ input: account, ok: false, detail: error.message });
+          stoppedEarly = error.message;
           break;
         }
         throw error;
@@ -84,6 +86,8 @@ export async function POST(request: NextRequest) {
       results,
       quotaUnitsSpent,
       ingested: results.filter((result) => result.ok).length,
+      /** Set when the token or the hourly limit failed the rest of the list. */
+      stoppedEarly,
     });
   });
 }
