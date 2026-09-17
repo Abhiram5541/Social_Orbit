@@ -59,3 +59,12 @@ describe("fetchAccount", () => {
     await expect(async () => { respond(400, { error: { code: 4 } }); await fetchAccount("natgeo"); }).rejects.toMatchObject({ reason: "quota_exceeded" });
   });
 });
+
+describe("graph host", () => {
+  it("sends an Instagram Login token to graph.instagram.com", async () => {
+    vi.stubEnv("META_IG_TOKEN", "IGAAxyz");
+    respond(200, { business_discovery: { id: "1", username: "a", followers_count: 1 } });
+    await fetchAccount("a");
+    expect(String(fetchMock.mock.calls[0][0])).toContain("https://graph.instagram.com/");
+  });
+});

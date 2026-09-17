@@ -12,16 +12,25 @@ import type { Provenance } from "@/lib/contracts/common";
  *
  * Every call is made as SENSO's own account, so two things are configured
  * beyond the app keys: `META_IG_USER_ID` (the Instagram professional account's
- * id) and `META_IG_TOKEN` (a long-lived Page token that reaches it). The
- * reads are Standard Access — they need no App Review, because the only
- * "user" whose token is involved is ours.
+ * id) and `META_IG_TOKEN` — either a long-lived Instagram Login token (60
+ * days, refreshed by `scripts/meta-token.mjs --refresh`) or a Page token from
+ * Facebook Login. The reads are Standard Access — they need no App Review,
+ * because the only "user" whose token is involved is ours.
  *
  * Rate limit is per token: 200 calls an hour. Each observation is one call,
  * so the budget is ~4,800 creators a day — the ceiling this connector runs at
  * until a second professional account is added.
  * ------------------------------------------------------------------------ */
 
-const GRAPH = "https://graph.facebook.com";
+/**
+ * Two hosts serve the same Business Discovery call. A token minted through
+ * "Instagram API with Instagram Login" (prefix `IGAA`) is only valid on
+ * graph.instagram.com; a Facebook user/Page token (`EAA`) on graph.facebook.com.
+ * Read from the token, so switching login products is a token swap, not a deploy.
+ */
+function graphHost(token: string): string {
+  return token.startsWith("IG") ? "https://graph.instagram.com" : "https://graph.facebook.com";
+}
 
 export class ConnectorUnavailable extends Error {
   constructor(
@@ -99,7 +108,7 @@ const GraphError = z.object({
 async function call<T extends z.ZodTypeAny>(path: string, params: Record<string, string>, schema: T): Promise<z.infer<T>> {
   const { token } = requireCredentials();
   const version = process.env.META_GRAPH_VERSION?.trim() || "v21.0";
-  const url = new URL(`${GRAPH}/${version}/${path}`);
+  const url = new URL(`${graphHost(token)}/${version}/${path}`);
   for (const [name, value] of Object.entries(params)) url.searchParams.set(name, value);
   url.searchParams.set("access_token", token);
 
