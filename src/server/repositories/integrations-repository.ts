@@ -92,7 +92,7 @@ export function integrationCatalog(): Integration[] {
         (instagram && instagram.missing.length === 0
           ? "Meta app credentials are set, but no adapter is written yet, and the app still needs "
           : "No adapter is written yet, and beyond credentials the Meta app needs ") +
-        "instagram_basic and instagram_manage_insights through Meta App Review. Instagram publishes no discovery endpoint, so creators will be added by handle, not found by sweep.",
+        "Business Discovery reads run as SENSO's own professional account (META_IG_USER_ID + META_IG_TOKEN) and need no App Review. Instagram publishes no discovery endpoint, so creators are added by handle, not found by sweep; creators connecting their own account still needs instagram_basic and instagram_manage_insights through App Review.",
       requires: instagram?.requires ?? [],
       missing: instagram?.missing ?? [],
       manageHref: "/admin/connectors",

@@ -15,6 +15,7 @@ import { Table, TableWrap, Tbody, Td, Th, Thead, Tr } from "@/components/ui/tabl
 import { StatRow, StatTile } from "@/components/intelligence/stat";
 import { ReviewTable } from "@/components/admin/review-table";
 import { ChannelIngest } from "@/components/admin/channel-ingest";
+import { InstagramIngest } from "@/components/admin/instagram-ingest";
 import { XIngest } from "@/components/admin/x-ingest";
 import { STATE } from "@/components/admin/status-language";
 
@@ -54,6 +55,7 @@ export default async function IngestionPage() {
 
         <ChannelIngest disabled={!process.env.YOUTUBE_API_KEY} />
         <XIngest disabled={!process.env.X_API_KEY || !process.env.X_API_SECRET} />
+        <InstagramIngest disabled={!process.env.META_IG_TOKEN || !process.env.META_IG_USER_ID} />
 
         {/* Freshness is this page's task, so staleness leads. Coverage totals
             live on the overview. */}

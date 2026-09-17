@@ -339,6 +339,21 @@ What follows from it, and is intended:
   footer are now deep forest rather than graphite. A light marketing redesign is a
   separate piece of work.
 
+**D35 — Instagram is read through Business Discovery, as SENSO's own account.**
+`src/server/connectors/instagram/`. Instagram publishes no public read of an arbitrary
+account and no search; what it publishes is Business Discovery — a professional
+account SENSO owns may ask, by username, for the public figures and recent media of
+any other Business or Creator account. So the connector needs `META_IG_USER_ID` and
+a long-lived Page token `META_IG_TOKEN` (`scripts/meta-token.mjs` derives both from a
+Graph API Explorer token) beyond the app keys, needs no App Review for these reads,
+and is rate-limited per token at 200 calls an hour — ~4,800 creators a day. Creators
+are added by handle (`/api/internal/connectors/instagram/ingest`, the admin ingest
+card, or `refreshInfluencer`) and re-read daily by `refreshInstagramStale` inside the
+snapshot job. What comes back is followers, media count, bio, and posts with likes
+and comments; no views, no country, no language, no history — recorded as absent,
+never zero. The YouTube sweeps (`refreshableAccounts`) now filter to their own
+platform, which they never had to before.
+
 **D34 — Production is one Hostinger VPS, not Vercel.**
 `srv1082984.hstgr.cloud` (168.231.120.57), Ubuntu 24.04 with CloudPanel. The app runs
 as the `senso` site user under PM2 on port 3005 (`pm2-senso` systemd unit), behind

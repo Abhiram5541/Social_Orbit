@@ -10,6 +10,7 @@ import { PLANS } from "./discovery-plan";
 import {
   CATEGORY_PLAN,
   harvest,
+  refreshInstagramStale,
   refreshStale,
   type DiscoveryQuery,
   type HarvestReport,
@@ -102,8 +103,13 @@ export async function runSnapshotJob(
 
   if (!snapshotCutShort(report, maxChannels)) await recordRun({ name: "snapshot", ranOn: day, report });
 
+  // Instagram accounts, when the token is configured. A separate budget (its
+  // own rate limit), so it neither waits for nor competes with the YouTube pass.
+  const instagram = process.env.META_IG_TOKEN ? await refreshInstagramStale() : null;
+
   await sendOpsEvent("Daily snapshot", [
     `${report.ingested} creators refreshed, ${report.quotaUnitsSpent} quota units spent.`,
+    ...(instagram ? [`Instagram: ${instagram.ingested} refreshed, ${instagram.remaining} still due.`] : []),
     report.remaining > 0
       ? `${report.remaining} still carrying an older reading.`
       : "Every account holds a reading from today.",

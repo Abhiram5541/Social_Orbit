@@ -104,7 +104,7 @@ export interface ConnectorStatus {
 
 const CONNECTOR_REQUIREMENTS: Record<Platform, string[]> = {
   youtube: ["YOUTUBE_API_KEY", "YOUTUBE_OAUTH_CLIENT_ID", "YOUTUBE_OAUTH_CLIENT_SECRET"],
-  instagram: ["META_APP_ID", "META_APP_SECRET"],
+  instagram: ["META_APP_ID", "META_APP_SECRET", "META_IG_USER_ID", "META_IG_TOKEN"],
   tiktok: ["TIKTOK_CLIENT_KEY", "TIKTOK_CLIENT_SECRET"],
   x: ["X_API_KEY", "X_API_SECRET"],
 };
@@ -119,7 +119,7 @@ const CONNECTOR_REQUIREMENTS: Record<Platform, string[]> = {
  */
 const IMPLEMENTED: Record<Platform, boolean> = {
   youtube: true,
-  instagram: false,
+  instagram: true,
   tiktok: false,
   x: true,
 };

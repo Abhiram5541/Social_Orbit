@@ -15,8 +15,9 @@ import {
   upsertViewHistory,
   type IngestedRecord,
 } from "@/server/data/ingested-store";
+import { ConnectorUnavailable as InstagramUnavailable } from "@/server/connectors/instagram";
 import { readRecords, type RawAccount } from "@/server/data/records";
-import { IngestionRefused, buildRecord } from "./ingestion-service";
+import { IngestionRefused, buildRecord, ingestInstagramAccount } from "./ingestion-service";
 
 /* ---------------------------------------------------------------------------
  * Bulk harvest — building the influencer database from real channels.
@@ -242,7 +243,9 @@ function refreshableAccounts(): RawAccount[] {
       .influencers.filter((influencer) => influencer.isDemo)
       .map((influencer) => influencer.id),
   );
-  return ingestedRecords().accounts.filter((account) => !demo.has(account.influencerId));
+  return ingestedRecords().accounts.filter(
+    (account) => account.platform === "youtube" && !demo.has(account.influencerId),
+  );
 }
 
 /**
@@ -340,6 +343,49 @@ export async function ingestSeeds(
     else throw error;
   }
 
+  return report;
+}
+
+/**
+ * The Instagram half of the daily snapshot: re-reads every Instagram account
+ * without a reading from today, oldest first. One Business Discovery call
+ * each against the 200-an-hour token limit — stops at the limit and lets the
+ * next tick continue, the same way the YouTube pass does with its budget.
+ */
+export async function refreshInstagramStale(
+  options: { maxAccounts?: number } = {},
+): Promise<StaleRefreshReport> {
+  const report: StaleRefreshReport = {
+    discovered: 0, ingested: 0, skipped: [], quotaUnitsSpent: 0, stoppedEarly: null, remaining: 0, oldestRemaining: null,
+  };
+  const today = new Date().toISOString().slice(0, 10);
+  const due = ingestedRecords()
+    .accounts.filter((a) => a.platform === "instagram" && !a.unavailableSince && a.lastSyncedAt.slice(0, 10) !== today)
+    .sort((a, b) => a.lastSyncedAt.localeCompare(b.lastSyncedAt));
+  const batch = due.slice(0, options.maxAccounts ?? 150);
+  report.discovered = batch.length;
+
+  for (const account of batch) {
+    try {
+      const result = await ingestInstagramAccount(account.handle, 50);
+      report.ingested += 1;
+      report.quotaUnitsSpent += result.quotaUnitsSpent;
+    } catch (error) {
+      if (error instanceof IngestionRefused) {
+        report.skipped.push({ channelId: account.platformAccountId, reason: error.message });
+        continue;
+      }
+      if (error instanceof InstagramUnavailable) {
+        report.stoppedEarly = error.message;
+        break;
+      }
+      throw error;
+    }
+  }
+
+  const stillDue = due.slice(report.ingested + report.skipped.length);
+  report.remaining = stillDue.length;
+  report.oldestRemaining = stillDue[0]?.lastSyncedAt ?? null;
   return report;
 }
 

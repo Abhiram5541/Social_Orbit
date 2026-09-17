@@ -4,6 +4,11 @@ import {
   type YouTubeChannel,
   type YouTubeVideo,
 } from "@/server/connectors/youtube";
+import {
+  observeAccount as observeInstagramAccount,
+  type InstagramAccount,
+  type InstagramPost,
+} from "@/server/connectors/instagram";
 import { observeAccount, type XAccount, type XPost } from "@/server/connectors/x";
 import { upsertIngested, type IngestedRecord } from "@/server/data/ingested-store";
 import { readRecords } from "@/server/data/records";
@@ -475,6 +480,123 @@ export async function ingestXAccount(input: string, postLimit = 50): Promise<Ing
   };
 }
 
+/* --- Instagram ------------------------------------------------------------ */
+
+/**
+ * Maps one Business Discovery read onto the record shapes. Same posture as X:
+ * everything here is observed platform data, nothing is inferred, categories
+ * and languages stay empty (D14/D16), and verification is never granted from
+ * a public read (Arch §2).
+ */
+export function buildInstagramRecord(
+  account: InstagramAccount,
+  posts: InstagramPost[],
+  collectedAt: string,
+): IngestedRecord {
+  if (account.followers === null) {
+    // Business Discovery always returns followers_count for a professional
+    // account; its absence means the read was partial, and every cohort and
+    // band keys off this number (see buildRecord).
+    throw new IngestionRefused(
+      "unmeasurable",
+      `Instagram returned no follower count for @${account.username}.`,
+    );
+  }
+  const influencerId = `ig_${account.userId}`;
+  const accountId = `${influencerId}_instagram`;
+
+  return {
+    influencer: {
+      id: influencerId,
+      displayName: account.name,
+      primaryHandle: account.username,
+      avatarUrl: account.avatarUrl,
+      bio: account.biography.slice(0, 400),
+      status: "published",
+      isConnected: false,
+      identityMatched: false,
+      categories: [],
+      // Instagram publishes no country and no language for an account.
+      countryCode: "",
+      countryName: "",
+      languages: [],
+      primaryPlatform: "instagram",
+      createdAt: collectedAt,
+      lastRefreshedAt: collectedAt,
+      conflictCount: 0,
+    },
+    accounts: [
+      {
+        id: accountId,
+        influencerId,
+        platform: "instagram",
+        platformAccountId: account.userId,
+        handle: account.username,
+        url: account.url,
+        isPrimary: true,
+        isConnected: false,
+        connectedAt: null,
+        needsReauth: false,
+        followers: account.followers,
+        // No lifetime view total exists for an Instagram account. Absent, not zero.
+        totalViews: null,
+        contentCount: account.mediaCount ?? posts.length,
+        lastSyncedAt: collectedAt,
+      },
+    ],
+    snapshot: {
+      accountId,
+      date: collectedAt.slice(0, 10),
+      followers: account.followers,
+      views: null,
+      contentCount: account.mediaCount ?? posts.length,
+    },
+    content: posts.map((post) => ({
+      id: `${accountId}_${post.postId}`,
+      accountId,
+      influencerId,
+      platform: "instagram",
+      title: post.caption.split("\n")[0].slice(0, 120) || (post.productType === "REELS" ? "Reel" : "Post"),
+      url: post.url,
+      thumbnailUrl: post.thumbnailUrl,
+      publishedAt: post.publishedAt ?? collectedAt,
+      // Business Discovery returns no view or play count for another
+      // account's media; only the account's own insights do.
+      views: null,
+      likes: post.likes,
+      comments: post.comments,
+      shares: null,
+      durationSeconds: null,
+      isSponsored: null,
+      caption: post.caption.slice(0, 400),
+      hashtags: extractHashtags(post.caption),
+      platformCategoryId: post.productType,
+    })),
+  };
+}
+
+export async function ingestInstagramAccount(input: string, mediaLimit = 50): Promise<IngestionReport> {
+  const observation = await observeInstagramAccount(input, mediaLimit);
+  if (!observation) {
+    throw new IngestionRefused(
+      "not_found",
+      `No Instagram professional account matched "${input}" — personal accounts cannot be read.`,
+    );
+  }
+  const record = buildInstagramRecord(
+    observation.account,
+    observation.recentContent,
+    observation.provenance.collectedAt,
+  );
+  await upsertIngested([record]);
+  return {
+    influencerId: record.influencer.id,
+    displayName: observation.account.name,
+    contentIngested: record.content.length,
+    quotaUnitsSpent: observation.quotaUnitsSpent,
+  };
+}
+
 /* --- On-demand refresh --------------------------------------------------- */
 
 /**
@@ -533,7 +655,9 @@ export async function refreshInfluencer(influencerId: string): Promise<RefreshRe
   const report =
     account.platform === "x"
       ? await ingestXAccount(account.platformAccountId, 50)
-      : await ingestYouTubeChannel(account.platformAccountId, 50);
+      : account.platform === "instagram"
+        ? await ingestInstagramAccount(account.handle, 50)
+        : await ingestYouTubeChannel(account.platformAccountId, 50);
   const refreshed = readRecords().accounts.find((item) => item.id === account.id);
 
   return {
