@@ -12,7 +12,7 @@ SSH="ssh -i $HOME/.ssh/senso_vps root@$HOST"
 rsync -az --delete -e "ssh -i $HOME/.ssh/senso_vps" \
   --exclude node_modules --exclude .next --exclude .data --exclude .git \
   --exclude test-results --exclude playwright-report --exclude ".env*" \
-  --exclude .claude --exclude .agents --exclude "docs/*.docx" \
+  --exclude .claude --exclude .agents --exclude "docs/*.docx" --exclude "*.cursor" \
   ./ "root@$HOST:$DIR/"
 
 $SSH "cd $DIR && npm ci --no-audit --no-fund && NODE_OPTIONS=--max-old-space-size=3072 npm run build && chown -R senso:senso . && sudo -u senso pm2 restart senso --update-env"
