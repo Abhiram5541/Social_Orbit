@@ -27,6 +27,11 @@ export async function register(): Promise<void> {
     usage: () => [],
   });
 
+  // Score every creator once now, in the background, so the first request
+  // reads a finished list instead of taking the ten-second pass itself.
+  const { warmSummaries } = await import("@/server/repositories/influencer-repository");
+  void warmSummaries().catch((error: unknown) => console.error(`[scoring] warm failed: ${String(error)}`));
+
   // Daily snapshots and discovery, when this server is the one meant to run
   // them (SOCIALORBIT_DAILY_JOBS=true). Vercel uses the cron routes instead.
   const { startScheduler } = await import("@/server/services/daily-jobs");

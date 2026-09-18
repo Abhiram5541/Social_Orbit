@@ -301,28 +301,27 @@ function followerBandOf(followers: number | null): FollowerBand {
  */
 let cohortCache: { revision: number; map: Map<string, Cohort> } | null = null;
 
-function cohorts(now: Date): Map<string, Cohort> {
-  const revision = ingestedRevision();
-  if (cohortCache?.revision === revision) return cohortCache.map;
+type CohortBuckets = Map<string, { engagement: number[]; vpf: number[]; medianViews: number[] }>;
 
-  const buckets = new Map<string, { engagement: number[]; vpf: number[]; medianViews: number[] }>();
-  for (const raw of readRecords().influencers) {
-    // A demonstration record's figures were chosen, not measured. Letting one
-    // into a bucket would move the median every real creator in that category
-    // and follower band is ranked against.
-    if (raw.isDemo) continue;
-    const record = assemble(raw.id);
-    if (!record) continue;
-    const derived = derive(record, now);
-    const key = cohortKey(record);
-    const bucket = buckets.get(key) ?? { engagement: [], vpf: [], medianViews: [] };
-    if (derived.engagementRatePct !== null) bucket.engagement.push(derived.engagementRatePct);
-    if (derived.viewsPerFollower !== null) bucket.vpf.push(derived.viewsPerFollower);
-    if (derived.medianViews !== null) bucket.medianViews.push(derived.medianViews);
-    buckets.set(key, bucket);
-  }
+/** One creator's contribution to the cohort medians. Demo rows contribute nothing. */
+function bucketCohort(buckets: CohortBuckets, raw: RawInfluencer, now: Date): void {
+  // A demonstration record's figures were chosen, not measured. Letting one
+  // into a bucket would move the median every real creator in that category
+  // and follower band is ranked against.
+  if (raw.isDemo) return;
+  const record = assemble(raw.id);
+  if (!record) return;
+  const derived = derive(record, now);
+  const key = cohortKey(record);
+  const bucket = buckets.get(key) ?? { engagement: [], vpf: [], medianViews: [] };
+  if (derived.engagementRatePct !== null) bucket.engagement.push(derived.engagementRatePct);
+  if (derived.viewsPerFollower !== null) bucket.vpf.push(derived.viewsPerFollower);
+  if (derived.medianViews !== null) bucket.medianViews.push(derived.medianViews);
+  buckets.set(key, bucket);
+}
 
-  const map = new Map<string, Cohort>(
+function finishCohorts(buckets: CohortBuckets): Map<string, Cohort> {
+  return new Map<string, Cohort>(
     [...buckets].map(([key, bucket]) => [
       key,
       {
@@ -335,8 +334,21 @@ function cohorts(now: Date): Map<string, Cohort> {
       },
     ]),
   );
-  cohortCache = { revision, map };
-  return map;
+}
+
+/**
+ * The cohorts a score is normalised against. Served from the last completed
+ * pass (see `allSummaries`): a write moves the medians by a hair, and
+ * recomputing every creator's derived metrics inside the request that
+ * happened to follow the write is what made every page pay for the harvest.
+ * Only a process that has never scored computes here, synchronously.
+ */
+function cohorts(now: Date): Map<string, Cohort> {
+  if (cohortCache) return cohortCache.map;
+  const buckets: CohortBuckets = new Map();
+  for (const raw of readRecords().influencers) bucketCohort(buckets, raw, now);
+  cohortCache = { revision: ingestedRevision(), map: finishCohorts(buckets) };
+  return cohortCache.map;
 }
 
 /**
@@ -996,26 +1008,90 @@ function buildSignalReading(
 /* --- Collection reads --------------------------------------------------- */
 
 /**
- * Every published creator, scored. Memoised on the record revision and a
- * one-minute clock bucket: the platform overview alone asks for this three
- * times per request, and each pass scores the whole database (~2s in dev for
- * 2.4K creators). The minute matters because staleness and activity are
- * measured against `now`; a write invalidates it the way the cohort cache is.
+ * Every published creator, scored — from the last completed pass.
+ *
+ * A pass scores the whole database: cohort medians first, then every creator
+ * against them. At 2.4K creators that was ~2s; at 5.8K on a two-core VPS,
+ * 10–15s, and it used to run inside whichever request followed a write or a
+ * minute boundary — during a harvest, nearly every request — freezing the
+ * event loop for everyone. So the pass now runs in the background, in chunks
+ * that yield to the event loop between them, and a request reads whatever pass
+ * finished last. A list is refreshed when the store has changed or it is more
+ * than `SUMMARIES_MAX_AGE_MS` old; the only synchronous pass is a cold
+ * process's first, which `warmSummaries` takes at boot so no request pays it.
+ *
+ * ponytail: full recompute per pass. Per-creator memoisation keyed on row
+ * identity would make a pass O(changed) — do it when the pass stops fitting
+ * between two writes.
  */
-let summariesCache: { revision: number; minute: number; list: InfluencerSummary[] } | null = null;
+let summariesCache: { revision: number; computedAt: number; list: InfluencerSummary[] } | null = null;
+let passRunning = false;
+
+const SUMMARIES_MAX_AGE_MS = 5 * 60_000;
+/** Creators scored between two yields to the event loop. ~150ms a chunk on the VPS. */
+const PASS_CHUNK = 100;
+
+const yieldToLoop = () => new Promise<void>((resolve) => setImmediate(resolve));
+
+async function runScoringPass(now: Date): Promise<void> {
+  if (passRunning) return;
+  passRunning = true;
+  try {
+    const revision = ingestedRevision();
+    const influencers = readRecords().influencers;
+
+    const buckets: CohortBuckets = new Map();
+    for (let i = 0; i < influencers.length; i += PASS_CHUNK) {
+      for (const raw of influencers.slice(i, i + PASS_CHUNK)) bucketCohort(buckets, raw, now);
+      await yieldToLoop();
+    }
+    cohortCache = { revision, map: finishCohorts(buckets) };
+
+    const list: InfluencerSummary[] = [];
+    for (let i = 0; i < influencers.length; i += PASS_CHUNK) {
+      for (const raw of influencers.slice(i, i + PASS_CHUNK)) {
+        if (raw.status !== "published") continue;
+        const summary = toSummary(raw.id, now);
+        if (summary) list.push(summary);
+      }
+      await yieldToLoop();
+    }
+    summariesCache = { revision, computedAt: now.getTime(), list };
+  } finally {
+    passRunning = false;
+  }
+}
 
 export function allSummaries(now: Date = new Date()): InfluencerSummary[] {
   const revision = ingestedRevision();
-  const minute = Math.floor(now.getTime() / 60_000);
-  if (summariesCache?.revision === revision && summariesCache.minute === minute) {
+  const stale =
+    !summariesCache ||
+    summariesCache.revision !== revision ||
+    now.getTime() - summariesCache.computedAt > SUMMARIES_MAX_AGE_MS;
+
+  if (summariesCache) {
+    if (stale && !passRunning) {
+      void runScoringPass(now).catch((error: unknown) => {
+        console.error(`[scoring] background pass failed: ${String(error)}`);
+      });
+    }
     return summariesCache.list;
   }
+
+  // Cold process and nothing warmed it: score synchronously, once.
   const list = readRecords()
     .influencers.filter((raw) => raw.status === "published")
     .map((raw) => toSummary(raw.id, now))
     .filter((summary): summary is InfluencerSummary => summary !== null);
-  summariesCache = { revision, minute, list };
+  summariesCache = { revision, computedAt: now.getTime(), list };
   return list;
+}
+
+/** Takes the first pass at boot, chunked, so the first request finds a list waiting. */
+export async function warmSummaries(): Promise<void> {
+  const started = Date.now();
+  await runScoringPass(new Date());
+  console.log(`[scoring] scored ${summariesCache?.list.length ?? 0} creators in ${Date.now() - started}ms`);
 }
 
 export function countInfluencers(): number {
