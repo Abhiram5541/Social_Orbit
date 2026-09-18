@@ -339,6 +339,19 @@ What follows from it, and is intended:
   footer are now deep forest rather than graphite. A light marketing redesign is a
   separate piece of work.
 
+**D36 — Scoring the database is a background pass; a request reads the last one.**
+`allSummaries` used to rescore every creator whenever the store changed or a minute
+passed — inside whichever request came next. With a harvest writing every couple of
+minutes that was nearly every request, and at 5.8K creators on the two-core VPS it
+was 10–15 seconds with the event loop frozen for everyone else. The pass (cohort
+medians, then every creator) now runs in the background in chunks of 100 that yield
+between them — at boot (`warmSummaries` from `instrumentation.ts`), when the store
+revision changes, or when the list is five minutes old — and every collection read
+returns whatever pass finished last. Cohorts are served from the last pass too, so a
+single profile read after a write is normalised against medians a few writes old,
+which is a rounding error. A cold process with nothing warmed still scores
+synchronously once. Landing page went from 13s to 0.1s; profile pages ~0.6s.
+
 **D35 — Instagram is read through Business Discovery, as SENSO's own account.**
 `src/server/connectors/instagram/`. Instagram publishes no public read of an arbitrary
 account and no search; what it publishes is Business Discovery — a professional
