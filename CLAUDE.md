@@ -339,6 +339,18 @@ What follows from it, and is intended:
   footer are now deep forest rather than graphite. A light marketing redesign is a
   separate piece of work.
 
+**D37 — Every workspace route has a loading boundary, and navigation is cached for a minute.**
+Without a `loading.tsx`, Next prefetches a dynamic route *in full*: each link on screen
+is a complete server render, the rail alone carries a dozen, and a click waited behind
+thirty renders queued by the page it was leaving. Each route group now has one
+(`src/components/shell/page-loading.tsx`), so a prefetch stops at the shell, the click
+paints a skeleton at once, and only the chosen page renders. `staleTimes.dynamic = 60`
+serves a page visited in the last minute from the client router cache — the store
+changes on a daily cadence, so nothing a person could notice is stale. Lists of
+creators carry `prefetch={false}` on their profile links. The scoring pass (D36) runs
+in 40 ms slices and is not restarted within two minutes of the last; `derive` is
+memoised on the row, so a pass calls it once per creator rather than twice.
+
 **D36 — Scoring the database is a background pass; a request reads the last one.**
 `allSummaries` used to rescore every creator whenever the store changed or a minute
 passed — inside whichever request came next. With a harvest writing every couple of
