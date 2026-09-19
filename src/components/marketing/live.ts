@@ -76,7 +76,7 @@ function toSpecimenShape(s: InfluencerSummary): SpecimenCreator {
     confidence: Math.round(s.confidence),
     verified: s.verification === "verified",
     risk: s.risk,
-    activity: s.activity === "active" ? "Active" : s.activity === "slowing" ? "Slowing" : "Recent",
+    activity: s.activity === "active" ? "Active" : s.activity === "recently_active" ? "Recent" : "Slowing",
   };
 }
 
@@ -96,11 +96,14 @@ export function landingFacets(): { group: string; options: [string, string][] }[
       ],
     },
     {
-      group: "Audience quality",
+      // Activity rather than audience risk: risk needs a bot signal the public
+      // API does not carry, so today it would read 0 / 7 / 2 against seven
+      // thousand "not assessed" — true, and the wrong thing to lead with.
+      group: "Activity",
       options: [
-        ["Low risk", count((s) => s.risk === "low")],
-        ["Medium risk", count((s) => s.risk === "medium")],
-        ["High risk", count((s) => s.risk === "high")],
+        ["Active", count((s) => s.activity === "active")],
+        ["Recently active", count((s) => s.activity === "recently_active")],
+        ["Slowing or dormant", count((s) => s.activity !== "active" && s.activity !== "recently_active")],
       ],
     },
     {

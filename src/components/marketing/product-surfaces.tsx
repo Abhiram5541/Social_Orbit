@@ -280,7 +280,7 @@ export function DiscoverySurface({
                       aria-hidden
                       className={cn(
                         "size-3.5 shrink-0 rounded-[3px] border",
-                        label === "Low risk" || label === "Mega · 1M+"
+                        label === "Low risk" || label === "Mega · 1M+" || label === "Active"
                           ? "border-brand bg-brand"
                           : "border-line-strong bg-surface",
                       )}
