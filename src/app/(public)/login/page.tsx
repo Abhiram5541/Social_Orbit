@@ -119,7 +119,11 @@ export default async function LoginPage({
             next={next}
             devPassword={
               process.env.NODE_ENV === "production"
-                ? process.env.DEV_SEED_PASSWORD
+                ? // The seed accounts exist, so offer the picker — but never
+                  // the password: this page is public.
+                  process.env.DEV_SEED_PASSWORD
+                  ? null
+                  : undefined
                 : (process.env.DEV_SEED_PASSWORD ?? "SENSO-Dev-2026")
             }
           />

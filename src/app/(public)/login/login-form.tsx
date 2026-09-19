@@ -15,7 +15,8 @@ export function LoginForm({
 }: {
   next?: string;
   /** Present only outside production — see dev-credentials.tsx. */
-  devPassword?: string;
+  /** Shared seed password locally; `null` shows the picker without it; undefined hides it. */
+  devPassword?: string | null;
 }) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
@@ -115,13 +116,13 @@ export function LoginForm({
         Sign in
       </Button>
 
-      {devPassword && (
+      {devPassword !== undefined && (
         <DevCredentials
           password={devPassword}
           selected={email || null}
           onSelect={(nextEmail, nextPassword) => {
             setEmail(nextEmail);
-            setPassword(nextPassword);
+            if (nextPassword !== null) setPassword(nextPassword);
             setFormError(null);
             setFieldErrors({});
           }}

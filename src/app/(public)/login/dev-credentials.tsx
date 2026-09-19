@@ -19,14 +19,16 @@ export interface DevAccount {
   note: string;
 }
 
+/**
+ * The four seats a demo walks through. The analyst, the free-plan client and
+ * the creator-portal sign-in still exist (e2e exercises them) but are not
+ * offered here: a picker with seven rows reads as a test fixture.
+ */
 export const DEV_ACCOUNTS: DevAccount[] = [
   { email: "admin@senso360.com", role: "super_admin", note: "Full platform access" },
-  { email: "manager@senso360.com", role: "manager", note: "Influencer CRUD, verification review" },
-  { email: "analyst@senso360.com", role: "analytics_manager", note: "Analytics, no user admin" },
-  { email: "owner@northwind.example", role: "client_owner", note: "Growth plan client" },
+  { email: "manager@senso360.com", role: "manager", note: "Creator database, verification review" },
+  { email: "owner@northwind.example", role: "client_owner", note: "Client workspace, billing and API keys" },
   { email: "member@northwind.example", role: "client_member", note: "Same workspace, no billing" },
-  { email: "hello@lumen.example", role: "client_owner", note: "Free plan — 5 searches/month" },
-  { email: "creator@senso360.com", role: "influencer", note: "Creator portal" },
 ];
 
 export function DevCredentials({
@@ -34,19 +36,30 @@ export function DevCredentials({
   selected,
   onSelect,
 }: {
-  password: string;
+  /**
+   * The shared seed password, or null on a public deployment: there the
+   * picker fills the email only and the password is typed. A production
+   * sign-in page must never print the super admin's password.
+   */
+  password: string | null;
   selected: string | null;
-  onSelect: (email: string, password: string) => void;
+  onSelect: (email: string, password: string | null) => void;
 }) {
   return (
     <details className="rounded-lg bg-surface card-shadow text-sm" open>
       <summary className="cursor-pointer select-none rounded-t-lg px-3 py-2 font-medium text-ink-muted transition-colors hover:bg-sunken hover:text-ink">
-        Development accounts
+        {password ? "Development accounts" : "Demo accounts"}
       </summary>
       <div className="border-t border-line px-3 py-2">
         <p className="mb-2 text-ink-muted">
-          Local seed data only. Pick an account to fill the form — password for all of them
-          is <code className="rounded bg-sunken px-1 font-num text-ink">{password}</code>
+          {password ? (
+            <>
+              Local seed data only. Pick an account to fill the form — password for all of
+              them is <code className="rounded bg-sunken px-1 font-num text-ink">{password}</code>
+            </>
+          ) : (
+            "Pick an account to fill the email, then enter the demo password."
+          )}
         </p>
         <ul className="divide-y divide-line">
           {DEV_ACCOUNTS.map((account) => {
