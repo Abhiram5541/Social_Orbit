@@ -215,7 +215,25 @@ function uploadHistoryFor(record: Assembled): ContentObservation[] {
   return rows;
 }
 
+/**
+ * `derive` is the expensive half of scoring, and a pass calls it twice per
+ * creator — once building the cohort medians, once scoring against them.
+ * Memoised on the raw row's identity and the minute: a row object is replaced
+ * on every write, so a stale entry can never be served, and the WeakMap lets
+ * the old rows go with it.
+ */
+const derivedCache = new WeakMap<RawInfluencer, { minute: number; value: Derived }>();
+
 function derive(record: Assembled, now: Date): Derived {
+  const minute = Math.floor(now.getTime() / 60_000);
+  const hit = derivedCache.get(record.raw);
+  if (hit && hit.minute === minute) return hit.value;
+  const value = deriveUncached(record, now);
+  derivedCache.set(record.raw, { minute, value });
+  return value;
+}
+
+function deriveUncached(record: Assembled, now: Date): Derived {
   const primaryContent = record.content.filter(
     (item) => item.accountId === record.primary.id,
   );
@@ -1028,10 +1046,30 @@ let summariesCache: { revision: number; computedAt: number; list: InfluencerSumm
 let passRunning = false;
 
 const SUMMARIES_MAX_AGE_MS = 5 * 60_000;
-/** Creators scored between two yields to the event loop. ~150ms a chunk on the VPS. */
-const PASS_CHUNK = 100;
+/**
+ * A pass is not restarted sooner than this after the last one finished, even
+ * if the store changed again. During an import the store changes every few
+ * seconds; without a floor the server would score continuously and every
+ * request would share the CPU with it. Being two minutes behind a harvest
+ * is invisible; a page that stalls is not.
+ */
+const PASS_MIN_INTERVAL_MS = 2 * 60_000;
+/** CPU the pass may take between two yields to the event loop. */
+const PASS_SLICE_MS = 40;
 
 const yieldToLoop = () => new Promise<void>((resolve) => setImmediate(resolve));
+
+/** Runs `work` over `items`, handing the event loop back every PASS_SLICE_MS. */
+async function sliced<T>(items: T[], work: (item: T) => void): Promise<void> {
+  let sliceStart = performance.now();
+  for (const item of items) {
+    work(item);
+    if (performance.now() - sliceStart > PASS_SLICE_MS) {
+      await yieldToLoop();
+      sliceStart = performance.now();
+    }
+  }
+}
 
 async function runScoringPass(now: Date): Promise<void> {
   if (passRunning) return;
@@ -1041,22 +1079,16 @@ async function runScoringPass(now: Date): Promise<void> {
     const influencers = readRecords().influencers;
 
     const buckets: CohortBuckets = new Map();
-    for (let i = 0; i < influencers.length; i += PASS_CHUNK) {
-      for (const raw of influencers.slice(i, i + PASS_CHUNK)) bucketCohort(buckets, raw, now);
-      await yieldToLoop();
-    }
+    await sliced(influencers, (raw) => bucketCohort(buckets, raw, now));
     cohortCache = { revision, map: finishCohorts(buckets) };
 
     const list: InfluencerSummary[] = [];
-    for (let i = 0; i < influencers.length; i += PASS_CHUNK) {
-      for (const raw of influencers.slice(i, i + PASS_CHUNK)) {
-        if (raw.status !== "published") continue;
-        const summary = toSummary(raw.id, now);
-        if (summary) list.push(summary);
-      }
-      await yieldToLoop();
-    }
-    summariesCache = { revision, computedAt: now.getTime(), list };
+    await sliced(influencers, (raw) => {
+      if (raw.status !== "published") return;
+      const summary = toSummary(raw.id, now);
+      if (summary) list.push(summary);
+    });
+    summariesCache = { revision, computedAt: Date.now(), list };
   } finally {
     passRunning = false;
   }
@@ -1064,10 +1096,11 @@ async function runScoringPass(now: Date): Promise<void> {
 
 export function allSummaries(now: Date = new Date()): InfluencerSummary[] {
   const revision = ingestedRevision();
+  const age = summariesCache ? Date.now() - summariesCache.computedAt : Infinity;
   const stale =
     !summariesCache ||
-    summariesCache.revision !== revision ||
-    now.getTime() - summariesCache.computedAt > SUMMARIES_MAX_AGE_MS;
+    (summariesCache.revision !== revision && age > PASS_MIN_INTERVAL_MS) ||
+    age > SUMMARIES_MAX_AGE_MS;
 
   if (summariesCache) {
     if (stale && !passRunning) {
