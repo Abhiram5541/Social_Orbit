@@ -119,11 +119,16 @@ export default async function LoginPage({
             next={next}
             devPassword={
               process.env.NODE_ENV === "production"
-                ? // The seed accounts exist, so offer the picker — but never
-                  // the password: this page is public.
-                  process.env.DEV_SEED_PASSWORD
-                  ? null
-                  : undefined
+                ? // This page is public, so the password is only ever put in it
+                  // when the deployment says it is a demo (SOCIALORBIT_DEMO_LOGINS).
+                  // Otherwise the picker fills the email alone. Note a filled
+                  // password is in the page source whether or not it is shown,
+                  // so "fill but hide" would be the same exposure in disguise.
+                  process.env.SOCIALORBIT_DEMO_LOGINS === "true"
+                  ? process.env.DEV_SEED_PASSWORD
+                  : process.env.DEV_SEED_PASSWORD
+                    ? null
+                    : undefined
                 : (process.env.DEV_SEED_PASSWORD ?? "SENSO-Dev-2026")
             }
           />
