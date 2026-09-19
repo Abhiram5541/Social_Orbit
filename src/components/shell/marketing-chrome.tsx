@@ -49,7 +49,10 @@ export function MarketingChrome({
       >
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-7 px-4 sm:px-6">
           <Link href="/" className="rounded" aria-label="SENSO home">
-            <Wordmark inverse={onDark} />
+            <Wordmark
+              inverse={onDark}
+              className="[&_.label-caps-sm]:hidden sm:[&_.label-caps-sm]:block"
+            />
           </Link>
           <nav aria-label="Main" className="hidden md:block">
             <ul className="flex items-center gap-1">
@@ -74,7 +77,7 @@ export function MarketingChrome({
             <Link
               href="/login"
               className={cn(
-                "press rounded-md px-2.5 py-1.5 text-base font-semibold",
+                "press whitespace-nowrap rounded-md px-2.5 py-1.5 text-base font-semibold",
                 onDark
                   ? "text-instrument-muted hover:bg-instrument-raised hover:text-instrument-ink"
                   : "text-ink-muted hover:bg-sunken hover:text-ink",
@@ -99,13 +102,14 @@ export function MarketingChrome({
         {children}
       </main>
 
-      {/* The footer closes the page back into the housing the hero opened
-          with, so the whole site sits between two graphite edges. */}
-      <footer className="bg-instrument text-instrument-ink">
+      {/* Light, like the rest of the page: the one dark card on the landing
+          page is its closing feature card, and a dark footer beneath it
+          would make two. */}
+      <footer className="border-t border-line bg-surface text-ink">
         <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-12 sm:px-6 md:flex-row md:items-start md:justify-between">
           <div className="space-y-3">
-            <Wordmark inverse />
-            <p className="max-w-xs text-sm text-instrument-muted">
+            <Wordmark />
+            <p className="max-w-xs text-sm text-ink-muted">
               Influencer intelligence built on official platform APIs, authorized creator
               connections and permitted public research.
             </p>
@@ -130,8 +134,8 @@ export function MarketingChrome({
             />
           </div>
         </div>
-        <div className="border-t border-instrument-line">
-          <p className="mx-auto max-w-6xl px-4 py-4 text-sm text-instrument-subtle sm:px-6">
+        <div className="border-t border-rule">
+          <p className="mx-auto max-w-6xl px-4 py-4 text-sm text-ink-subtle sm:px-6">
             © {new Date().getFullYear()} SENSO. Data is collected from official platform
             APIs and authorized connections. Estimated and AI-inferred values are labelled as
             such throughout the product. Creators shown in marketing interfaces are
@@ -152,13 +156,13 @@ function FooterGroup({
 }) {
   return (
     <div className="space-y-2.5">
-      <p className="label-caps-sm text-instrument-subtle">{title}</p>
+      <p className="label-caps-sm text-ink-subtle">{title}</p>
       <ul className="space-y-2">
         {links.map((link) => (
           <li key={link.href + link.label}>
             <Link
               href={link.href}
-              className="rounded text-instrument-muted hover:text-instrument-ink hover:underline"
+              className="rounded text-ink-muted hover:text-ink hover:underline"
             >
               {link.label}
             </Link>

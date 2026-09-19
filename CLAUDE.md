@@ -339,6 +339,18 @@ What follows from it, and is intended:
   footer are now deep forest rather than graphite. A light marketing redesign is a
   separate piece of work.
 
+**D38 — The landing page is the product's own material, and its reveal needs no script.**
+*(Closes D31's "a light marketing redesign is a separate piece of work".)* The dark
+hero is gone: the page opens on the application's canvas with the creator surface set
+in it as a white card, the five-stop journey follows as one divided strip, and every
+band after it carries its step number as a kicker (wayfinding, per D27). The one dark
+surface is the closing feature card; the footer went light so the page does not end
+between two of them. `Reveal` no longer hides content until an IntersectionObserver
+marks it shown — that blanked the page for crawlers, screenshots and slow hydrations.
+It is a scroll-driven CSS animation (`animation-timeline: view()`) behind `@supports`,
+so content is visible by default and a browser without the feature simply shows it.
+D22's rules stand: real surfaces, specimen values in `specimen.ts`, live coverage.
+
 **D37 — Every workspace route has a loading boundary, and navigation is cached for a minute.**
 Without a `loading.tsx`, Next prefetches a dynamic route *in full*: each link on screen
 is a complete server render, the rail alone carries a dozen, and a click waited behind

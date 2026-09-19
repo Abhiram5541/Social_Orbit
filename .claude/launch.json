@@ -4,8 +4,30 @@
     {
       "name": "senso",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--", "-p", "3001"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "-p",
+        "3001"
+      ],
       "port": 3001,
+      "autoPort": false
+    },
+    {
+      "name": "senso-dev-driver",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "SOCIALORBIT_DATA_DRIVER=development",
+        "SOCIALORBIT_DAILY_JOBS=false",
+        "npm",
+        "run",
+        "dev",
+        "--",
+        "-p",
+        "3002"
+      ],
+      "port": 3002,
       "autoPort": false
     }
   ]

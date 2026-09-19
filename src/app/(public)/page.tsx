@@ -35,6 +35,9 @@ export const dynamic = "force-dynamic";
  * is the order an engineer would present it in and not the order anyone decides
  * to buy in.
  *
+ * The page is the product's own material — the soft canvas and white cards
+ * the application is built from — rather than a dark housing around it.
+ *
  * Two rules govern the composition:
  *
  *   1. The product carries the argument. Every section leads with a surface
@@ -51,11 +54,11 @@ export const dynamic = "force-dynamic";
  * ------------------------------------------------------------------------ */
 
 const JOURNEY = [
-  { href: "#discover", label: "Discover" },
-  { href: "#evaluate", label: "Evaluate" },
-  { href: "#verify", label: "Verify" },
-  { href: "#activate", label: "Activate" },
-  { href: "#measure", label: "Measure" },
+  { href: "#discover", label: "Discover", note: "Search a real index on audience quality, not size." },
+  { href: "#evaluate", label: "Evaluate", note: "A deterministic health score with its confidence beside it." },
+  { href: "#verify", label: "Verify", note: "Every figure names its source, method and freshness." },
+  { href: "#activate", label: "Activate", note: "Shortlist, agree rates, track the hashtag." },
+  { href: "#measure", label: "Measure", note: "Campaign performance scored on its own axis." },
 ];
 
 const DISCOVER_OUTCOMES = [
@@ -113,100 +116,73 @@ export default function LandingPage() {
   // Real coverage from the running database. The only unmarked figures on the
   // page, because they are the only ones that were measured.
   const stats = databaseStats();
+  const live = [
+    { label: "Creators indexed", value: formatCompact(stats.totalInfluencers) },
+    { label: "Content items read", value: formatCompact(stats.totalContent) },
+    { label: "Historical snapshots", value: formatCompact(stats.totalSnapshots) },
+    { label: "Markets", value: formatCompact(stats.byCountry.length) },
+  ];
 
   return (
-    <MarketingChrome onDark>
+    <MarketingChrome>
       {/* ============================================================== HERO
-          The instrument, opened. The page begins inside the housing the
-          product's own chrome is made of and only steps out onto paper once
-          the argument starts — so the first thing a visitor sees is the
-          material the application is built from, not a picture of it. */}
-      <section className="relative overflow-hidden bg-instrument text-instrument-ink">
-        {/* One orbit, drawn as geometry rather than decoration: the arc the
-            mark is built on, set at the scale of the page. */}
-        <svg
+          The product's own material: the soft canvas the application sits
+          on, and the creator surface set in it as a white card. The page no
+          longer opens inside a dark housing — the people who buy this are
+          marketing teams, and the first screen should look like the tool
+          they will use, not the instrument it is built on. */}
+      <section className="relative overflow-hidden bg-canvas">
+        {/* One soft bloom behind the surface: the page's single decorative
+            gradient, and it sits behind a product surface rather than on one. */}
+        <div
           aria-hidden
-          viewBox="0 0 1200 800"
-          preserveAspectRatio="xMidYMid slice"
-          className="pointer-events-none absolute inset-0 size-full opacity-70"
-        >
-          <ellipse
-            cx="880"
-            cy="330"
-            rx="560"
-            ry="300"
-            transform="rotate(-18 880 330)"
-            fill="none"
-            stroke="var(--color-instrument-line)"
-            strokeWidth="1"
-          />
-          <ellipse
-            cx="880"
-            cy="330"
-            rx="380"
-            ry="196"
-            transform="rotate(-18 880 330)"
-            fill="none"
-            stroke="var(--color-instrument-line)"
-            strokeWidth="1"
-          />
-        </svg>
-
-        <div className="relative mx-auto grid max-w-6xl items-center gap-x-14 gap-y-12 px-4 pb-20 pt-14 sm:px-6 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:pb-28 lg:pt-20">
+          className="pointer-events-none absolute -right-40 top-10 size-[38rem] rounded-full bg-brand/10 blur-3xl lg:-right-20"
+        />
+        <div className="relative mx-auto grid max-w-6xl items-center gap-x-14 gap-y-12 px-4 pb-16 pt-14 sm:px-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:pb-24 lg:pt-20">
           <Reveal>
-            <h1 className="display-lg text-instrument-ink">
+            <p className="inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1.5 text-sm font-medium text-ink-muted card-shadow">
+              <span aria-hidden className="size-1.5 rounded-full bg-brand" />
+              Influencer intelligence for marketing teams
+            </p>
+            <h1 className="display-lg mt-6 text-ink">
               Find the creators worth betting your brand on.
             </h1>
-            <p className="mt-6 max-w-xl text-md leading-7 text-instrument-muted">
-              SENSO gives marketing teams an intelligence layer for discovering,
-              evaluating and measuring creators — with evidence behind every important
-              number.
+            <p className="mt-6 max-w-xl text-md leading-7 text-ink-muted">
+              SENSO is the intelligence layer between a shortlist and a signed
+              creator: discovery, evaluation, verification and campaign measurement,
+              with evidence behind every important number.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-3">
-              <LinkButton href="/register" variant="accent" size="lg">
+              <LinkButton href="/register" variant="primary" size="lg">
                 Request a demo
               </LinkButton>
-              <LinkButton
-                href="#discover"
-                size="lg"
-                variant="ghost"
-                className="gap-2 text-instrument-ink hover:bg-instrument-raised hover:text-instrument-ink"
-              >
-                Explore the platform
+              <LinkButton href="#discover" size="lg" className="gap-2">
+                See how it works
                 <ArrowRight className="size-4" aria-hidden />
               </LinkButton>
             </div>
 
-            {/* The live coverage figures, promoted into the hero. They are the
-                only measured numbers on this page, so they belong where the
-                claim is made rather than in a band underneath it. */}
-            <dl className="mt-12 grid max-w-lg grid-cols-3 gap-x-6 border-t border-instrument-line pt-6">
-              {[
-                { label: "Creators indexed", value: formatCompact(stats.totalInfluencers) },
-                { label: "Content read", value: formatCompact(stats.totalContent) },
-                { label: "Markets", value: formatCompact(stats.byCountry.length) },
-              ].map((figure) => (
+            {/* The live coverage figures belong where the claim is made. */}
+            <dl className="mt-12 grid max-w-lg grid-cols-3 gap-x-6 border-t border-line pt-6">
+              {live.slice(0, 3).map((figure) => (
                 <div key={figure.label} className="min-w-0">
-                  <dd className="font-num text-stat-lg font-medium leading-none text-instrument-ink">
+                  <dd className="font-num text-stat-lg font-semibold leading-none text-ink">
                     {figure.value}
                   </dd>
-                  <dt className="label-caps-sm mt-1.5 text-instrument-subtle">
-                    {figure.label}
-                  </dt>
+                  <dt className="mt-1.5 text-sm text-ink-subtle">{figure.label}</dt>
                 </div>
               ))}
             </dl>
           </Reveal>
 
-          <Reveal delay={120} className="min-w-0 lg:-mr-8 xl:-mr-14">
-            <PointerGlow className="rounded-2xl bg-surface text-ink shadow-instrument">
+          <Reveal delay={120} className="min-w-0 lg:-mr-6 xl:-mr-12">
+            <PointerGlow className="rounded-2xl bg-surface text-ink shadow-lifted">
               <DossierMasthead />
             </PointerGlow>
-            {/* The page's one specimen disclosure. Repeating it on all eight
-                surfaces would read as defensiveness; withholding it entirely,
-                on a product whose pitch is that its numbers are checkable,
-                would be worse. */}
-            <p className="mt-4 text-sm text-instrument-subtle">
+            {/* The page's one specimen disclosure. Repeating it on every
+                surface would read as defensiveness; withholding it, on a
+                product whose pitch is that its numbers are checkable, worse. */}
+            <p className="mt-4 text-sm text-ink-subtle">
               Product surfaces on this page are the real interface, rendered with
               illustrative creators. Coverage figures are live.
             </p>
@@ -214,70 +190,44 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ====================================================== JOURNEY RAIL
-          No heading. The journey is stated once, in words, here — every band
-          after this demonstrates a stop on it. It is also the seam: graphite
-          above, paper below. */}
-      <nav
-        aria-label="How SENSO works"
-        className="border-b border-line bg-sunken"
-      >
-        <ol className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-2 gap-y-1 px-4 py-4 sm:px-6">
+      {/* =========================================================== JOURNEY
+          The five stops, stated once as one divided strip. Every band after
+          this demonstrates one of them, in this order. */}
+      <section className="border-y border-line bg-surface">
+        <ol className="mx-auto grid max-w-6xl divide-y divide-rule px-4 sm:px-6 md:grid-cols-5 md:divide-x md:divide-y-0">
           {JOURNEY.map((stop, index) => (
-            <li key={stop.href} className="flex items-center gap-2">
-              {index > 0 && (
-                <ArrowRight className="size-3 shrink-0 text-ink-subtle" aria-hidden />
-              )}
+            <li key={stop.href}>
               <a
                 href={stop.href}
-                className="label-caps rounded px-1 py-0.5 text-ink-muted transition-colors hover:text-ink"
+                className="group block py-5 md:px-5 md:first:pl-0 md:last:pr-0"
               >
-                {stop.label}
+                <span className="font-num text-xs text-ink-subtle">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="mt-1 flex items-center gap-1.5 text-md font-semibold text-ink">
+                  {stop.label}
+                  <ArrowRight
+                    className="size-3.5 text-ink-subtle transition-transform group-hover:translate-x-0.5"
+                    aria-hidden
+                  />
+                </span>
+                <span className="mt-1 block text-sm leading-5 text-ink-muted">
+                  {stop.note}
+                </span>
               </a>
             </li>
           ))}
         </ol>
-      </nav>
-
-      {/* ========================================================= PROOF BAR
-          The remaining live figures, and the sourcing statement they need. */}
-      <section className="border-b border-line bg-surface">
-        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-          <Reveal>
-            <dl className="grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-4">
-              {[
-                { label: "Accounts resolved", value: formatCompact(stats.totalAccounts) },
-                { label: "Content items read", value: formatCompact(stats.totalContent) },
-                {
-                  label: "Historical snapshots",
-                  value: formatCompact(stats.totalSnapshots),
-                },
-                { label: "Markets covered", value: formatCompact(stats.byCountry.length) },
-              ].map((figure) => (
-                <div key={figure.label} className="min-w-0">
-                  <dt className="label-caps-sm text-ink-subtle">{figure.label}</dt>
-                  <dd className="mt-1.5 font-num text-metric font-medium leading-none text-ink">
-                    {figure.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-            <p className="mt-7 measure text-sm text-ink-subtle">
-              Live from the SENSO database as this page rendered. Collected from
-              official platform APIs and creator-authorised accounts — no prohibited
-              scraping, and no purchased list.
-            </p>
-          </Reveal>
-        </div>
       </section>
 
       {/* ========================================================= 1 DISCOVER
           The surface is the section: one line of copy, then the product at
           full width. */}
-      <section id="discover" className="border-b border-line bg-canvas">
+      <section id="discover" className="bg-canvas">
         <div className="mx-auto max-w-7xl px-4 pb-16 pt-20 sm:px-6 lg:pb-20 lg:pt-24">
-          <Reveal className="mx-auto max-w-3xl">
-            <h2 className="display-sm text-ink">
+          <Reveal className="mx-auto max-w-3xl text-center">
+            <p className="label-caps text-brand-ink">01 · Discover</p>
+            <h2 className="display-sm mt-3 text-ink">
               Don&apos;t choose creators by follower count.
             </h2>
           </Reveal>
@@ -286,7 +236,6 @@ export default function LandingPage() {
             <DiscoverySurface />
           </div>
 
-          {/* Rules, not cards. Three outcomes on one divided row. */}
           <dl className="mt-10 grid divide-y divide-line border-t border-line md:grid-cols-3 md:divide-x md:divide-y-0">
             {DISCOVER_OUTCOMES.map((outcome) => (
               <div key={outcome.title} className="py-5 md:px-6 md:first:pl-0 md:last:pr-0">
@@ -301,12 +250,12 @@ export default function LandingPage() {
       </section>
 
       {/* ========================================================= 2 EVALUATE
-          Sticky split-screen: the copy holds while the dossier scrolls past
-          it. The tallest section and the visual centrepiece. */}
-      <section id="evaluate" className="border-b border-line bg-surface">
-        <div className="mx-auto grid max-w-6xl gap-x-12 gap-y-8 px-4 py-20 sm:px-6 lg:py-24 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start">
+          Sticky split: the copy holds while the dossier scrolls past it. */}
+      <section id="evaluate" className="border-t border-line bg-surface">
+        <div className="mx-auto grid max-w-6xl gap-x-12 gap-y-8 px-4 py-20 sm:px-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start lg:py-24">
           <div className="lg:sticky lg:top-24">
-            <h2 className="display-sm text-ink">
+            <p className="label-caps text-brand-ink">02 · Evaluate</p>
+            <h2 className="display-sm mt-3 text-ink">
               Understand the creator behind the audience.
             </h2>
             <dl className="mt-8 divide-y divide-rule border-t border-rule">
@@ -326,13 +275,14 @@ export default function LandingPage() {
       </section>
 
       {/* =========================================================== 3 VERIFY
-          The interaction is the explanation: the panel is drawn open beside
-          the figure it explains. No paragraph. */}
-      <section id="verify" className="border-b border-line bg-sunken">
+          The interaction is the explanation: the panel drawn open beside the
+          figure it explains. */}
+      <section id="verify" className="border-t border-line bg-canvas">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:py-24">
           <div className="grid items-start gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
             <div>
-              <h2 className="display-sm text-ink">
+              <p className="label-caps text-brand-ink">03 · Verify</p>
+              <h2 className="display-sm mt-3 text-ink">
                 Every important number carries its evidence.
               </h2>
               <p className="mt-5 max-w-md text-md leading-6 text-ink-muted">
@@ -343,10 +293,9 @@ export default function LandingPage() {
             <ProvenanceDossier />
           </div>
 
-          {/* The five states as a ladder across the band, not five cards. */}
-          <ol className="mt-12 grid divide-y divide-line border-y border-line lg:grid-cols-5 lg:divide-x lg:divide-y-0">
+          <ol className="mt-12 grid divide-y divide-line rounded-xl bg-surface px-5 card-shadow lg:grid-cols-5 lg:divide-x lg:divide-y-0 lg:px-0">
             {FACT_STATES.map((state) => (
-              <li key={state.label} className="px-0 py-4 lg:px-5 lg:first:pl-0 lg:last:pr-0">
+              <li key={state.label} className="py-4 lg:px-5">
                 <p className="flex items-center gap-1.5">
                   <state.icon className={`size-3.5 ${state.tone}`} aria-hidden />
                   <span className="label-caps text-ink">{state.label}</span>
@@ -356,7 +305,7 @@ export default function LandingPage() {
             ))}
           </ol>
 
-          <p className="mt-5 max-w-3xl text-base text-ink-muted">
+          <p className="mt-6 max-w-3xl text-base text-ink-muted">
             Sources are ranked, and the ranking is visible. An official API measurement
             outranks permitted public research, which outranks model inference — and where
             two sources disagree, the conflict is raised for a human rather than silently
@@ -368,10 +317,11 @@ export default function LandingPage() {
       {/* =============================================================== 4 AI
           The output on one side, the constraint on the other. The constraint
           is the sales argument, so it is set as plainly as the output. */}
-      <section id="intelligence" className="border-b border-line bg-surface">
+      <section id="intelligence" className="border-t border-line bg-surface">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:py-24">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="display-sm text-ink">
+            <p className="label-caps text-brand-ink">Intelligence layer</p>
+            <h2 className="display-sm mt-3 text-ink">
               AI explains the score. It never sets it.
             </h2>
           </div>
@@ -395,10 +345,7 @@ export default function LandingPage() {
                     key={item}
                     className="flex items-center gap-3 py-2.5 text-base text-ink"
                   >
-                    <span
-                      aria-hidden
-                      className="h-px w-4 shrink-0 bg-critical"
-                    />
+                    <span aria-hidden className="h-px w-4 shrink-0 bg-critical" />
                     {item}
                   </li>
                 ))}
@@ -413,12 +360,13 @@ export default function LandingPage() {
       </section>
 
       {/* ========================================================= 5 ACTIVATE
-          Offset overlapping layers — the only place on the page where two
-          surfaces sit at different elevations. */}
-      <section id="platform" className="border-b border-line bg-canvas">
+          Offset layers — the one place two surfaces sit at different
+          elevations. */}
+      <section id="activate" className="border-t border-line bg-canvas">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:py-24">
           <div className="mx-auto max-w-3xl">
-            <h2 className="display-sm text-ink">
+            <p className="label-caps text-brand-ink">04 · Activate</p>
+            <h2 className="display-sm mt-3 text-ink">
               From creator selection to measurable delivery.
             </h2>
             <p className="mt-4 text-md leading-6 text-ink-muted">
@@ -447,11 +395,12 @@ export default function LandingPage() {
 
       {/* ========================================================== 6 MEASURE
           One oversized canvas. The section is the chart. */}
-      <section id="measure" className="border-b border-line bg-surface">
+      <section id="measure" className="border-t border-line bg-surface">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-24">
           <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
             <div className="max-w-2xl">
-              <h2 className="display-sm text-ink">
+              <p className="label-caps text-brand-ink">05 · Measure</p>
+              <h2 className="display-sm mt-3 text-ink">
                 Quality on one axis. Evidence on the other.
               </h2>
             </div>
@@ -494,41 +443,52 @@ export default function LandingPage() {
       </section>
 
       {/* ======================================================== FOUNDATION
-          A horizontal track, not a card grid. */}
-      <section className="border-b border-line bg-sunken">
+          The live figures and the pipeline behind them, in one band. */}
+      <section className="border-t border-line bg-canvas">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:py-24">
-          <div className="max-w-2xl">
-            <h2 className="text-title font-semibold tracking-display text-ink">
-              Where the numbers come from.
-            </h2>
+          <div className="grid gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+            <div>
+              <p className="label-caps text-brand-ink">Foundation</p>
+              <h2 className="display-sm mt-3 text-ink">
+                Where the numbers come from.
+              </h2>
+              <p className="mt-4 text-base leading-6 text-ink-muted">
+                Live from the SENSO database as this page rendered. Collected from
+                official platform APIs and creator-authorised accounts — no prohibited
+                scraping, and no purchased list.
+              </p>
+              <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-6">
+                {live.map((figure) => (
+                  <div key={figure.label} className="min-w-0">
+                    <dd className="font-num text-metric font-semibold leading-none text-ink">
+                      {figure.value}
+                    </dd>
+                    <dt className="mt-1.5 text-sm text-ink-subtle">{figure.label}</dt>
+                  </div>
+                ))}
+              </dl>
+            </div>
+
+            <ol className="grid divide-y divide-rule rounded-xl bg-surface px-5 card-shadow sm:grid-cols-2 sm:divide-x sm:divide-y-0 md:grid-cols-5 md:px-0">
+              {PIPELINE.map((stage, index) => (
+                <li key={stage.label} className="py-4 sm:px-4 md:px-4">
+                  <span className="font-num text-xs text-ink-subtle">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <p
+                    className={`mt-1.5 text-base font-semibold ${
+                      stage.inferred ? "text-inferred" : "text-ink"
+                    }`}
+                  >
+                    {stage.label}
+                  </p>
+                  <p className="mt-0.5 text-sm leading-5 text-ink-muted">{stage.note}</p>
+                </li>
+              ))}
+            </ol>
           </div>
 
-          <ol className="mt-9 grid gap-y-6 border-t border-line pt-6 md:grid-cols-5 md:gap-x-6">
-            {PIPELINE.map((stage, index) => (
-              <li
-                key={stage.label}
-                className={
-                  stage.inferred
-                    ? "border-l border-dashed border-inferred-line pl-4 md:border-l md:pl-5"
-                    : "border-l border-line pl-4 md:pl-5 md:first:border-l-0 md:first:pl-0"
-                }
-              >
-                <span className="font-num text-xs text-ink-subtle">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <p
-                  className={`mt-1.5 text-base font-semibold ${
-                    stage.inferred ? "text-inferred" : "text-ink"
-                  }`}
-                >
-                  {stage.label}
-                </p>
-                <p className="mt-0.5 text-sm leading-5 text-ink-muted">{stage.note}</p>
-              </li>
-            ))}
-          </ol>
-
-          <p className="mt-8 max-w-3xl text-base text-ink-muted">
+          <p className="mt-8 max-w-3xl text-sm text-ink-subtle">
             A cohort of fewer than eight creators publishes no percentile. A rank computed
             against two accounts is noise wearing the costume of a statistic, and it would
             be the most quotable number on the page.
@@ -536,26 +496,39 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* =============================================================== CTA */}
-      <section className="bg-surface">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-10 gap-y-5 px-4 py-12 sm:px-6">
-          <div className="max-w-xl">
-            <h2 className="text-title font-semibold tracking-display text-ink">
-              Start with five searches.
-            </h2>
-            <p className="mt-2 text-base leading-6 text-ink-muted">
-              The free plan includes five influencer searches per month. Saved profiles,
-              shortlists and comparisons stay available whether or not you have searches
-              left.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <LinkButton href="/register" variant="primary" size="lg">
-              Request a demo
-            </LinkButton>
-            <LinkButton href="/pricing" size="lg">
-              See plans
-            </LinkButton>
+      {/* =============================================================== CTA
+          The one feature card on the page: the mark's tile, used once. */}
+      <section className="border-t border-line bg-canvas">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
+          <div className="relative overflow-hidden rounded-2xl bg-instrument px-6 py-12 text-instrument-ink sm:px-10 lg:px-14 lg:py-16">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-24 -top-24 size-80 rounded-full bg-brand-glow/25 blur-3xl"
+            />
+            <div className="relative flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
+              <div className="max-w-xl">
+                <h2 className="display-sm text-instrument-ink">
+                  Bring your own shortlist.
+                </h2>
+                <p className="mt-4 text-md leading-6 text-instrument-muted">
+                  Start with five searches a month, free. Saved profiles, shortlists and
+                  comparisons stay available whether or not you have searches left.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <LinkButton href="/register" variant="primary" size="lg">
+                  Request a demo
+                </LinkButton>
+                <LinkButton
+                  href="/pricing"
+                  size="lg"
+                  variant="ghost"
+                  className="text-instrument-ink hover:bg-instrument-raised hover:text-instrument-ink"
+                >
+                  See plans
+                </LinkButton>
+              </div>
+            </div>
           </div>
         </div>
       </section>

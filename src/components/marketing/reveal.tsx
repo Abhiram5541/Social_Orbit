@@ -11,10 +11,11 @@ import { cn } from "@/lib/class-names";
  * the point — a page where each section arrives differently reads as a demo of
  * transitions, not as a considered surface.
  *
- * Built on IntersectionObserver rather than a motion library. The whole effect
- * is one CSS class plus this observer, and a scroll-animation dependency would
- * be the largest thing on a page whose argument is that the product is
- * measured rather than decorated. Scroll itself is left alone for the same
+ * Built on the browser's scroll timeline (`animation-timeline: view()`)
+ * rather than a motion library or an observer. The whole effect is one CSS
+ * class, content is visible without JavaScript, and a scroll-animation
+ * dependency would be the largest thing on a page whose argument is that the
+ * product is measured rather than decorated. Scroll itself is left alone for the same
  * reason: hijacked scrolling on an enterprise page is a liability, not a
  * flourish — the browser's own scroll is already smooth and already accessible.
  *
@@ -34,34 +35,11 @@ export function Reveal({
   className?: string;
   as?: React.ElementType;
 }) {
-  const ref = React.useRef<HTMLElement>(null);
-
-  React.useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-
-    // Anything already on screen at mount — the hero, above all — must not
-    // wait for an intersection callback that has nothing to report.
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            entry.target.setAttribute("data-shown", "true");
-            observer.unobserve(entry.target);
-          }
-        }
-      },
-      { rootMargin: "0px 0px -12% 0px", threshold: 0.05 },
-    );
-
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-
+  // No observer any more: `.reveal` is a scroll-driven CSS animation (see
+  // globals.css), so the content is visible by default and the browser does
+  // the timing. This component only names the block and carries the stagger.
   return (
     <Tag
-      ref={ref}
-      data-shown="false"
       className={cn("reveal", className)}
       style={delay ? ({ "--reveal-delay": `${delay}ms` } as React.CSSProperties) : undefined}
     >

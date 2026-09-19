@@ -568,20 +568,32 @@
      observer marks it visible. One config for the whole marketing site: the
      consistency is what reads as considered. `--reveal-delay` sequences
      siblings. */
-  .reveal {
-    opacity: 0;
-    transform: translate3d(0, 14px, 0);
-    filter: blur(6px);
-    transition:
-      opacity var(--duration-reveal) var(--ease-out-quick) var(--reveal-delay, 0ms),
-      transform var(--duration-reveal) var(--ease-out-quick) var(--reveal-delay, 0ms),
-      filter var(--duration-reveal) var(--ease-out-quick) var(--reveal-delay, 0ms);
+  /* The one entrance (CLAUDE.md D26), now driven by the browser's own scroll
+     timeline: no observer, no script, and — the reason for the change —
+     content is visible by default. The previous version hid every band at
+     opacity 0 until JavaScript marked it shown, so a crawler, a screenshot or
+     a slow hydration saw a blank page. A browser without scroll-driven
+     animations simply shows the content. */
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 14px, 0);
+      filter: blur(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
   }
 
-  .reveal[data-shown="true"] {
-    opacity: 1;
-    transform: none;
-    filter: none;
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: rise var(--duration-reveal) var(--ease-out-quick) both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 28%;
+      animation-delay: var(--reveal-delay, 0ms);
+    }
   }
 
   /* Interactive surfaces. Fast, never bouncy. */
@@ -729,8 +741,6 @@
      disabled — the observer still runs, but the resting state is the shown
      state. */
   .reveal {
-    opacity: 1;
-    transform: none;
-    filter: none;
+    animation: none;
   }
 }
