@@ -359,7 +359,10 @@ account SENSO owns may ask, by username, for the public figures and recent media
 any other Business or Creator account. So the connector needs `META_IG_USER_ID` and
 a long-lived Page token `META_IG_TOKEN` (`scripts/meta-token.mjs` derives both from a
 Graph API Explorer token) beyond the app keys, needs no App Review for these reads,
-and is rate-limited per token at 200 calls an hour — ~4,800 creators a day. Creators
+and is rate-limited at 200 calls an hour × the app's daily active users — with one
+user, 200 an hour, ~4,800 creators a day; the limit is per *app*, so the credential
+pool (`META_IG_POOL`, 37 linked Pages) shares it rather than multiplying it, and the
+way up is more people using the app's login or a licensed provider. Creators
 are added by handle (`/api/internal/connectors/instagram/ingest`, the admin ingest
 card, or `refreshInfluencer`) and re-read daily by `refreshInstagramStale` inside the
 snapshot job. What comes back is followers, media count, bio, and posts with likes
