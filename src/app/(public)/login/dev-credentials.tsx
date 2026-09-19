@@ -20,15 +20,17 @@ export interface DevAccount {
 }
 
 /**
- * The four seats a demo walks through. The analyst, the free-plan client and
- * the creator-portal sign-in still exist (e2e exercises them) but are not
- * offered here: a picker with seven rows reads as a test fixture.
+ * The seats a demo walks through — the two platform roles, a paying client's
+ * owner and member, and a free-plan client to show the search allowance. The
+ * analyst and creator-portal seeds still exist (e2e exercises them) but are
+ * not offered here.
  */
 export const DEV_ACCOUNTS: DevAccount[] = [
   { email: "admin@senso360.com", role: "super_admin", note: "Full platform access" },
   { email: "manager@senso360.com", role: "manager", note: "Creator database, verification review" },
   { email: "owner@northwind.example", role: "client_owner", note: "Client workspace, billing and API keys" },
   { email: "member@northwind.example", role: "client_member", note: "Same workspace, no billing" },
+  { email: "hello@lumen.example", role: "client_owner", note: "Free plan — 5 searches a month" },
 ];
 
 export function DevCredentials({
