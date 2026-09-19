@@ -1,5 +1,6 @@
 import type { Platform } from "@/lib/contracts/common";
 import { readRecords, EPOCH } from "@/server/data/records";
+import type { InfluencerSummary } from "@/lib/contracts/influencer";
 import { allSummaries, countInfluencers } from "./influencer-repository";
 
 /* ---------------------------------------------------------------------------
@@ -29,9 +30,24 @@ export interface DatabaseStats {
   byCountry: { country: string; count: number }[];
 }
 
+/**
+ * Memoised on the scored list it is built from: seven screens (the landing
+ * page among them) ask for these figures, and each pass walks every creator,
+ * account and content row — a few hundred milliseconds at 7K creators that
+ * would otherwise be paid on every render.
+ */
+let statsCache: { list: InfluencerSummary[]; stats: DatabaseStats } | null = null;
+
 export function databaseStats(now: Date = new Date()): DatabaseStats {
-  const data = readRecords();
   const summaries = allSummaries(now);
+  if (statsCache?.list === summaries) return statsCache.stats;
+  const stats = computeDatabaseStats(summaries, now);
+  statsCache = { list: summaries, stats };
+  return stats;
+}
+
+function computeDatabaseStats(summaries: InfluencerSummary[], now: Date): DatabaseStats {
+  const data = readRecords();
 
   const staleAfterMs = 48 * 60 * 60 * 1000;
   const staleProfiles = data.influencers.filter(

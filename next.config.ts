@@ -16,6 +16,15 @@ const nextConfig: NextConfig = {
   // serve the app through a tunnel (Cloudflare, ngrok, etc.) where the
   // browser's origin is the tunnel host, not localhost.
   allowedDevOrigins: ["*.trycloudflare.com"],
+
+  experimental: {
+    // A page visited in the last minute is served again from the client's
+    // router cache rather than re-rendered: moving between the overview, the
+    // database and a profile and back is then instant. The store behind these
+    // pages changes on a daily cadence, so a minute is never stale in any way
+    // a person could notice.
+    staleTimes: { dynamic: 60, static: 300 },
+  },
 };
 
 export default nextConfig;
