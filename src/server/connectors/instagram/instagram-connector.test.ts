@@ -74,11 +74,20 @@ describe("graph host", () => {
 describe("credential pool", () => {
   it("moves to the next credential when one hits its hourly limit", async () => {
     vi.stubEnv("META_IG_POOL", "222:tokB");
-    respond(400, { error: { message: "limit", code: 4 } });
+    respond(400, { error: { message: "page limit", code: 32 } });
     respond(200, { business_discovery: { id: "1", username: "a", followers_count: 1 } });
     const found = await fetchAccount("a");
     expect(found?.account.username).toBe("a");
     const hosts = fetchMock.mock.calls.map((c) => new URL(String(c[0])).searchParams.get("access_token"));
     expect(hosts).toEqual(["tok", "tokB"]);
+  });
+});
+
+describe("app-wide limit", () => {
+  it("benches every credential on code 4 rather than trying each in turn", async () => {
+    vi.stubEnv("META_IG_POOL", "222:tokB,333:tokC");
+    respond(400, { error: { message: "app limit", code: 4 } });
+    await expect(fetchAccount("a")).rejects.toMatchObject({ reason: "quota_exceeded" });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

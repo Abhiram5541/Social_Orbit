@@ -196,8 +196,12 @@ async function call<T extends z.ZodTypeAny>(
       throw new ConnectorUnavailable("instagram", "credentials_missing", `Instagram rejected the token: ${detail}`);
     }
     if (error.code === 4 || error.code === 17 || error.code === 32 || error.code === 613) {
-      // Bench this credential for the rest of the rolling hour; another may still read.
-      credential.benchedUntil = Date.now() + 60 * 60_000;
+      // Code 4 is the app-wide limit (200 an hour × the app's active users):
+      // every credential shares it, so benching one and trying the next would
+      // spend a failing call per credential. The others are per user or page.
+      const until = Date.now() + 60 * 60_000;
+      if (error.code === 4) for (const c of credentials()) c.benchedUntil = until;
+      else credential.benchedUntil = until;
       throw new ConnectorUnavailable("instagram", "quota_exceeded", `Instagram rate limit reached: ${detail}`);
     }
     if (error.code === 10 || (error.code !== undefined && error.code >= 200 && error.code < 300)) {
