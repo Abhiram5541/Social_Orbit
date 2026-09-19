@@ -23,7 +23,7 @@ import {
   Split,
 } from "@/components/ui/panel";
 import { DistributionRows, type DistributionTone } from "@/components/charts/distribution-bars";
-import { CorrelationPlot } from "@/components/charts/distribution";
+import { CorrelationPlot, type PositionPoint } from "@/components/charts/distribution";
 import { HeroSignal, Metric, MetricStrip } from "@/components/intelligence/signal";
 
 export const metadata: Metadata = { title: "Analytics" };
@@ -217,14 +217,33 @@ export default async function AnalyticsPage() {
           </PanelHead>
           <PanelBody>
             <CorrelationPlot
-              points={scored.map((summary) => ({
-                id: summary.id,
-                name: summary.displayName,
-                x: summary.healthScore,
-                y: summary.confidence,
-                tone: HEALTH_TONE[healthBand(summary.healthScore)] as DistributionTone,
-                detail: `${confidenceBand(summary.confidence)} confidence`,
-              }))}
+              // Both axes are integers 0–100, so at most ~10k distinct cells;
+              // every creator in a cell draws the same dot. Plotting one per
+              // cell (with the count in its tooltip) keeps the shape exact and
+              // stops the page shipping seven thousand points to draw it.
+              points={Object.values(
+                scored.reduce<Record<string, PositionPoint & { n: number }>>((cells, summary) => {
+                  const x = Math.round(summary.healthScore!);
+                  const y = Math.round(summary.confidence);
+                  const key = `${x}:${y}`;
+                  const cell = cells[key];
+                  if (cell) {
+                    cell.n += 1;
+                    cell.name = `${cell.n} creators`;
+                  } else {
+                    cells[key] = {
+                      id: key,
+                      name: summary.displayName,
+                      x,
+                      y,
+                      tone: HEALTH_TONE[healthBand(summary.healthScore)] as DistributionTone,
+                      detail: `${confidenceBand(summary.confidence)} confidence`,
+                      n: 1,
+                    };
+                  }
+                  return cells;
+                }, {}),
+              )}
               xLabel="SENSO Health"
               yLabel="Confidence"
               ariaLabel="Every scored creator plotted by health score against data confidence"

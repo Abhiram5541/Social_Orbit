@@ -107,7 +107,7 @@ export function ReviewTable({
       <RowList>
         {ordered.map((item) => (
           <li key={`${item.influencerId}-${item.reason}`}>
-            <Link
+            <Link prefetch={false}
               href={`/influencers/${item.influencerId}`}
               aria-label={`${actionLabel ?? "Open"} — ${item.displayName}: ${item.reason}`}
               className="group flex items-start gap-3 px-4 py-3 transition-colors hover:bg-sunken/70"

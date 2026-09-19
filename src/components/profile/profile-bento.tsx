@@ -299,7 +299,7 @@ export function LookalikeTable({
                   >
                     <td className="px-3">
                       {linkToProfiles ? (
-                        <Link href={`/influencers/${creator.id}`} className="block rounded-md hover:text-brand-ink">
+                        <Link prefetch={false} href={`/influencers/${creator.id}`} className="block rounded-md hover:text-brand-ink">
                           {name}
                         </Link>
                       ) : (

@@ -114,7 +114,7 @@ export function LookalikePanel({
                 <Avatar name={match.displayName} src={match.avatarUrl} size="sm" />
                 <div className="min-w-0 flex-1">
                   {linkToProfiles ? (
-                    <Link
+                    <Link prefetch={false}
                       href={`/influencers/${match.id}`}
                       className="block truncate text-base font-medium text-ink hover:text-brand-ink"
                     >

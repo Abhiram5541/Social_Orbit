@@ -343,7 +343,7 @@ function CreatorCell({ item }: { item: InfluencerSummary }) {
       />
       <div className="min-w-0">
         <div className="flex min-w-0 items-center gap-1.5">
-          <Link
+          <Link prefetch={false}
             href={`/influencers/${item.id}`}
             className="truncate rounded text-base font-medium text-ink hover:text-brand-ink hover:underline"
           >

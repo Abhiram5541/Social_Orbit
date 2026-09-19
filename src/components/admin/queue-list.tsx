@@ -54,7 +54,7 @@ export function QueueList({
         <ul className="flex-1 divide-y divide-line">
           {items.slice(0, limit).map((item) => (
             <li key={`${item.influencerId}-${item.reason}`}>
-              <Link
+              <Link prefetch={false}
                 href={`/influencers/${item.influencerId}`}
                 className="flex items-start gap-2 px-4 py-2 transition-colors hover:bg-sunken/70"
               >

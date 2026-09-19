@@ -262,7 +262,7 @@ export default async function DashboardPage() {
                               className="group [&>td]:py-2.5 even:[&>td]:bg-sunken/70 [&>td:first-child]:rounded-l-lg [&>td:last-child]:rounded-r-lg"
                             >
                               <td className="px-3">
-                                <Link
+                                <Link prefetch={false}
                                   href={`/influencers/${creator.id}`}
                                   className="flex items-center gap-3 rounded-md"
                                 >

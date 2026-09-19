@@ -59,7 +59,7 @@ export function ResultCards({
               />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <Link
+                  <Link prefetch={false}
                     href={`/influencers/${item.id}`}
                     className="min-w-0 truncate rounded-md font-display text-md font-bold text-ink hover:text-brand-ink"
                   >

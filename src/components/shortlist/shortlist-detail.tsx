@@ -176,7 +176,7 @@ export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailD
                     <div className="flex min-w-0 items-center gap-2.5">
                       <Avatar name={item.displayName} src={item.avatarUrl} size="sm" />
                       <div className="min-w-0">
-                        <Link
+                        <Link prefetch={false}
                           href={`/influencers/${item.influencerId}`}
                           className="block truncate rounded font-medium text-ink hover:text-brand-ink hover:underline"
                         >
