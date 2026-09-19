@@ -339,6 +339,23 @@ What follows from it, and is intended:
   footer are now deep forest rather than graphite. A light marketing redesign is a
   separate piece of work.
 
+**D39 — The landing page shows real creators, and its instruments play on scroll.**
+*(Amends D22's "every fabricated value lives in specimen.ts".)* With seven thousand
+creators indexed, the surfaces that show *a creator* show a real one:
+`src/components/marketing/live.ts` picks the highest-health creators with a photo, a
+country, a real audience and a showcase category (Indian creators first, one per
+country after), and the hero, dossier, search rows, facet counts, provenance figures
+and the quality scatter are the application's own readings — including withheld
+components drawn as absent and a benchmark only where the cohort publishes one. The
+specimen module remains the fallback for an empty database and the source of the two
+examples that must stay illustrative: the campaign (SENSO holds no client's campaign)
+and the AI extract (enrichment has not run on these creators). The disclosure line
+says which is which. Motion: live figures count up once on entry (`CountUp`, server
+renders the final string), the dossier's bars and arc and the search rows play as
+they scroll into view (`.mk-surface`, `.mk-rows` — scroll-driven, no script), and
+the hero surface leans a few degrees toward the pointer (`PointerGlow tilt`). All of
+it is off under `prefers-reduced-motion`.
+
 **D38 — The landing page is the product's own material, and its reveal needs no script.**
 *(Closes D31's "a light marketing redesign is a separate piece of work".)* The dark
 hero is gone: the page opens on the application's canvas with the creator surface set

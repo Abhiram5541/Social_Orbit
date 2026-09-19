@@ -594,6 +594,36 @@
       animation-range: entry 0% entry 28%;
       animation-delay: var(--reveal-delay, 0ms);
     }
+
+    /* Marketing surfaces play their instrument entrances as they scroll into
+       view rather than on mount — on mount they would have finished long
+       before anyone scrolled to them. The application keeps the mount
+       versions: there the surface is the page. */
+    .mk-surface .animate-extend {
+      animation-name: so-extend;
+      animation-timeline: view();
+      animation-range: entry 10% entry 55%;
+      animation-delay: 0ms;
+    }
+    .mk-surface .animate-sweep {
+      animation-timeline: view();
+      animation-range: entry 5% entry 60%;
+    }
+    /* Table rows arrive in reading order: each row's range starts a little
+       further down the scroll than the one above it. */
+    .mk-rows > tr {
+      animation: rise var(--duration-base) var(--ease-out-quick) both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 30%;
+    }
+  }
+
+  /* A surface that leans toward the pointer. Degrees come from PointerGlow;
+     the perspective is shallow so it reads as material, not as a card trick. */
+  .pointer-tilt {
+    transform: perspective(1400px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition: transform 240ms var(--ease-out-quick);
+    will-change: transform;
   }
 
   /* Interactive surfaces. Fast, never bouncy. */
@@ -740,7 +770,12 @@
   /* The reveal must never leave content invisible when its transition is
      disabled — the observer still runs, but the resting state is the shown
      state. */
-  .reveal {
+  .reveal,
+  .mk-rows > tr {
     animation: none;
+  }
+  .pointer-tilt {
+    transform: none;
+    transition: none;
   }
 }

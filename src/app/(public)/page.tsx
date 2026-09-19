@@ -4,6 +4,8 @@ import { formatCompact } from "@/lib/format";
 import { databaseStats } from "@/server/repositories/ops-repository";
 import { LinkButton } from "@/components/ui/button";
 import { MarketingChrome } from "@/components/shell/marketing-chrome";
+import { CountUp } from "@/components/marketing/count-up";
+import { collectedAgo, landingCreators, landingFacets, landingQualityPoints } from "@/components/marketing/live";
 import { PointerGlow, Reveal } from "@/components/marketing/reveal";
 import {
   CampaignDeliveryPanel,
@@ -15,6 +17,7 @@ import {
   FACT_STATES,
   ProvenanceDossier,
   QualityCanvas,
+  toLiveDossier,
 } from "@/components/marketing/product-surfaces";
 
 export const metadata: Metadata = {
@@ -116,11 +119,18 @@ export default function LandingPage() {
   // Real coverage from the running database. The only unmarked figures on the
   // page, because they are the only ones that were measured.
   const stats = databaseStats();
+  // A real creator for the hero and the dossier, real rows for the search
+  // surface, real facet counts and the real quality scatter. The campaign and
+  // AI examples stay illustrative (live.ts says why) and are disclosed.
+  const { hero, rows } = landingCreators();
+  const dossier = hero ? toLiveDossier(hero, rows[0]) : null;
+  const facets = landingFacets();
+  const quality = landingQualityPoints();
   const live = [
-    { label: "Creators indexed", value: formatCompact(stats.totalInfluencers) },
-    { label: "Content items read", value: formatCompact(stats.totalContent) },
-    { label: "Historical snapshots", value: formatCompact(stats.totalSnapshots) },
-    { label: "Markets", value: formatCompact(stats.byCountry.length) },
+    { label: "Creators indexed", raw: stats.totalInfluencers, value: formatCompact(stats.totalInfluencers) },
+    { label: "Content items read", raw: stats.totalContent, value: formatCompact(stats.totalContent) },
+    { label: "Historical snapshots", raw: stats.totalSnapshots, value: formatCompact(stats.totalSnapshots) },
+    { label: "Markets", raw: stats.byCountry.length, value: formatCompact(stats.byCountry.length) },
   ];
 
   return (
@@ -167,7 +177,7 @@ export default function LandingPage() {
               {live.slice(0, 3).map((figure) => (
                 <div key={figure.label} className="min-w-0">
                   <dd className="font-num text-stat-lg font-semibold leading-none text-ink">
-                    {figure.value}
+                    <CountUp value={figure.raw} text={figure.value} />
                   </dd>
                   <dt className="mt-1.5 text-sm text-ink-subtle">{figure.label}</dt>
                 </div>
@@ -176,15 +186,16 @@ export default function LandingPage() {
           </Reveal>
 
           <Reveal delay={120} className="min-w-0 lg:-mr-6 xl:-mr-12">
-            <PointerGlow className="rounded-2xl bg-surface text-ink shadow-lifted">
-              <DossierMasthead />
+            <PointerGlow tilt className="rounded-2xl bg-surface text-ink shadow-lifted">
+              <DossierMasthead live={dossier} />
             </PointerGlow>
-            {/* The page's one specimen disclosure. Repeating it on every
-                surface would read as defensiveness; withholding it, on a
-                product whose pitch is that its numbers are checkable, worse. */}
+            {/* The page's one disclosure. Repeating it on every surface would
+                read as defensiveness; withholding it, on a product whose pitch
+                is that its numbers are checkable, worse. */}
             <p className="mt-4 text-sm text-ink-subtle">
-              Product surfaces on this page are the real interface, rendered with
-              illustrative creators. Coverage figures are live.
+              {dossier
+                ? "Creators, scores and coverage on this page are live from the SENSO database. The campaign and AI examples are illustrative."
+                : "Product surfaces on this page are the real interface, rendered with illustrative creators. Coverage figures are live."}
             </p>
           </Reveal>
         </div>
@@ -233,7 +244,11 @@ export default function LandingPage() {
           </Reveal>
 
           <div className="mt-10">
-            <DiscoverySurface />
+            <DiscoverySurface
+              rows={rows.length >= 5 ? rows : undefined}
+              facets={rows.length >= 5 ? facets : undefined}
+              matching={rows.length >= 5 ? stats.totalInfluencers : undefined}
+            />
           </div>
 
           <dl className="mt-10 grid divide-y divide-line border-t border-line md:grid-cols-3 md:divide-x md:divide-y-0">
@@ -269,7 +284,7 @@ export default function LandingPage() {
           </div>
 
           <div className="min-w-0">
-            <CreatorDossier />
+            <CreatorDossier live={dossier} />
           </div>
         </div>
       </section>
@@ -290,7 +305,18 @@ export default function LandingPage() {
                 its working — on any number you might have to defend in a meeting.
               </p>
             </div>
-            <ProvenanceDossier />
+            <ProvenanceDossier
+              live={
+                dossier
+                  ? {
+                      engagement: dossier.creator.engagement,
+                      collected: collectedAgo(dossier.profile),
+                      confidence: dossier.creator.confidence,
+                      sourceUrl: dossier.profile.socialAccounts[0]?.url ?? null,
+                    }
+                  : null
+              }
+            />
           </div>
 
           <ol className="mt-12 grid divide-y divide-line rounded-xl bg-surface px-5 card-shadow lg:grid-cols-5 lg:divide-x lg:divide-y-0 lg:px-0">
@@ -429,14 +455,12 @@ export default function LandingPage() {
               </span>
             </div>
             <div className="px-5 py-5">
-              <QualityCanvas />
+              <QualityCanvas points={quality.length >= 50 ? quality : undefined} />
             </div>
             <div className="border-t border-rule bg-sunken/50 px-5 py-3 text-base text-ink-muted">
-              The top-right quadrant is where a shortlist should be drawn from: creators
-              scoring above 70 on evidence that is itself above 70% confident. The cluster
-              low and to the right is the case this axis exists to expose — a strong score
-              standing on history too thin to rely on, which every other tool in this
-              category would have shown you as a clean number.
+              {quality.length >= 50
+                ? "Every creator in the index, as scored today. Confidence sits in the middle band for all of them: the index is read from official platform APIs, and no creator has yet connected an account. A creator scoring 90 on that evidence is exactly the case this axis exists to expose — and exactly what every other tool in this category would have shown you as a clean 90."
+                : "The top-right quadrant is where a shortlist should be drawn from: creators scoring above 70 on evidence that is itself above 70% confident. The cluster low and to the right is the case this axis exists to expose — a strong score standing on history too thin to rely on, which every other tool in this category would have shown you as a clean number."}
             </div>
           </div>
         </div>

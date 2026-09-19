@@ -12,6 +12,8 @@ import {
   HEALTH_WEIGHTS,
   type HealthComponentKey,
 } from "@/lib/contracts/score";
+import type { InfluencerProfile } from "@/lib/contracts/influencer";
+import { formatCompact } from "@/lib/format";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScoreBar, ScorePill, ScoreRing } from "@/components/intelligence/score";
@@ -23,7 +25,54 @@ import {
   SPECIMEN_FACETS,
   SPECIMEN_QUALITY_POINTS,
   SPECIMEN_RESULTS,
+  type SpecimenCreator,
 } from "./specimen";
+
+/**
+ * A profile from the live database, in the shape the surfaces draw. Every
+ * figure is the application's own reading; nothing is rounded up or filled in
+ * — a component the formula could not measure stays null and the bar says so.
+ */
+export interface LiveDossier {
+  creator: SpecimenCreator;
+  profile: InfluencerProfile;
+  components: Record<HealthComponentKey, number | null>;
+  weightCovered: number;
+  benchmark: string | null;
+}
+
+export function toLiveDossier(profile: InfluencerProfile, creator: SpecimenCreator): LiveDossier {
+  // `available: false` is "not measurable", and the bar must say so (D13) —
+  // the stored value is 0 only because the shape needs a number.
+  const components = Object.fromEntries(
+    (Object.keys(HEALTH_WEIGHTS) as HealthComponentKey[]).map((key) => {
+      const component = profile.health.components.find((c) => c.key === key);
+      return [key, component?.available ? component.value : null];
+    }),
+  ) as Record<HealthComponentKey, number | null>;
+  // The cohort benchmark the profile publishes (withheld below eight peers,
+  // D10). Engagement is the one a buyer reads first, so it is the one quoted.
+  const bench = profile.benchmarks;
+  const engagement = bench?.metrics.find((m) => m.key === "engagement_rate");
+  return {
+    creator,
+    profile,
+    components,
+    weightCovered: profile.health.weightCovered,
+    benchmark:
+      bench && engagement
+        ? `Engagement in the ${ordinal(Math.round(engagement.percentile))} percentile of ${bench.cohortSize.toLocaleString("en-US")} ${bench.category} creators in the ${bench.followerBand} band.`
+        : null,
+  };
+}
+
+function ordinal(n: number): string {
+  const v = n % 100;
+  const suffix = v >= 11 && v <= 13 ? "th" : (["th", "st", "nd", "rd"][n % 10] ?? "th");
+  return `${n}${suffix}`;
+}
+
+const BAND_LABEL = { excellent: "Excellent", strong: "Strong", fair: "Fair", weak: "Needs review" } as const;
 
 /* ---------------------------------------------------------------------------
  * Product surfaces for the marketing site.
@@ -93,54 +142,87 @@ export function SurfaceFrame({
   );
 }
 
+/** Verification, risk and activity chips as the profile header draws them. */
+function CreatorBadges({ creator }: { creator: SpecimenCreator }) {
+  const riskTone = { low: "positive", medium: "caution", high: "critical", unknown: "neutral" } as const;
+  return (
+    <>
+      {creator.verified ? (
+        <Badge tone="verified" dot>
+          SENSO Verified
+        </Badge>
+      ) : (
+        <Badge tone="neutral">Not identity-verified</Badge>
+      )}
+      <Badge tone={riskTone[creator.risk]} dot={creator.risk !== "unknown"}>
+        {RISK_LABEL[creator.risk]}
+      </Badge>
+    </>
+  );
+}
+
+function confidenceWord(value: number): string {
+  return value >= 90 ? "High" : value >= 70 ? "Good" : value >= 50 ? "Moderate" : "Preliminary";
+}
+
+/** The three highest-weighted measurable components, for the cropped masthead. */
+function topComponents(components: Record<HealthComponentKey, number | null>): HealthComponentKey[] {
+  return (Object.keys(HEALTH_WEIGHTS) as HealthComponentKey[])
+    .filter((key) => components[key] !== null)
+    .sort((a, b) => HEALTH_WEIGHTS[b] - HEALTH_WEIGHTS[a])
+    .slice(0, 3);
+}
+
 /* --- Hero: the dossier masthead, cropped ---------------------------------- */
 
-export function DossierMasthead() {
+export function DossierMasthead({ live }: { live?: LiveDossier | null }) {
+  const c = live?.creator ?? SPECIMEN_DOSSIER;
+  const components = live?.components ?? SPECIMEN_COMPONENTS;
   return (
-    <SurfaceFrame label="Creator intelligence" meta="Northlight Studio">
+    <SurfaceFrame label="Creator intelligence" meta={c.name}>
       <div className="flex flex-wrap items-center gap-4 border-b border-rule px-5 py-4">
-        <Avatar name={SPECIMEN_DOSSIER.name} size="lg" verification="verified" />
+        <Avatar
+          name={c.name}
+          src={c.avatarUrl}
+          size="lg"
+          verification={c.verified ? "verified" : "unverified"}
+        />
         <div className="min-w-0 flex-1">
-          <p className="text-md font-semibold text-ink">{SPECIMEN_DOSSIER.name}</p>
+          <p className="text-md font-semibold text-ink">{c.name}</p>
           <p className="mt-0.5 truncate text-sm text-ink-muted">
-            <span className="font-num">@{SPECIMEN_DOSSIER.handle}</span>
+            <span className="font-num">@{c.handle}</span>
             <span aria-hidden> · </span>
-            {SPECIMEN_DOSSIER.platform}
+            {c.platform}
             <span aria-hidden> · </span>
-            {SPECIMEN_DOSSIER.market}
+            {c.market}
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            <Badge tone="verified" dot>
-              SENSO Verified
-            </Badge>
-            <Badge tone="positive" dot>
-              Low risk
-            </Badge>
+            <CreatorBadges creator={c} />
           </div>
         </div>
       </div>
 
       <div className="bg-instrument px-5 py-5 text-instrument-ink">
         <div className="flex flex-wrap items-center gap-5">
-          <ScoreRing value={SPECIMEN_DOSSIER.health} size={104} tone="instrument" />
+          <ScoreRing value={c.health} size={104} tone="instrument" />
           <div className="min-w-40 flex-1 space-y-3">
             <div>
               <p className="label-caps text-instrument-muted">SENSO Health</p>
-              <p className="mt-0.5 font-display text-stat font-bold leading-tight">Excellent</p>
+              <p className="mt-0.5 font-display text-stat font-bold leading-tight">
+                {live ? BAND_LABEL[live.profile.health.band] : "Excellent"}
+              </p>
             </div>
             <div className="space-y-2">
-              {(["authenticity", "engagementQuality", "growthPattern"] as const).map(
-                (key, index) => (
-                  <ScoreBar
-                    key={key}
-                    label={HEALTH_COMPONENT_LABEL[key]}
-                    weight={HEALTH_WEIGHTS[key]}
-                    value={SPECIMEN_COMPONENTS[key]}
-                    tone="instrument"
-                    index={index}
-                  />
-                ),
-              )}
+              {topComponents(components).map((key, index) => (
+                <ScoreBar
+                  key={key}
+                  label={HEALTH_COMPONENT_LABEL[key]}
+                  weight={HEALTH_WEIGHTS[key]}
+                  value={components[key]}
+                  tone="instrument"
+                  index={index}
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -148,18 +230,16 @@ export function DossierMasthead() {
         <div className="mt-4 border-t border-instrument-line pt-3">
           <div className="flex items-baseline justify-between gap-3">
             <span className="label-caps text-instrument-muted">Data confidence</span>
-            <span className="font-num text-base font-semibold">
-              {SPECIMEN_DOSSIER.confidence}%
-            </span>
+            <span className="font-num text-base font-semibold">{c.confidence}%</span>
           </div>
           <div className="mt-1.5 h-1 overflow-hidden rounded-sm bg-instrument-line">
             <div
-              className="h-full rounded-sm bg-brand-glow"
-              style={{ width: `${SPECIMEN_DOSSIER.confidence}%` }}
+              className="animate-extend h-full rounded-sm bg-brand-glow"
+              style={{ width: `${c.confidence}%` }}
             />
           </div>
           <p className="mt-1 text-xs text-instrument-muted">
-            High confidence — a separate axis from the score above
+            {confidenceWord(c.confidence)} confidence — a separate axis from the score above
           </p>
         </div>
       </div>
@@ -169,15 +249,24 @@ export function DossierMasthead() {
 
 /* --- §1 Discover ---------------------------------------------------------- */
 
-export function DiscoverySurface() {
+export function DiscoverySurface({
+  rows = SPECIMEN_RESULTS,
+  facets = SPECIMEN_FACETS,
+  matching,
+}: {
+  rows?: SpecimenCreator[];
+  facets?: { group: string; options: [string, string][] }[];
+  /** Live index size; the specimen meta line is used when absent. */
+  matching?: number;
+}) {
   return (
     <SurfaceFrame
       label="Creator search"
-      meta="6,847 creators match · 3 filters"
+      meta={matching ? `${matching.toLocaleString("en-US")} creators indexed · sorted by health` : "6,847 creators match · 3 filters"}
       bodyClassName="grid lg:grid-cols-[16rem_1fr]"
     >
       <div className="border-b border-line bg-surface lg:border-b-0 lg:border-r">
-        {SPECIMEN_FACETS.map((facet) => (
+        {facets.map((facet) => (
           <div key={facet.group} className="border-b border-rule px-4 py-3 last:border-b-0">
             <p className="text-base font-semibold text-ink">{facet.group}</p>
             <ul className="mt-2 space-y-1.5">
@@ -233,13 +322,14 @@ export function DiscoverySurface() {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-rule">
-            {SPECIMEN_RESULTS.map((creator) => (
+          <tbody className="mk-rows divide-y divide-rule">
+            {rows.map((creator) => (
               <tr key={creator.handle}>
                 <td className="max-w-[17rem] px-3 py-2">
                   <div className="flex min-w-0 items-center gap-2.5">
                     <Avatar
                       name={creator.name}
+                      src={creator.avatarUrl}
                       size="sm"
                       verification={creator.verified ? "verified" : "unverified"}
                     />
@@ -321,47 +411,70 @@ export function DiscoverySurface() {
 
 /* --- §2 Evaluate ---------------------------------------------------------- */
 
-export function CreatorDossier() {
+export function CreatorDossier({ live }: { live?: LiveDossier | null }) {
   const keys = Object.keys(HEALTH_WEIGHTS) as HealthComponentKey[];
+  const c = live?.creator ?? SPECIMEN_DOSSIER;
+  const components = live?.components ?? SPECIMEN_COMPONENTS;
+  const measurable = keys.filter((key) => components[key] !== null).length;
+  const coverage = live ? Math.round(live.weightCovered * 100) : 100;
+  const glance = live?.profile.glance;
+  const content = live
+    ? live.profile.topContent.slice(0, 3).map((item) => [
+        item.title,
+        item.views === null ? "—" : formatCompact(item.views),
+        item.performanceIndex === null ? "—" : `${item.performanceIndex.toFixed(1)}×`,
+      ] as const)
+    : ([
+        ["Thermals after 200 hours: the honest numbers", "412.8K", "1.9×"],
+        ["What the spec sheet does not tell you", "298.1K", "1.3×"],
+        ["Six months with the workstation nobody reviewed", "241.6K", "1.1×"],
+      ] as const);
 
   return (
-    <SurfaceFrame label="Creator dossier" meta="health-1.1.0">
+    <SurfaceFrame label="Creator dossier" meta={live?.profile.health.formulaVersion ?? "health-1.1.0"}>
       <div className="flex flex-wrap items-start gap-4 border-b border-rule px-5 py-4">
-        <Avatar name={SPECIMEN_DOSSIER.name} size="xl" verification="verified" />
+        <Avatar
+          name={c.name}
+          src={c.avatarUrl}
+          size="xl"
+          verification={c.verified ? "verified" : "unverified"}
+        />
         <div className="min-w-48 flex-1">
-          <h3 className="text-[28px] font-medium leading-tight text-ink">
-            {SPECIMEN_DOSSIER.name}
-          </h3>
+          <h3 className="text-[28px] font-medium leading-tight text-ink">{c.name}</h3>
           <p className="mt-1 text-base text-ink-muted">
-            <span className="font-num">@{SPECIMEN_DOSSIER.handle}</span>
+            <span className="font-num">@{c.handle}</span>
             <span aria-hidden> · </span>
-            {SPECIMEN_DOSSIER.platform}
+            {c.platform}
             <span aria-hidden> · </span>
-            {SPECIMEN_DOSSIER.market}
-            <span aria-hidden> · </span>
-            {SPECIMEN_DOSSIER.categories.join(", ")}
+            {c.market}
+            {c.categories.length > 0 && (
+              <>
+                <span aria-hidden> · </span>
+                {c.categories.join(", ")}
+              </>
+            )}
           </p>
           <div className="mt-2.5 flex flex-wrap gap-1.5">
-            <Badge tone="verified" dot>
-              SENSO Verified
-            </Badge>
-            <Badge tone="positive" dot>
-              Low risk
-            </Badge>
-            <Badge tone="neutral">Active</Badge>
+            <CreatorBadges creator={c} />
+            <Badge tone="neutral">{c.activity}</Badge>
           </div>
         </div>
       </div>
 
       {/* The instrument: the one dark surface the product allows itself. */}
-      <div className="bg-instrument px-5 py-5 text-instrument-ink">
+      <div className="mk-surface bg-instrument px-5 py-5 text-instrument-ink">
         <div className="flex flex-wrap items-center gap-6">
-          <ScoreRing value={SPECIMEN_DOSSIER.health} size={128} tone="instrument" />
+          <ScoreRing value={c.health} size={128} tone="instrument" />
           <div className="min-w-56 flex-1">
             <p className="label-caps text-instrument-muted">SENSO Health</p>
-            <p className="mt-1 text-stat-lg font-semibold leading-tight">Excellent</p>
+            <p className="mt-1 text-stat-lg font-semibold leading-tight">
+              {live ? BAND_LABEL[live.profile.health.band] : "Excellent"}
+            </p>
             <p className="mt-1 text-sm text-instrument-muted">
-              94th percentile of 412 technology creators in the 1M+ follower band.
+              {live
+                ? (live.benchmark ??
+                  `${measurable} of nine components measurable; the rest withheld, never scored as zero.`)
+                : "94th percentile of 412 technology creators in the 1M+ follower band."}
             </p>
           </div>
         </div>
@@ -372,7 +485,7 @@ export function CreatorDossier() {
               key={key}
               label={HEALTH_COMPONENT_LABEL[key]}
               weight={HEALTH_WEIGHTS[key]}
-              value={SPECIMEN_COMPONENTS[key]}
+              value={components[key]}
               tone="instrument"
               index={index}
             />
@@ -382,23 +495,25 @@ export function CreatorDossier() {
         <div className="mt-5 grid gap-x-8 gap-y-3 border-t border-instrument-line pt-4 sm:grid-cols-2">
           <InstrumentTrack
             label="Data confidence"
-            value={SPECIMEN_DOSSIER.confidence}
-            note="high confidence — separate from the score"
+            value={c.confidence}
+            note={`${confidenceWord(c.confidence).toLowerCase()} confidence — separate from the score`}
           />
           <InstrumentTrack
             label="Formula coverage"
-            value={100}
-            note="all nine components measurable"
+            value={coverage}
+            note={measurable === 9 ? "all nine components measurable" : `${measurable} of nine components measurable`}
           />
         </div>
       </div>
 
       <dl className="grid grid-cols-2 divide-x divide-y divide-rule border-b border-rule sm:grid-cols-4 sm:divide-y-0">
         {[
-          ["Followers", SPECIMEN_DOSSIER.followers],
-          ["Median views", SPECIMEN_DOSSIER.medianViews],
-          ["Engagement", SPECIMEN_DOSSIER.engagement],
-          ["Brand safety", String(SPECIMEN_ENRICHMENT.brandSafety)],
+          ["Followers", c.followers],
+          ["Median views", c.medianViews],
+          ["Engagement", c.engagement],
+          live
+            ? ["Total views", glance?.totalViews === null || glance?.totalViews === undefined ? "—" : formatCompact(glance.totalViews)]
+            : ["Brand safety", String(SPECIMEN_ENRICHMENT.brandSafety)],
         ].map(([label, value]) => (
           <div key={label} className="px-4 py-3">
             <dt className="label-caps-sm text-ink-subtle">{label}</dt>
@@ -410,17 +525,11 @@ export function CreatorDossier() {
       <div className="px-5 py-4">
         <p className="label-caps-sm text-ink-subtle">Content performance</p>
         <ul className="mt-2 divide-y divide-rule">
-          {[
-            ["Thermals after 200 hours: the honest numbers", "412.8K", "1.9×"],
-            ["What the spec sheet does not tell you", "298.1K", "1.3×"],
-            ["Six months with the workstation nobody reviewed", "241.6K", "1.1×"],
-          ].map(([title, views, index]) => (
+          {content.map(([title, views, index]) => (
             <li key={title} className="flex items-center gap-3 py-2">
               <span className="min-w-0 flex-1 truncate text-base text-ink">{title}</span>
               <span className="shrink-0 font-num text-sm text-ink-muted">{views}</span>
-              <span className="w-12 shrink-0 text-right font-num text-sm text-ink">
-                {index}
-              </span>
+              <span className="w-12 shrink-0 text-right font-num text-sm text-ink">{index}</span>
             </li>
           ))}
         </ul>
@@ -466,13 +575,20 @@ function InstrumentTrack({
  * argument — describing it in a paragraph would be the exact failure the
  * section exists to correct.
  */
-export function ProvenanceDossier() {
+export function ProvenanceDossier({
+  live,
+}: {
+  live?: { engagement: string; collected: string; confidence: number; sourceUrl: string | null } | null;
+}) {
+  const engagement = live?.engagement ?? "5.4%";
+  const collected = live?.collected ?? "2 hours ago";
+  const confidence = live?.confidence ?? 94;
   return (
     <div className="grid items-start gap-5 sm:grid-cols-[minmax(0,14rem)_minmax(0,20rem)]">
       <div className="rounded-xl bg-surface card-shadow px-5 py-5">
         <p className="label-caps-sm text-ink-subtle">Engagement rate</p>
         <p className="mt-2 font-num text-metric-lg font-medium leading-none text-ink underline decoration-line-strong decoration-dotted underline-offset-8">
-          5.4%
+          {engagement}
         </p>
         <p className="mt-4 text-sm text-ink-muted">
           Every figure on a profile carries this. Click it and the platform shows its
@@ -484,7 +600,7 @@ export function ProvenanceDossier() {
         <div className="border-b border-rule px-3 py-2.5">
           <p className="label-caps-sm text-ink-subtle">Engagement rate</p>
           <p className="mt-1 flex items-baseline gap-2">
-            <span className="font-num text-stat font-medium text-ink">5.4%</span>
+            <span className="font-num text-stat font-medium text-ink">{engagement}</span>
             <span className="inline-flex items-center gap-1 rounded-sm border border-line bg-sunken px-1 py-px text-2xs font-semibold uppercase tracking-[0.06em] text-ink-muted">
               <Sigma className="size-2.5" aria-hidden />
               Derived
@@ -511,7 +627,7 @@ export function ProvenanceDossier() {
               </>
             }
           />
-          <ProvenanceRow term="Collected" detail="2 hours ago" />
+          <ProvenanceRow term="Collected" detail={collected} />
           <ProvenanceRow
             term="Derivation"
             detail="Observed interactions ÷ observed views. Posts that hide likes or disable comments contribute no interactions and are not counted as zero."
@@ -521,10 +637,13 @@ export function ProvenanceDossier() {
         <div className="border-t border-rule px-3 py-2.5">
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-sm text-ink-muted">Field confidence</span>
-            <span className="font-num text-sm font-medium text-ink">94%</span>
+            <span className="font-num text-sm font-medium text-ink">{confidence}%</span>
           </div>
           <div className="mt-1 h-1 overflow-hidden rounded-full bg-sunken-strong">
-            <div className="h-full rounded-full bg-positive" style={{ width: "94%" }} />
+            <div
+              className="animate-extend h-full rounded-full bg-positive"
+              style={{ width: `${confidence}%` }}
+            />
           </div>
         </div>
       </div>
@@ -796,7 +915,13 @@ const PLOT_FILL = {
  * pulling Recharts onto the marketing page to draw 100 circles would cost a
  * first-time visitor more than the whole rest of the page put together.
  */
-export function QualityCanvas({ className }: { className?: string }) {
+export function QualityCanvas({
+  className,
+  points = SPECIMEN_QUALITY_POINTS,
+}: {
+  className?: string;
+  points?: { x: number; y: number; tone: "positive" | "brand" | "caution" | "critical" }[];
+}) {
   const W = 1000;
   const H = 360;
   const PAD = { top: 16, right: 16, bottom: 52, left: 66 };
@@ -894,7 +1019,7 @@ export function QualityCanvas({ className }: { className?: string }) {
           strokeDasharray="4 4"
         />
 
-        {SPECIMEN_QUALITY_POINTS.map((point, index) => (
+        {points.map((point, index) => (
           <circle
             key={index}
             cx={px(point.x)}

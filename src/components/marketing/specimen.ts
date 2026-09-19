@@ -14,6 +14,9 @@ import type { HealthComponentKey } from "@/lib/contracts/score";
  * ------------------------------------------------------------------------ */
 
 export interface SpecimenCreator {
+  /** Present when the row is a real creator (live.ts); links to the profile. */
+  id?: string;
+  avatarUrl?: string | null;
   name: string;
   handle: string;
   market: string;
@@ -55,7 +58,7 @@ export const SPECIMEN_COMPONENTS: Record<HealthComponentKey, number | null> = {
 };
 
 /** Facets with counts, as the discovery rail renders them. */
-export const SPECIMEN_FACETS = [
+export const SPECIMEN_FACETS: { group: string; options: [string, string][] }[] = [
   {
     group: "Audience size",
     options: [

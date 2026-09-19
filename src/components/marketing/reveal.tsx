@@ -59,9 +59,12 @@ export function Reveal({
 export function PointerGlow({
   children,
   className,
+  tilt = false,
 }: {
   children: React.ReactNode;
   className?: string;
+  /** Also lean the surface a few degrees toward the pointer. */
+  tilt?: boolean;
 }) {
   const ref = React.useRef<HTMLDivElement>(null);
 
@@ -72,10 +75,22 @@ export function PointerGlow({
         const node = ref.current;
         if (!node || event.pointerType === "touch") return;
         const box = node.getBoundingClientRect();
-        node.style.setProperty("--mx", `${((event.clientX - box.left) / box.width) * 100}%`);
-        node.style.setProperty("--my", `${((event.clientY - box.top) / box.height) * 100}%`);
+        const x = (event.clientX - box.left) / box.width;
+        const y = (event.clientY - box.top) / box.height;
+        node.style.setProperty("--mx", `${x * 100}%`);
+        node.style.setProperty("--my", `${y * 100}%`);
+        if (tilt) {
+          node.style.setProperty("--rx", `${(0.5 - y) * 4}deg`);
+          node.style.setProperty("--ry", `${(x - 0.5) * 4}deg`);
+        }
       }}
-      className={cn("pointer-glow relative", className)}
+      onPointerLeave={() => {
+        const node = ref.current;
+        if (!node) return;
+        node.style.setProperty("--rx", "0deg");
+        node.style.setProperty("--ry", "0deg");
+      }}
+      className={cn("pointer-glow relative", tilt && "pointer-tilt", className)}
     >
       {children}
     </div>
