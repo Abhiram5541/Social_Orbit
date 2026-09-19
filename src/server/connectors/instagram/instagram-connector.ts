@@ -51,17 +51,74 @@ export function instagramUserId(): string | null {
   return process.env.META_IG_USER_ID?.trim() || null;
 }
 
-function requireCredentials(): { token: string; userId: string } {
-  const token = instagramToken();
-  const userId = instagramUserId();
-  if (!token || !userId) {
+/* --- Credential pool -------------------------------------------------------
+ *
+ * The 200-an-hour limit is per Instagram account, not per app. Every Page the
+ * token holder manages that has an Instagram professional account linked is
+ * another 200, and the same Business Discovery read works as any of them. So
+ * `META_IG_POOL` may carry further `userId:token` pairs (comma separated,
+ * from scripts/meta-token.mjs); reads round-robin across the pool and a
+ * credential that hits its limit is benched for the rest of the hour.
+ * ------------------------------------------------------------------------ */
+
+interface Credential {
+  userId: string;
+  token: string;
+  /** Epoch ms until which this credential is rate-limited. */
+  benchedUntil: number;
+}
+
+let pool: Credential[] | null = null;
+let cursor = 0;
+
+function credentials(): Credential[] {
+  if (pool) return pool;
+  const primary = instagramToken() && instagramUserId() ? [{ userId: instagramUserId()!, token: instagramToken()!, benchedUntil: 0 }] : [];
+  const extra = (process.env.META_IG_POOL ?? "")
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map((entry) => {
+      const at = entry.indexOf(":");
+      return { userId: entry.slice(0, at), token: entry.slice(at + 1), benchedUntil: 0 };
+    })
+    .filter((c) => c.userId && c.token && c.userId !== primary[0]?.userId);
+  pool = [...primary, ...extra];
+  return pool;
+}
+
+/** The next credential that is not benched; the soonest-to-return one if all are. */
+function requireCredentials(): Credential {
+  const all = credentials();
+  if (all.length === 0) {
     throw new ConnectorUnavailable(
       "instagram",
       "credentials_missing",
       "META_IG_TOKEN and META_IG_USER_ID are not both set, so Instagram cannot be read.",
     );
   }
-  return { token, userId };
+  const now = Date.now();
+  for (let i = 0; i < all.length; i += 1) {
+    const candidate = all[(cursor + i) % all.length];
+    if (candidate.benchedUntil <= now) {
+      cursor = (cursor + i + 1) % all.length;
+      return candidate;
+    }
+  }
+  return all.reduce((a, b) => (a.benchedUntil <= b.benchedUntil ? a : b));
+}
+
+/** How many credentials can still be read from this hour. */
+export function instagramCapacity(): { total: number; available: number } {
+  const all = credentials();
+  const now = Date.now();
+  return { total: all.length, available: all.filter((c) => c.benchedUntil <= now).length };
+}
+
+/** Test seam. */
+export function __resetInstagramPool(): void {
+  pool = null;
+  cursor = 0;
 }
 
 /* --- Wire shapes ---------------------------------------------------------- */
@@ -105,8 +162,13 @@ const GraphError = z.object({
 
 /* --- Transport ----------------------------------------------------------- */
 
-async function call<T extends z.ZodTypeAny>(path: string, params: Record<string, string>, schema: T): Promise<z.infer<T>> {
-  const { token } = requireCredentials();
+async function call<T extends z.ZodTypeAny>(
+  path: string,
+  params: Record<string, string>,
+  schema: T,
+  credential: Credential = requireCredentials(),
+): Promise<z.infer<T>> {
+  const { token } = credential;
   const version = process.env.META_GRAPH_VERSION?.trim() || "v21.0";
   const url = new URL(`${graphHost(token)}/${version}/${path}`);
   for (const [name, value] of Object.entries(params)) url.searchParams.set(name, value);
@@ -134,6 +196,8 @@ async function call<T extends z.ZodTypeAny>(path: string, params: Record<string,
       throw new ConnectorUnavailable("instagram", "credentials_missing", `Instagram rejected the token: ${detail}`);
     }
     if (error.code === 4 || error.code === 17 || error.code === 32 || error.code === 613) {
+      // Bench this credential for the rest of the rolling hour; another may still read.
+      credential.benchedUntil = Date.now() + 60 * 60_000;
       throw new ConnectorUnavailable("instagram", "quota_exceeded", `Instagram rate limit reached: ${detail}`);
     }
     if (error.code === 10 || (error.code !== undefined && error.code >= 200 && error.code < 300)) {
@@ -199,19 +263,25 @@ const MEDIA_FIELDS = "id,caption,media_type,media_product_type,permalink,timesta
  * Instagram does not distinguish the two.
  */
 export async function fetchAccount(input: string, mediaLimit = 50): Promise<{ account: InstagramAccount; posts: InstagramPost[] } | null> {
-  const { userId } = requireCredentials();
   const username = parseAccountInput(input);
   const fields =
     `business_discovery.username(${username}){id,username,name,biography,website,profile_picture_url,` +
     `followers_count,follows_count,media_count,media.limit(${Math.min(100, Math.max(1, mediaLimit))}){${MEDIA_FIELDS}}}`;
 
-  let data: z.infer<typeof DiscoveryResponse>;
-  try {
-    data = await call(userId, { fields }, DiscoveryResponse);
-  } catch (error) {
-    if (error instanceof ConnectorUnavailable && error.reason === "not_found") return null;
-    throw error;
+  let data: z.infer<typeof DiscoveryResponse> | null = null;
+  // A credential that hits its limit mid-read is benched by `call`; retry once
+  // per remaining credential so one exhausted account does not fail the read.
+  for (let attempt = 0; attempt < Math.max(1, credentials().length) && data === null; attempt += 1) {
+    const credential = requireCredentials();
+    try {
+      data = await call(credential.userId, { fields }, DiscoveryResponse, credential);
+    } catch (error) {
+      if (error instanceof ConnectorUnavailable && error.reason === "not_found") return null;
+      if (error instanceof ConnectorUnavailable && error.reason === "quota_exceeded" && instagramCapacity().available > 0) continue;
+      throw error;
+    }
   }
+  if (!data) throw new ConnectorUnavailable("instagram", "quota_exceeded", "Every Instagram credential has reached its hourly limit.");
 
   const d = data.business_discovery;
   return {

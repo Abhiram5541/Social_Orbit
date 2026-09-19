@@ -36,7 +36,7 @@ const from = args.includes("--from")
   : Number(existsSync(cursorFile) ? readFileSync(cursorFile, "utf8") : 0) || 0;
 const limit = args.includes("--limit") ? Number(args[args.indexOf("--limit") + 1]) || Infinity : Infinity;
 const platform = args.includes("--platform") ? args[args.indexOf("--platform") + 1] : "youtube";
-const BATCH = platform === "instagram" ? 10 : 100;
+const BATCH = platform === "instagram" ? 50 : 100;
 
 const seeds = readFileSync(file, "utf8")
   .split("\n")

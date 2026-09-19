@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ConnectorUnavailable, fetchAccount, parseAccountInput } from "./instagram-connector";
+import { ConnectorUnavailable, __resetInstagramPool, fetchAccount, parseAccountInput } from "./instagram-connector";
 
 const fetchMock = vi.fn();
 
@@ -8,6 +8,7 @@ function respond(status: number, body: unknown) {
 }
 
 beforeEach(() => {
+  __resetInstagramPool();
   vi.stubGlobal("fetch", fetchMock);
   vi.stubEnv("META_IG_TOKEN", "tok");
   vi.stubEnv("META_IG_USER_ID", "17841400000000000");
@@ -48,6 +49,7 @@ describe("fetchAccount", () => {
     await expect(fetchAccount("nobody")).resolves.toBeNull();
 
     vi.stubEnv("META_IG_TOKEN", "");
+    __resetInstagramPool();
     await expect(fetchAccount("natgeo")).rejects.toMatchObject({ reason: "credentials_missing" });
   });
 
@@ -66,5 +68,17 @@ describe("graph host", () => {
     respond(200, { business_discovery: { id: "1", username: "a", followers_count: 1 } });
     await fetchAccount("a");
     expect(String(fetchMock.mock.calls[0][0])).toContain("https://graph.instagram.com/");
+  });
+});
+
+describe("credential pool", () => {
+  it("moves to the next credential when one hits its hourly limit", async () => {
+    vi.stubEnv("META_IG_POOL", "222:tokB");
+    respond(400, { error: { message: "limit", code: 4 } });
+    respond(200, { business_discovery: { id: "1", username: "a", followers_count: 1 } });
+    const found = await fetchAccount("a");
+    expect(found?.account.username).toBe("a");
+    const hosts = fetchMock.mock.calls.map((c) => new URL(String(c[0])).searchParams.get("access_token"));
+    expect(hosts).toEqual(["tok", "tokB"]);
   });
 });

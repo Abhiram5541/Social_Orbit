@@ -9,6 +9,10 @@ import { readFileSync, writeFileSync } from "node:fs";
  *       env file; an `EAA…` Facebook user token needs META_APP_ID/SECRET and
  *       a Page with a linked Instagram account.
  *
+ *   node scripts/meta-token.mjs <token> --pool   Same, but also print one
+ *       META_IG_POOL= line holding every other linked Page's credential, so
+ *       the connector can rotate across them (D35).
+ *
  *   node scripts/meta-token.mjs --refresh   Refresh the long-lived Instagram
  *       Login token already in the env file (valid 60 days; refreshable once
  *       it is a day old) and write it back. Run monthly from cron; the app
@@ -72,4 +76,8 @@ for (const page of linked) {
   console.log(`# Page "${page.name}" → Instagram @${page.instagram_business_account.username} (Page token, does not expire)`);
   console.log(`META_IG_USER_ID=${page.instagram_business_account.id}`);
   console.log(`META_IG_TOKEN=${page.access_token}`);
+}
+if (process.argv.includes("--pool")) {
+  console.log(`# ${linked.length} linked accounts; the connector rotates across all of them:`);
+  console.log(`META_IG_POOL=${linked.map((p) => `${p.instagram_business_account.id}:${p.access_token}`).join(",")}`);
 }

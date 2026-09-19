@@ -12,7 +12,7 @@ const Body = z.object({
 
 /** At most this many accounts per request — each one spends a call against
  *  the 200-an-hour Instagram rate limit. */
-const MAX_PER_REQUEST = 10;
+const MAX_PER_REQUEST = 50;
 
 export interface InstagramIngestOutcome {
   input: string;
