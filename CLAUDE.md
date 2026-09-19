@@ -650,7 +650,7 @@ Rules:
 | Role | Scope |
 | --- | --- |
 | `super_admin` | Platform org. Everything: users, roles, connectors, AI config, scoring weights, API plans, audit, system config |
-| `manager` | Platform org. Influencer CRUD, discovery, verification review, shortlists |
+| `manager` (labelled *Admin*) | Platform org. The deputy seat: everything the analyst has, influencer CRUD and publishing, verification review, users, client orgs, connectors, ingestion, AI runs, audit, system health, read-only API keys and billing. **Not** scoring weights or billing changes — those stay with the one accountable seat |
 | `analytics_manager` | Platform org. Analytics, benchmarks, anomaly queue, score review. **No** user administration |
 | `influencer` | Own profile, own OAuth connections, own authorized analytics, correction requests |
 | `client_owner` | Client org. Everything within their org, plus billing and API keys |

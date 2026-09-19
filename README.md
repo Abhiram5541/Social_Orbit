@@ -86,7 +86,7 @@ If you set it for a demo deployment, set it to something that is not in this fil
 | Email | Role | What it shows |
 | --- | --- | --- |
 | `admin@senso360.com` | Super Admin | Full platform operations |
-| `manager@senso360.com` | Manager | Influencer CRUD, verification review |
+| `manager@senso360.com` | Admin (deputy) | Influencer CRUD, verification review |
 | `analyst@senso360.com` | Analytics Manager | Analytics and queues, no user administration |
 | `owner@northwind.example` | Client Owner | Growth plan, API keys, billing |
 | `member@northwind.example` | Client Member | Same workspace, no billing or keys |

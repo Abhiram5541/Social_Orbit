@@ -27,7 +27,7 @@ export interface DevAccount {
  */
 export const DEV_ACCOUNTS: DevAccount[] = [
   { email: "admin@senso360.com", role: "super_admin", note: "Full platform access" },
-  { email: "manager@senso360.com", role: "manager", note: "Creator database, verification review" },
+  { email: "manager@senso360.com", role: "manager", note: "Runs the platform day to day — everything but scoring weights and billing" },
   { email: "owner@northwind.example", role: "client_owner", note: "Client workspace, billing and API keys" },
   { email: "member@northwind.example", role: "client_member", note: "Same workspace, no billing" },
   { email: "hello@lumen.example", role: "client_owner", note: "Free plan — 5 searches a month" },

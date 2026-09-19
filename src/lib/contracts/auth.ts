@@ -20,7 +20,7 @@ export type Role = z.infer<typeof Role>;
 
 export const ROLE_LABEL: Record<Role, string> = {
   super_admin: "Super Admin",
-  manager: "Manager",
+  manager: "Admin",
   analytics_manager: "Analytics Manager",
   influencer: "Influencer",
   client_owner: "Client Owner",
@@ -129,14 +129,29 @@ const ANALYTICS_MANAGER: Permission[] = [
   "report:create",
 ];
 
+/**
+ * The platform's second seat — the person running operations when the
+ * super admin is not around. Everything the analyst has, everything the
+ * database needs (ingestion, connectors, AI runs, client orgs and users, the
+ * audit trail), and nothing that rewrites the product's guarantees: scoring
+ * weights and billing changes stay with the super admin, so a score can
+ * never be moved and a plan never changed without the one accountable seat.
+ */
 const MANAGER: Permission[] = [
   ...CLIENT_MEMBER,
-  "influencer:read_authorized_audience",
+  ...ANALYTICS_MANAGER,
   "influencer:write",
   "influencer:publish",
   "verification:review",
-  "analytics:read",
-  "analytics:benchmarks",
+  "admin:users",
+  "admin:orgs",
+  "admin:connectors",
+  "admin:ingestion",
+  "admin:ai_config",
+  "admin:audit",
+  "admin:system_health",
+  "api_key:read",
+  "billing:read",
 ];
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
