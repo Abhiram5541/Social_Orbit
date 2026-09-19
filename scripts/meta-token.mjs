@@ -15,7 +15,13 @@ import { readFileSync, writeFileSync } from "node:fs";
  *       needs a restart to pick the new value up.
  */
 
-const envFile = [".env.production.local", ".env.local"].find((f) => { try { readFileSync(f); return true; } catch { return false; } });
+// The first file that actually holds the Meta keys: locally that is .env.local
+// (.env.production.local there carries only the auth secrets), on the VPS the
+// production file is the only one.
+const envFile = [".env.local", ".env.production.local"].find((f) => {
+  try { return /^META_APP_ID=.+/m.test(readFileSync(f, "utf8")); } catch { return false; }
+});
+if (!envFile) { console.error("No env file with META_APP_ID found."); process.exit(1); }
 const text = readFileSync(envFile, "utf8");
 const env = Object.fromEntries(
   text.split("\n").filter((l) => l && !l.startsWith("#") && l.includes("="))
