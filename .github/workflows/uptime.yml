@@ -1,0 +1,59 @@
+# External uptime check, from outside the VPS: every five minutes GitHub's
+# runner asks production for its health. The cron on the box cannot notice
+# the box itself going away; this can. Down → Slack on every failed check;
+# the first success afterwards → a recovery message.
+#
+# Scheduled workflows can run a few minutes late under load and are paused by
+# GitHub after 60 days without a push — an alternative external monitor
+# (UptimeRobot or similar) is still worth having beside this one.
+name: Uptime
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Probe production health
+        id: probe
+        run: |
+          code=$(curl -s -m 20 -o body.json -w '%{http_code}' https://senso360.com/api/internal/health || echo 000)
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "body=$(tr -d '\n' < body.json 2>/dev/null | cut -c1-200)" >> "$GITHUB_OUTPUT"
+          echo "production → $code $(cat body.json 2>/dev/null)"
+
+      - name: Was the previous check failing?
+        id: previous
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prev=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow uptime.yml --status completed --limit 1 --json conclusion -q '.[0].conclusion' 2>/dev/null || echo unknown)
+          echo "conclusion=$prev" >> "$GITHUB_OUTPUT"
+
+      - name: Alert Slack
+        if: steps.probe.outputs.code != '200' || steps.previous.outputs.conclusion == 'failure'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          CODE: ${{ steps.probe.outputs.code }}
+          BODY: ${{ steps.probe.outputs.body }}
+          PREV: ${{ steps.previous.outputs.conclusion }}
+        run: |
+          [ -n "$SLACK_WEBHOOK_URL" ] || { echo "SLACK_WEBHOOK_URL secret not set"; exit 0; }
+          if [ "$CODE" != "200" ]; then
+            text=":rotating_light: senso360.com is DOWN from outside — health returned $CODE. $BODY"
+          else
+            text=":white_check_mark: senso360.com is answering again from outside (200)."
+          fi
+          curl -s -m 10 -X POST -H 'content-type: application/json' \
+            -d "$(jq -cn --arg t "$text" '{text:$t}')" "$SLACK_WEBHOOK_URL" >/dev/null
+
+      - name: Fail the run when production is down
+        if: steps.probe.outputs.code != '200'
+        run: exit 1
