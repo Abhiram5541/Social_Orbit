@@ -186,6 +186,7 @@ Nothing known. Every defect found during the build was fixed and is covered by a
 | `cohortCache` was computed once per process and never invalidated. Written against a frozen fixture set, it went stale the moment anything was ingested — so benchmarks stayed null and every creator in a band was normalised against an out-of-date median | Keyed on a revision counter the ingested store bumps on write |
 | `devDataset()` merged the ingested overlay on *every* call. Reads call it once per influencer and a cohort pass once per influencer in the database, so it copied every content row tens of thousands of times per request — the search API went from 24ms to ~2s and timed out five discovery E2E tests | Merge memoised on the same revision counter; 22–49ms with 11 ingested creators |
 | Server passed a function prop to a client chart | Format is named data, not a closure |
+| 335 of 8,678 display names carried a trailing or doubled space (and four a zero-width character) straight from the platform, so "Glow & Glam " sorted after every real name | `cleanDisplayName` at ingestion for every connector; the live and staging databases were backfilled |
 
 ---
 

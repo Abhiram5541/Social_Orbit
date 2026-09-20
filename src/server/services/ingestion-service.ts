@@ -165,6 +165,16 @@ const COUNTRY_NAMES =
     ? new Intl.DisplayNames(["en"], { type: "region" })
     : null;
 
+/**
+ * A display name as a platform sent it, minus what it never meant: leading,
+ * trailing and doubled whitespace, and zero-width characters that some
+ * creators paste in to game sort order. 331 of 8,678 names on the live
+ * database carried a trailing space, which then sorted them after "Zz…".
+ */
+export function cleanDisplayName(raw: string): string {
+  return raw.replace(/[\u200b-\u200f\ufeff\u2060]/g, "").replace(/\s+/g, " ").trim();
+}
+
 function countryName(code: string | null): string {
   if (!code) return "";
   try {
@@ -243,7 +253,7 @@ export function buildRecord(
   return {
     influencer: {
       id: influencerId,
-      displayName: channel.title,
+      displayName: cleanDisplayName(channel.title),
       primaryHandle: handle,
       avatarUrl: channel.avatarUrl,
       bio: channel.description.slice(0, 400),
@@ -331,7 +341,7 @@ export async function ingestYouTubeChannel(
 
   return {
     influencerId: record.influencer.id,
-    displayName: observation.channel.title,
+    displayName: cleanDisplayName(observation.channel.title),
     contentIngested: record.content.length,
     quotaUnitsSpent: observation.quotaUnitsSpent,
   };
@@ -371,7 +381,7 @@ export function buildXRecord(
   return {
     influencer: {
       id: influencerId,
-      displayName: account.name,
+      displayName: cleanDisplayName(account.name),
       primaryHandle: handle,
       avatarUrl: account.avatarUrl,
       bio: account.description.slice(0, 400),
@@ -474,7 +484,7 @@ export async function ingestXAccount(input: string, postLimit = 50): Promise<Ing
 
   return {
     influencerId: record.influencer.id,
-    displayName: observation.account.name,
+    displayName: cleanDisplayName(observation.account.name),
     contentIngested: record.content.length,
     quotaUnitsSpent: observation.quotaUnitsSpent,
   };
@@ -508,7 +518,7 @@ export function buildInstagramRecord(
   return {
     influencer: {
       id: influencerId,
-      displayName: account.name,
+      displayName: cleanDisplayName(account.name),
       primaryHandle: account.username,
       avatarUrl: account.avatarUrl,
       bio: account.biography.slice(0, 400),
@@ -591,7 +601,7 @@ export async function ingestInstagramAccount(input: string, mediaLimit = 50): Pr
   await upsertIngested([record]);
   return {
     influencerId: record.influencer.id,
-    displayName: observation.account.name,
+    displayName: cleanDisplayName(observation.account.name),
     contentIngested: record.content.length,
     quotaUnitsSpent: observation.quotaUnitsSpent,
   };
