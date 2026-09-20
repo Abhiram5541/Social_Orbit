@@ -138,8 +138,9 @@ const ANALYTICS_MANAGER: Permission[] = [
  * never be moved and a plan never changed without the one accountable seat.
  */
 const MANAGER: Permission[] = [
-  ...CLIENT_MEMBER,
-  ...ANALYTICS_MANAGER,
+  // The two sets overlap (search, read, compare, export, reports); a set
+  // keeps the count honest and the permission matrix's keys unique.
+  ...new Set<Permission>([...CLIENT_MEMBER, ...ANALYTICS_MANAGER]),
   "influencer:write",
   "influencer:publish",
   "verification:review",
@@ -237,18 +238,21 @@ export const LoginInput = z.object({
 });
 export type LoginInput = z.infer<typeof LoginInput>;
 
+/** One rule for every password a person chooses: registration, reset, invite. */
+export const NewPassword = z
+  .string()
+  .min(12, "Use at least 12 characters")
+  .regex(/[a-z]/, "Include a lowercase letter")
+  .regex(/[A-Z]/, "Include an uppercase letter")
+  .regex(/[0-9]/, "Include a number");
+
 export const RegisterInput = z
   .object({
     name: z.string().trim().min(2, "Enter your full name").max(80),
     email: z.string().trim().toLowerCase().email("Enter a valid email address"),
     organisation: z.string().trim().min(2, "Enter your organisation name").max(80),
     accountType: z.enum(["client", "influencer"]),
-    password: z
-      .string()
-      .min(12, "Use at least 12 characters")
-      .regex(/[a-z]/, "Include a lowercase letter")
-      .regex(/[A-Z]/, "Include an uppercase letter")
-      .regex(/[0-9]/, "Include a number"),
+    password: NewPassword,
     confirmPassword: z.string(),
     acceptTerms: z.literal(true, { message: "Accept the terms to continue" }),
   })
@@ -262,3 +266,16 @@ export const RequestResetInput = z.object({
   email: z.string().trim().toLowerCase().email("Enter a valid email address"),
 });
 export type RequestResetInput = z.infer<typeof RequestResetInput>;
+
+/** Redeems an emailed reset or invite link. */
+export const ResetPasswordInput = z
+  .object({
+    token: z.string().trim().min(20).max(200),
+    password: NewPassword,
+    confirmPassword: z.string(),
+  })
+  .refine((v) => v.password === v.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+export type ResetPasswordInput = z.infer<typeof ResetPasswordInput>;

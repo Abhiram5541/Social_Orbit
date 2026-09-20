@@ -3,6 +3,7 @@ import { PLAN_CONFIG, ROLE_LABEL, ROLE_PERMISSIONS } from "@/lib/contracts/auth"
 import { formatRelativeTime } from "@/lib/format";
 import { requirePagePermission } from "@/server/auth/rbac";
 import { listOrgs, listUsers } from "@/server/repositories/user-repository";
+import { NewAccountButton, UserRowActions } from "@/components/admin/user-admin";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +14,7 @@ export const metadata: Metadata = { title: "Users" };
 export const dynamic = "force-dynamic";
 
 export default async function UsersPage() {
-  await requirePagePermission("admin:users", "/admin/users");
+  const me = await requirePagePermission("admin:users", "/admin/users");
   const [users, orgs] = await Promise.all([listUsers(), listOrgs()]);
   const orgById = new Map(orgs.map((org) => [org.id, org]));
 
@@ -23,6 +24,7 @@ export default async function UsersPage() {
         eyebrow="Administration"
         title="Users"
         description="Every account, its role and the organisation it belongs to. Permissions are derived from the role, never assigned per user."
+        actions={<NewAccountButton orgs={orgs.map(({ id, name, kind }) => ({ id, name, kind }))} />}
       />
       <PageBody className="space-y-4">
         <Card>
@@ -37,6 +39,9 @@ export default async function UsersPage() {
                   <Th numeric>Permissions</Th>
                   <Th>Last sign-in</Th>
                   <Th>Status</Th>
+                  <Th numeric>
+                    <span className="sr-only">Actions</span>
+                  </Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -71,8 +76,18 @@ export default async function UsersPage() {
                       </Td>
                       <Td>
                         <Badge tone={user.status === "active" ? "positive" : "critical"} dot>
-                          {user.status}
+                          {user.passwordToken?.purpose === "invite" && user.status === "active"
+                            ? "invited"
+                            : user.status}
                         </Badge>
+                      </Td>
+                      <Td numeric>
+                        <UserRowActions
+                          userId={user.id}
+                          email={user.email}
+                          status={user.status}
+                          self={user.id === me.id}
+                        />
                       </Td>
                     </Tr>
                   );

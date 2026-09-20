@@ -339,6 +339,52 @@ What follows from it, and is intended:
   footer are now deep forest rather than graphite. A light marketing redesign is a
   separate piece of work.
 
+**D41 — Accounts are invited, links are emailed, and the server watches itself.**
+Production readiness for the first clients (2026-09-20). Accounts: the public
+registration form is an enquiry emailed to `EMAIL_REPORT_TO`; a super admin creates
+the organisation and its owner on `/admin/users` and the person receives an invite
+link (7 days) to choose their own password — no password ever passes through an
+admin. Password reset issues the same kind of link (30 minutes). Only the token's
+SHA-256 is stored, on the user record, and issuing again replaces it; redemption
+spends it. `reset-request` fires its work without awaiting so a known address takes
+no longer than an unknown one. Mail goes through the existing `sendEmail` (Resend by
+`fetch`, no SDK). Headers: CSP (inline scripts allowed — Next's hydration payload is
+one, and there is no third-party script), HSTS, `frame-ancestors 'none'`; no
+`upgrade-insecure-requests` because it rewrote every redirect on a plain-http dev
+server. Ops: `/api/internal/health` says the process answers and the database is
+loaded; `onRequestError` posts unhandled server errors to Slack, one per distinct
+error per ten minutes; on the VPS, `scripts/vps/install.sh` (run by every deploy)
+installs a nightly `pg_dump` (30 kept locally, copied off-box when an rclone remote
+`senso-backups` exists), a five-minute healthcheck that restarts PM2 after two
+failures and posts to Slack, and PM2 log rotation. Deploys ship a git ref through
+`git archive`, refuse a dirty tree, and record `DEPLOY_SHA` on the server. The
+preflight's margin reset had left every `<dialog>` in the top-left corner; base
+`dialog { margin: auto }` restores the centring once.
+
+**D40 — The landing page is one grid on one ground, and its reveal is once, timed and scripted.**
+*(Amends D38 and D39.)* The page mixed three container widths and two heading
+alignments, alternated white and canvas bands with a rule between each, and let
+two surfaces overlap — and the gutter jumping from band to band was most of what
+made it read as assembled rather than designed. Now: one container (`WRAP`,
+`max-w-6xl`), every heading on its left edge through `SectionHeader`, the canvas
+throughout with white surfaces on it, nothing overlapping anything. The provenance
+example is one framed surface (figure beside its opened panel) rather than two
+floating cards; the pipeline is a numbered list, not five cramped columns.
+
+Motion reversed D38's scroll-driven reveal. `animation-timeline: view()` scrubbed
+opacity *and blur* against the scrollbar: a slow scroll left every band
+half-shown, scrolling back re-hid it, and blurring a full-width table per frame
+was the most expensive thing on the page. `Reveal` is again an IntersectionObserver
+that marks a block `is-in` once, over 700ms, with no blur; `stagger` sequences a
+strip's children. D38's crawler concern is kept by hiding the un-revealed state
+only under `@media (scripting: enabled)`. Instrument entrances inside a revealed
+block are `animation-play-state: paused` until it is in view, so the arc and bars
+play as the reader arrives. The hero keeps its pure-CSS load entrance so it starts
+on first paint rather than after hydration. Removed outright: the pointer tilt and
+glow on the hero card, per-row reveals inside tables, and `CountUp` counting the
+digits of a compact string ("2.4K" passed through "0.6K") — it now counts the raw
+value through `formatCompact`.
+
 **D39 — The landing page shows real creators, and its instruments play on scroll.**
 *(Amends D22's "every fabricated value lives in specimen.ts".)* With seven thousand
 creators indexed, the surfaces that show *a creator* show a real one:

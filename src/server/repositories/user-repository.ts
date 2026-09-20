@@ -1,3 +1,4 @@
+import { createHash, randomBytes } from "node:crypto";
 import type { OrgKind, Plan, Role, SessionUser } from "@/lib/contracts/auth";
 import { hashPassword, verifyPassword, equaliseTiming } from "@/server/auth/password";
 import { appRows, persist } from "@/server/data/app-store";
@@ -36,6 +37,9 @@ export interface UserRecord {
   createdAt: string;
   lastLoginAt: string | null;
   status: "active" | "suspended";
+  /** An outstanding emailed link — a reset or an invite. Only its hash is
+   *  kept, so a database read cannot be replayed as the link. */
+  passwordToken?: { hash: string; expiresAt: string; purpose: "reset" | "invite" } | null;
 }
 
 const ORGS: Org[] = [
@@ -183,7 +187,52 @@ export async function setUserPassword(userId: string, password: string): Promise
   const user = (await load()).find((entry) => entry.id === userId);
   if (!user) throw new Error("No such user.");
   user.passwordHash = await hashPassword(password);
+  user.passwordToken = null;
   persist("users", [user]);
+}
+
+export async function setUserStatus(userId: string, status: UserRecord["status"]): Promise<void> {
+  const user = (await load()).find((entry) => entry.id === userId);
+  if (!user) throw new Error("No such user.");
+  user.status = status;
+  persist("users", [user]);
+}
+
+const tokenHash = (token: string) => createHash("sha256").update(token).digest("hex");
+
+/**
+ * Issues a one-time link token for a reset (30 minutes) or an invite (7 days)
+ * and returns the raw token to put in the email. Issuing again replaces the
+ * previous one, so only the latest link works.
+ */
+export async function issuePasswordToken(
+  userId: string,
+  purpose: "reset" | "invite",
+): Promise<string> {
+  const user = (await load()).find((entry) => entry.id === userId);
+  if (!user) throw new Error("No such user.");
+  const token = randomBytes(32).toString("base64url");
+  const ttl = purpose === "invite" ? 7 * 24 * 60 * 60_000 : 30 * 60_000;
+  user.passwordToken = {
+    hash: tokenHash(token),
+    expiresAt: new Date(Date.now() + ttl).toISOString(),
+    purpose,
+  };
+  persist("users", [user]);
+  return token;
+}
+
+/** Sets the password behind a live token and spends the token. */
+export async function redeemPasswordToken(token: string, password: string): Promise<UserRecord | null> {
+  const hash = tokenHash(token);
+  const user = (await load()).find((entry) => entry.passwordToken?.hash === hash);
+  if (!user || !user.passwordToken) return null;
+  if (Date.parse(user.passwordToken.expiresAt) < Date.now()) return null;
+  if (user.status !== "active") return null;
+  user.passwordHash = await hashPassword(password);
+  user.passwordToken = null;
+  persist("users", [user]);
+  return user;
 }
 
 export async function findUserByEmail(email: string): Promise<UserRecord | null> {

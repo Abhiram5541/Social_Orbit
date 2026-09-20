@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { RequestResetInput } from "@/lib/contracts/auth";
 import { handler } from "@/server/auth/rbac";
+import { findUserByEmail, issuePasswordToken } from "@/server/repositories/user-repository";
+import { sendPasswordResetMail } from "@/server/services/account-mail";
 import { checkRateLimit } from "@/server/services/rate-limit";
 
 /**
@@ -17,10 +19,23 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => null);
     const parsed = RequestResetInput.safeParse(body);
     if (parsed.success) {
-      // Delivery is queued by the notification service once SMTP is configured.
-      console.info("[auth] password reset requested");
+      // Not awaited: issuing the token and calling the mail API takes time an
+      // unknown address does not, and that difference would be the oracle.
+      void deliver(parsed.data.email, request.nextUrl.origin);
     }
 
     return NextResponse.json({ accepted: true }, { status: 202 });
   });
+}
+
+async function deliver(email: string, origin: string): Promise<void> {
+  try {
+    const user = await findUserByEmail(email);
+    if (!user || user.status !== "active") return;
+    const token = await issuePasswordToken(user.id, "reset");
+    const sent = await sendPasswordResetMail(user.email, token, origin);
+    console.info(`[auth] password reset ${sent ? "emailed" : "not sent (mail unconfigured)"}`);
+  } catch (error) {
+    console.error("[auth] password reset delivery failed", error);
+  }
 }

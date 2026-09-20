@@ -37,3 +37,37 @@ export async function register(): Promise<void> {
   const { startScheduler } = await import("@/server/services/daily-jobs");
   startScheduler();
 }
+
+/* ---------------------------------------------------------------------------
+ * Error reporting without a vendor: every unhandled server error is posted to
+ * the ops Slack channel (SLACK_WEBHOOK_URL), one message per distinct error
+ * per ten minutes so a hot loop cannot flood the channel. Next calls this for
+ * render, route-handler and middleware failures. Swap for Sentry by replacing
+ * the body; the signature is Next's.
+ * ------------------------------------------------------------------------ */
+
+const reported = new Map<string, number>();
+
+export async function onRequestError(
+  error: unknown,
+  request: { path: string; method: string },
+  context: { routerKind: string; routePath: string; routeType: string },
+): Promise<void> {
+  if (process.env.NEXT_RUNTIME !== "nodejs") return;
+  const message = error instanceof Error ? error.message : String(error);
+  const key = `${context.routePath}:${message}`;
+  const now = Date.now();
+  const last = reported.get(key) ?? 0;
+  if (now - last < 10 * 60_000) return;
+  reported.set(key, now);
+  // Bounded: an app that throws many distinct errors is a bigger problem
+  // than a map, but it should not also leak.
+  if (reported.size > 500) reported.clear();
+
+  const { sendSlack } = await import("@/server/services/notification-service");
+  const stack = error instanceof Error && error.stack ? error.stack.split("\n").slice(0, 6).join("\n") : "";
+  await sendSlack(
+    `:rotating_light: *SENSO ${context.routeType} error* \`${request.method} ${request.path}\` (${context.routePath})\n` +
+      "```" + `${message}\n${stack}` + "```",
+  ).catch(() => false);
+}

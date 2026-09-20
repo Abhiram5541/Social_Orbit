@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { RegisterInput } from "@/lib/contracts/auth";
 import { errorResponse, handler } from "@/server/auth/rbac";
 import { findUserByEmail } from "@/server/repositories/user-repository";
+import { sendEnquiryMail } from "@/server/services/account-mail";
 import { checkRateLimit } from "@/server/services/rate-limit";
 
 /**
@@ -9,8 +10,9 @@ import { checkRateLimit } from "@/server/services/rate-limit";
  * workspace immediately — SENSO grants access to the influencer database,
  * so an account is not self-serve in the way a note-taking app is.
  *
- * ponytail: no persistence yet; the account request is logged and the response
- * contract is final. Wire to the users table with the Postgres driver.
+ * The request goes to the sales inbox (EMAIL_REPORT_TO); an admin then
+ * creates the account and the invite email carries the set-password link.
+ * The password typed here is never stored or sent anywhere.
  */
 export async function POST(request: NextRequest) {
   return handler(async () => {
@@ -33,6 +35,13 @@ export async function POST(request: NextRequest) {
     // anyone test which email addresses hold accounts.
     const existing = await findUserByEmail(parsed.data.email);
     if (existing) console.info("[auth] registration for an existing address");
+    else {
+      const { password: _p, confirmPassword: _c, acceptTerms: _t, ...enquiry } = parsed.data;
+      void [_p, _c, _t];
+      void sendEnquiryMail(enquiry).then((sent) => {
+        if (!sent) console.info("[auth] access request not emailed (EMAIL_REPORT_TO unset)", enquiry.email);
+      });
+    }
 
     return NextResponse.json(
       {
