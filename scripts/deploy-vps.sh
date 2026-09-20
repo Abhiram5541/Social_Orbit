@@ -33,5 +33,7 @@ rsync -az --delete -e "ssh -i $HOME/.ssh/senso_vps" \
   --exclude "scripts/seeds/*.cursor" \
   "$EXPORT/" "root@$HOST:$DIR/"
 
-$SSH "cd $DIR && npm ci --no-audit --no-fund && NODE_OPTIONS=--max-old-space-size=3072 npm run build && chown -R senso:senso . && sudo -u senso bash -c 'cd $DIR && scripts/vps/install.sh' && sudo -u senso pm2 restart senso --update-env"
+# Ownership first: rsync leaves the tree owned by the sender's uid, and until
+# it is senso's again the cron healthcheck cannot even traverse into it.
+$SSH "cd $DIR && chown -R senso:senso . && npm ci --no-audit --no-fund && NODE_OPTIONS=--max-old-space-size=3072 npm run build && chown -R senso:senso . && sudo -u senso bash -c 'cd $DIR && scripts/vps/install.sh' && sudo -u senso pm2 restart senso --update-env"
 $SSH "sleep 6; curl -s -o /dev/null -w 'app: %{http_code}\n' http://127.0.0.1:3005/api/internal/health; cat $DIR/DEPLOY_SHA"
