@@ -9,10 +9,20 @@ async function expectNoHorizontalPageScroll(page: import("@playwright/test").Pag
   // Measured on <body>, not <html>: documentElement.scrollWidth reports the
   // unclipped size of content sitting inside a nested scroll container, which
   // is the intended design rather than a layout defect.
-  const overflow = await page.evaluate(
-    () => document.body.scrollWidth - document.documentElement.clientWidth,
-  );
-  expect(overflow, "the page itself must not scroll horizontally").toBeLessThanOrEqual(1);
+  const { overflow, culprits } = await page.evaluate(() => {
+    const limit = document.documentElement.clientWidth;
+    // Name what sticks out, so a failure in CI says which element on which
+    // route rather than only how many pixels.
+    const culprits = [...document.querySelectorAll("body *")]
+      .filter((el) => el.getBoundingClientRect().right > limit + 1)
+      .slice(0, 5)
+      .map((el) => `${el.tagName.toLowerCase()}.${String(el.className).split(" ").slice(0, 3).join(".")}`);
+    return { overflow: document.body.scrollWidth - limit, culprits };
+  });
+  expect(
+    overflow,
+    `the page itself must not scroll horizontally at ${page.url()} — ${culprits.join(", ") || "no element wider than the viewport"}`,
+  ).toBeLessThanOrEqual(1);
 }
 
 /** Creator-specific routes are built from live ids — see e2e/support.ts. */

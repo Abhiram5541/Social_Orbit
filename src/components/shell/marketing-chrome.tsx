@@ -54,7 +54,10 @@ export function MarketingChrome({
               className="[&_.label-caps-sm]:hidden sm:[&_.label-caps-sm]:block"
             />
           </Link>
-          <nav aria-label="Main" className="hidden md:block">
+          {/* From lg: at 768px the wordmark, four links and two actions need
+              more than the row has once Linux font metrics widen the text
+              a few pixels, and the page must never scroll sideways. */}
+          <nav aria-label="Main" className="hidden lg:block">
             <ul className="flex items-center gap-1">
               {NAV.map((item) => (
                 <li key={item.href}>
