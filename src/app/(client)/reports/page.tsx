@@ -77,10 +77,11 @@ export default async function ReportsPage() {
         description="Export what SENSO holds, with the provenance intact — every figure states whether it was verified, observed, derived, estimated or AI-inferred. A number that leaves the platform without that context is a number someone will eventually misquote."
       />
       <PageBody className="space-y-4">
-        <Notice tone="caution" title="Exports run from the record, not from here">
-          Open a creator, a shortlist or a campaign and export it from there. Scheduled
-          generation, PDF rendering and a report archive are not built yet, so this page does
-          not pretend to offer them.
+        <Notice tone="info" title="Exports run from the record, not from here">
+          Open a creator, a shortlist or a campaign: <strong>Export CSV</strong> downloads the
+          rows as the screen shows them, and <strong>Save as PDF</strong> prints the screen
+          itself through your browser, provenance labels included. Scheduled generation and
+          a report archive are not built, so this page does not pretend to offer them.
         </Notice>
 
         <Card>
@@ -124,7 +125,7 @@ export default async function ReportsPage() {
             title="No reports generated yet"
             description={
               campaigns.length > 0 || shortlists.length > 0
-                ? "Generate one from a campaign or a shortlist. It appears here when it is ready to download."
+                ? "Exports download immediately from a creator, shortlist or campaign; nothing is kept here yet."
                 : "Create a shortlist or a campaign first — a report needs something to report on."
             }
             action={

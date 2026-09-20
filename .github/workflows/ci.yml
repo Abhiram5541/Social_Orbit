@@ -1,0 +1,63 @@
+# Every push and pull request: types, lint, unit tests, a production build,
+# and the Playwright suite on the development driver over a committed slice
+# of the real database (e2e/fixtures, built by scripts/e2e-fixture.mjs).
+# Nothing here touches the VPS; deploys stay a person running
+# scripts/deploy-vps.sh against a tag.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SOCIALORBIT_DATA_DRIVER: development
+  SOCIALORBIT_DAILY_JOBS: "false"
+  AUTH_SECRET: ci-only-not-a-secret-0123456789abcdef
+  API_KEY_PEPPER: ci-only-not-a-secret
+  # The suite drives every sign-in from one loopback address.
+  AUTH_RATE_LIMIT_PER_MINUTE: "500"
+
+jobs:
+  checks:
+    name: Types, lint, unit, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - name: Stage the fixture database for the build's file tracing
+        run: mkdir -p .data && cp e2e/fixtures/ingested.json.gz .data/
+      - run: npm run build
+
+  e2e:
+    name: Playwright (desktop, mobile)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Stage the fixture database
+        run: mkdir -p .data && cp e2e/fixtures/ingested.json.gz .data/
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7

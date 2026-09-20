@@ -69,11 +69,11 @@ so this phase's entry condition is visible in the product.
 
 | # | Milestone | Status | Notes |
 | --- | --- | --- | --- |
-| M18 | Reports — async generation, PDF/CSV, object storage | 🟡 | Types and provenance rules defined |
+| M18 | Reports — async generation, PDF/CSV, object storage | 🟡 | CSV for all three record kinds; PDF via print stylesheet; no archive |
 | M15a | Benchmarks from live cohorts | 🟡 | Engine done; needs population |
 | M21 | Security hardening — CSP, security headers, audit writes, secret rotation | 🟡 | Auth, RBAC, hashing, limits, CSP + HSTS done; audit writes and rotation open |
 | M22 | Performance — query plans, caching, virtualised tables past ~500 rows | ⬜ | Pagination already in place |
-| M25 | Production readiness — Docker, CI, backups, monitoring, runbook | 🟡 | Nightly backups, healthcheck, error alerts, git-ref deploys (D41); CI and staging open |
+| M25 | Production readiness — Docker, CI, backups, monitoring, runbook | 🟡 | Nightly backups, healthcheck, error + capacity alerts, git-ref deploys, GitHub Actions CI, staging twin (D41, D42); runbook open |
 
 ---
 

@@ -16,6 +16,7 @@ import {
   type HarvestReport,
   type StaleRefreshReport,
 } from "./harvest-service";
+import { sendAlertDigests, type DigestReport } from "./digest-service";
 import { sendOpsEvent } from "./notification-service";
 
 /* ---------------------------------------------------------------------------
@@ -150,6 +151,15 @@ export async function runDiscoveryJob(now = new Date()): Promise<HarvestReport |
   return report;
 }
 
+/** Emails each client user the alerts that are new since their last digest. */
+export async function runDigestJob(now = new Date()): Promise<DigestReport | null> {
+  const day = today(now);
+  if ((await lastRun("digest"))?.ranOn === day) return null;
+  const report = await sendAlertDigests(now);
+  await recordRun({ name: "digest", ranOn: day, report });
+  return report;
+}
+
 /* --- Clock -------------------------------------------------------------- */
 
 const TICK_MS = 15 * 60_000;
@@ -161,7 +171,10 @@ const TICK_MS = 15 * 60_000;
  * for it: a test run or a fresh clone must not spend quota by surprise.
  */
 export function startScheduler(): void {
-  if (process.env.SOCIALORBIT_DAILY_JOBS !== "true" || !process.env.YOUTUBE_API_KEY?.trim()) return;
+  if (process.env.SOCIALORBIT_DAILY_JOBS !== "true") return;
+  // The platform jobs spend YouTube quota and need the key; the digest does
+  // not, so a server without one still mails its alerts.
+  const platformJobs = Boolean(process.env.YOUTUBE_API_KEY?.trim());
 
   const state = shared("scheduler", () => ({ timer: null as NodeJS.Timeout | null, busy: false }));
   if (state.timer) return;
@@ -171,10 +184,14 @@ export function startScheduler(): void {
     if (now.getUTCHours() < JOBS_HOUR_UTC || state.busy) return;
     state.busy = true;
     try {
-      const snapshot = await runSnapshotJob(now);
-      if (snapshot) console.log(`[jobs] snapshot: ${snapshot.ingested} read, ${snapshot.remaining} remaining`);
-      const discovery = await runDiscoveryJob(now);
-      if (discovery) console.log(`[jobs] discover: ${discovery.ingested} new creators`);
+      if (platformJobs) {
+        const snapshot = await runSnapshotJob(now);
+        if (snapshot) console.log(`[jobs] snapshot: ${snapshot.ingested} read, ${snapshot.remaining} remaining`);
+        const discovery = await runDiscoveryJob(now);
+        if (discovery) console.log(`[jobs] discover: ${discovery.ingested} new creators`);
+      }
+      const digest = await runDigestJob(now);
+      if (digest) console.log(`[jobs] digest: ${digest.emailed} of ${digest.users} users emailed, ${digest.alerts} alerts`);
     } catch (error) {
       console.error(`[jobs] daily run failed: ${String(error)}`);
     } finally {

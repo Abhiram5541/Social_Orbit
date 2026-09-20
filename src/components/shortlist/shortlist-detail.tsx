@@ -9,6 +9,7 @@ import { PLATFORM_LABEL } from "@/lib/contracts/common";
 import { formatCompact, formatPercent } from "@/lib/format";
 import { Avatar } from "@/components/ui/avatar";
 import { Button, LinkButton } from "@/components/ui/button";
+import { PrintButton } from "@/components/ui/print-button";
 import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import { Checkbox, Field, Textarea } from "@/components/ui/field";
@@ -128,10 +129,11 @@ export function ShortlistDetailView({ shortlist }: { shortlist: ShortlistDetailD
         </LinkButton>
         {/* A plain download link, not a fetch: the route sets
             Content-Disposition, so the browser handles the file itself. */}
-        <LinkButton href={`/api/internal/shortlists/${shortlist.id}/export`} className="gap-1.5">
+        <LinkButton href={`/api/internal/shortlists/${shortlist.id}/export`} className="gap-1.5 print:hidden">
           <Download className="size-4" aria-hidden />
           Export CSV
         </LinkButton>
+        <PrintButton />
       </div>
 
       <Card>

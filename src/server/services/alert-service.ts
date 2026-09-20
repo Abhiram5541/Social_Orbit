@@ -1,0 +1,90 @@
+import type { SessionUser } from "@/lib/contracts/auth";
+import type { NotificationItem } from "@/lib/contracts/notifications";
+import { formatDate } from "@/lib/format";
+import { toSummary } from "@/server/repositories/influencer-repository";
+import { quotaFor } from "@/server/repositories/usage-repository";
+import { getShortlist, listShortlists } from "@/server/repositories/workspace-repository";
+
+/* ---------------------------------------------------------------------------
+ * Alerts for one person: real detections on the creators their organisation
+ * tracks, plus their plan's allowance. Derived at read time from the current
+ * state, so nothing is stored and nothing is invented — an empty inbox says
+ * so. The notifications page draws this list; the daily digest emails what
+ * is new in it.
+ * ------------------------------------------------------------------------ */
+
+export function alertsFor(user: SessionUser): NotificationItem[] {
+  // Platform staff have no plan quota of their own to warn about.
+  const quota = user.orgKind === "client" ? quotaFor(user.orgId, user.plan) : null;
+
+  // Alerts are derived from real detections on the creators this org tracks.
+  const tracked = listShortlists(user)
+    .flatMap((shortlist) => getShortlist(user, shortlist.id)?.items ?? [])
+    .filter(
+      (item, index, list) =>
+        list.findIndex((other) => other.influencerId === item.influencerId) === index,
+    );
+
+  const items: NotificationItem[] = [];
+
+  for (const item of tracked) {
+    const summary = toSummary(item.influencerId);
+    if (!summary) continue;
+
+    if (summary.activity === "dormant") {
+      items.push({
+        id: `dormant-${summary.id}`,
+        kind: "dormancy",
+        severity: "warning",
+        title: `${summary.displayName} has gone dormant`,
+        detail: "No qualifying publication in over 90 days. Recent figures should be read as historical.",
+        // The last observed publication is the event; when even that is
+        // unknown, the row carries no time rather than a minted one.
+        at: summary.lastActiveAt ?? undefined,
+        href: `/influencers/${summary.id}`,
+      });
+    }
+    if (summary.risk === "high") {
+      items.push({
+        id: `risk-${summary.id}`,
+        kind: "brand_safety",
+        severity: "critical",
+        title: `${summary.displayName} is flagged high risk`,
+        // Current state, not a dated detection — no timestamp is honest;
+        // "just now" on every visit would be a manufactured observation.
+        detail: "Audience-quality or brand-safety signals crossed the escalation threshold.",
+        href: `/influencers/${summary.id}`,
+      });
+    }
+    if (summary.confidence < 50) {
+      items.push({
+        id: `confidence-${summary.id}`,
+        kind: "data_stale",
+        severity: "info",
+        title: `Preliminary confidence on ${summary.displayName}`,
+        detail: `Confidence is ${Math.round(summary.confidence)}%. There is not enough history or source authority to rely on these numbers yet.`,
+        href: `/influencers/${summary.id}`,
+      });
+    }
+  }
+
+  if (quota && quota.limit !== null && (quota.remaining ?? 0) <= 2) {
+    items.push({
+      id: "quota",
+      kind: "quota_warning",
+      severity: quota.remaining === 0 ? "critical" : "warning",
+      title:
+        quota.remaining === 0
+          ? "Monthly search allowance used"
+          : `${quota.remaining} searches remaining`,
+      detail: `Your allowance resets on ${formatDate(quota.resetsAt)}.`,
+      href: "/usage",
+    });
+  }
+
+  // Dated events newest first; state-derived rows carry no time and sort
+  // after them. The list itself pulls critical severities to the top.
+  items.sort((a, b) => (b.at ?? "").localeCompare(a.at ?? ""));
+
+  return items;
+}

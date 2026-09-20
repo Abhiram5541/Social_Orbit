@@ -20,7 +20,10 @@ import {
 } from "@/lib/format";
 import { requirePagePermission } from "@/server/auth/rbac";
 import { getCampaign } from "@/server/repositories/workspace-repository";
+import { Download } from "lucide-react";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
+import { LinkButton } from "@/components/ui/button";
+import { PrintButton } from "@/components/ui/print-button";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -94,9 +97,20 @@ export default async function CampaignDetailPage({
         breadcrumbs={[{ label: "Campaigns", href: "/campaigns" }, { label: campaign.name }]}
         description={campaign.brief ?? undefined}
         actions={
-          <Badge tone={CAMPAIGN_STATUS_TONE[campaign.status]} dot={campaign.status === "live"}>
-            {CAMPAIGN_STATUS_LABEL[campaign.status]}
-          </Badge>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone={CAMPAIGN_STATUS_TONE[campaign.status]} dot={campaign.status === "live"}>
+              {CAMPAIGN_STATUS_LABEL[campaign.status]}
+            </Badge>
+            <LinkButton
+              href={`/api/internal/campaigns/${campaign.id}/export`}
+              variant="ghost"
+              className="gap-1.5 print:hidden"
+            >
+              <Download className="size-4" aria-hidden />
+              Export CSV
+            </LinkButton>
+            <PrintButton />
+          </div>
         }
         meta={
           <span className="flex max-w-full flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-muted sm:justify-end">

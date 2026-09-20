@@ -22,6 +22,17 @@ fails=$(cat "$STATE" 2>/dev/null || echo 0)
 if [ "$code" = "200" ]; then
   if [ "$fails" -ge 2 ]; then notify ":white_check_mark: SENSO is answering again ($URL)"; fi
   echo 0 > "$STATE"
+  # Capacity: the whole database is resident (CLAUDE.md D42). Warn once a day
+  # when the process nears the heap limit or the read model nears its measured
+  # ceiling, while there is still time to move reads to SQL.
+  body=$(curl -s -m 15 "$URL" || echo '{}')
+  mem=$(printf '%s' "$body" | sed -n 's/.*"memoryMb":\([0-9]*\).*/\1/p')
+  creators=$(printf '%s' "$body" | sed -n 's/.*"creators":\([0-9]*\).*/\1/p')
+  stamp=/home/senso/.senso-capacity-warned
+  if { [ "${mem:-0}" -gt 3000 ] || [ "${creators:-0}" -gt 25000 ]; } && [ "$(cat "$stamp" 2>/dev/null)" != "$(date -u +%F)" ]; then
+    notify ":warning: SENSO capacity: ${mem}MB RSS, ${creators} creators (heap limit 4096MB, read model measured to ~35k). Plan the SQL read path — CLAUDE.md D42."
+    date -u +%F > "$stamp"
+  fi
   exit 0
 fi
 

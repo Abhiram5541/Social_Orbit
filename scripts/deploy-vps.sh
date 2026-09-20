@@ -6,11 +6,17 @@
 # (.env.production.local) and are never synced.
 #
 # Usage: scripts/deploy-vps.sh [ref]        default HEAD; a tag is the norm
+#        SENSO_TARGET=staging scripts/deploy-vps.sh [ref]   the staging site
 #        ALLOW_DIRTY=1 scripts/deploy-vps.sh  ship HEAD with uncommitted changes
 # Needs: ~/.ssh/senso_vps authorised for root@HOST.
 set -euo pipefail
 HOST=${SENSO_VPS_HOST:-168.231.120.57}
-DIR=/home/senso/htdocs/srv1082984.hstgr.cloud
+TARGET=${SENSO_TARGET:-production}
+case "$TARGET" in
+  production) DIR=/home/senso/htdocs/srv1082984.hstgr.cloud; APP=senso; PORT=3005 ;;
+  staging) DIR=/home/senso-staging/htdocs/staging.srv1082984.hstgr.cloud; APP=senso-staging; PORT=3015 ;;
+  *) echo "deploy: SENSO_TARGET must be production or staging" >&2; exit 1 ;;
+esac
 SSH="ssh -i $HOME/.ssh/senso_vps root@$HOST"
 REF=${1:-HEAD}
 
@@ -25,7 +31,7 @@ EXPORT=$(mktemp -d)
 trap 'rm -rf "$EXPORT"' EXIT
 git archive --format=tar "$REF" | tar -x -C "$EXPORT"
 printf '%s %s %s\n' "$DESC" "$SHA" "$(date -u +%FT%TZ)" > "$EXPORT/DEPLOY_SHA"
-echo "deploy: $DESC ($SHA) → $HOST"
+echo "deploy: $DESC ($SHA) → $HOST ($TARGET)"
 
 rsync -az --delete -e "ssh -i $HOME/.ssh/senso_vps" \
   --exclude node_modules --exclude .next --exclude .data --exclude .git \
@@ -35,5 +41,7 @@ rsync -az --delete -e "ssh -i $HOME/.ssh/senso_vps" \
 
 # Ownership first: rsync leaves the tree owned by the sender's uid, and until
 # it is senso's again the cron healthcheck cannot even traverse into it.
-$SSH "cd $DIR && chown -R senso:senso . && npm ci --no-audit --no-fund && NODE_OPTIONS=--max-old-space-size=3072 npm run build && chown -R senso:senso . && sudo -u senso bash -c 'cd $DIR && scripts/vps/install.sh' && sudo -u senso pm2 restart senso --update-env"
-$SSH "sleep 6; curl -s -o /dev/null -w 'app: %{http_code}\n' http://127.0.0.1:3005/api/internal/health; cat $DIR/DEPLOY_SHA"
+# Production also refreshes its cron and log rotation; staging has none.
+SETUP="true"; [ "$TARGET" = production ] && SETUP="scripts/vps/install.sh"
+$SSH "cd $DIR && chown -R senso:senso . && npm ci --no-audit --no-fund && NODE_OPTIONS=--max-old-space-size=3072 npm run build && chown -R senso:senso . && sudo -u senso bash -c 'cd $DIR && $SETUP && pm2 startOrReload $DIR/ecosystem.config.cjs --only $APP --update-env && pm2 save'"
+$SSH "sleep 6; curl -s -o /dev/null -w 'app: %{http_code}\n' http://127.0.0.1:$PORT/api/internal/health; cat $DIR/DEPLOY_SHA"

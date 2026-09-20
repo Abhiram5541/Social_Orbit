@@ -761,3 +761,61 @@
     transform: none;
   }
 }
+
+/* ============================================================================
+   Print — "Save as PDF" is the browser's print dialog.
+
+   The chrome goes, the frame's ground and rounding go, and the work prints
+   at full width on white. Nothing on a figure changes: provenance labels,
+   confidence and "building history" states print exactly as they render,
+   which is the whole point of exporting from the record rather than
+   re-drawing it for paper.
+   ========================================================================= */
+@media print {
+  :root {
+    --color-ground: #fff;
+    --color-canvas: #fff;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+  body > * > .rounded-3xl {
+    min-height: 0 !important;
+    max-width: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  a[href]::after {
+    content: "";
+  }
+  .card-shadow,
+  .shadow-overlay,
+  .shadow-popover,
+  .shadow-lifted {
+    box-shadow: none !important;
+    border: 1px solid var(--color-line);
+  }
+  .scroll-x {
+    overflow: visible !important;
+  }
+  .animate-sweep,
+  .animate-extend,
+  .animate-grow,
+  .animate-draw,
+  .animate-rise,
+  .reveal,
+  .reveal-stagger > * {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  tr,
+  figure,
+  .break-inside-avoid {
+    break-inside: avoid;
+  }
+}

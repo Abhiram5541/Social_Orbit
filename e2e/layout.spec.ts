@@ -78,10 +78,12 @@ test.describe("connector cards contain their contents", () => {
     await page.goto("/admin", { waitUntil: "networkidle" });
 
     const cards = await worstOverflow(page, CONNECTOR_CARD);
-    const heights = [...new Set(cards.map((card) => card.height))];
-    // A grid row of peers should align; differing heights mean one card's
-    // header wrapped while another's did not.
-    expect(heights, `card heights: ${heights.join(", ")}`).toHaveLength(1);
+    const heights = cards.map((card) => card.height);
+    // A grid row of peers should align; a card several pixels taller means
+    // its header wrapped while another's did not. Sub-pixel rounding of a
+    // hairline border is not a wrapped header.
+    const spread = Math.max(...heights) - Math.min(...heights);
+    expect(spread, `card heights: ${[...new Set(heights)].join(", ")}`).toBeLessThanOrEqual(1);
   });
 
   test("every missing credential name stays inside its box", async ({ page }) => {

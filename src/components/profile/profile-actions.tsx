@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Check, Download, Megaphone, Plus, Scale } from "lucide-react";
 import type { InfluencerProfile } from "@/lib/contracts/influencer";
+import { PrintButton } from "@/components/ui/print-button";
 import { Button, LinkButton } from "@/components/ui/button";
 
 /* ---------------------------------------------------------------------------
@@ -115,6 +116,7 @@ export function ProfileActions({ profile }: { profile: InfluencerProfile }) {
         )}
         {exported ? "Downloaded" : "Export"}
       </Button>
+      <PrintButton />
     </div>
   );
 }

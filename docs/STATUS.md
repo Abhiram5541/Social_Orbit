@@ -138,9 +138,9 @@ covered by the responsive suite.
 | Ingestion — YouTube | **Live and scheduled.** `/admin/ingestion` ingests real channels; `daily-jobs.ts` (D30) re-reads every account daily for a snapshot and runs ten discovery searches from a rotating plan, in-process on a long-lived server or via the Vercel cron routes | Discovery is a fixed rotation, not adaptive; no lookalike/related-channel expansion yet |
 | Connectors — Instagram, TikTok | Adapter boundary, per-platform requirements, honest status reporting, degradation | The HTTP calls themselves; blocked on credentials |
 | AI enrichment | **Live.** OpenAI structured-output classification: category, creator type, commercial intent, brand safety and comment quality, the last judged from comments actually read from the platform. Every output stores provider, model, prompt and schema version, and its evidence. Operator control on `/admin/ai` | Gemini as the second opinion, and therefore the DPR UC-12 conflict queue, which has nothing to compare yet. No worker, so enrichment is a batched operator action |
-| Reports | Report types, provenance guarantees, generation UI | Async generation, PDF/CSV rendering, storage |
+| Reports | Report types, provenance guarantees; CSV export for profiles, shortlists and campaigns; Save as PDF through a print stylesheet | Scheduled generation, a report archive |
 | Verification | Full status model, creator-facing flow, admin review queue | The OAuth round trip itself |
-| Notifications | Alert model, real detections from tracked creators, both inboxes; account mail (reset, invite, enquiry) and ops alerts (server errors, healthcheck) delivered | Alert delivery (email/webhook digests), read state |
+| Notifications | Alert model, real detections from tracked creators, both inboxes; daily email digest of new alerts; account mail (reset, invite, enquiry) and ops alerts (server errors, healthcheck, capacity) delivered | Webhook delivery, read state |
 | Billing | Plan model, usage metering, plan comparison | Payment provider, self-serve plan changes |
 
 ---

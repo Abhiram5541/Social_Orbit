@@ -124,7 +124,7 @@ export function AppShell({
         {/* The sticky band carries the frame's top padding in the canvas
             colour, so scrolled content passes behind it rather than through
             the gap above the pill. */}
-        <div className="sticky top-0 z-30 bg-canvas pt-3 sm:pt-4">
+        <div className="sticky top-0 z-30 bg-canvas pt-3 sm:pt-4 print:hidden">
           <Topbar
             user={user}
             quota={quota}
@@ -137,7 +137,9 @@ export function AppShell({
           />
         </div>
         <div className="flex min-w-0 flex-1 gap-4">
-          <IconRail sections={sections} />
+          <div className="contents print:hidden">
+            <IconRail sections={sections} />
+          </div>
           <main id="main" className="min-w-0 flex-1 pb-4">
             {children}
           </main>

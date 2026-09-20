@@ -1,4 +1,5 @@
 import type { RegisterInput } from "@/lib/contracts/auth";
+import type { NotificationItem } from "@/lib/contracts/notifications";
 import { sendEmail } from "@/server/services/notification-service";
 
 /* ---------------------------------------------------------------------------
@@ -79,6 +80,35 @@ export function sendEnquiryMail(input: Omit<RegisterInput, "password" | "confirm
 <tr><td style="color:#8a8399">Organisation</td><td>${escape(input.organisation)}</td></tr>
 <tr><td style="color:#8a8399">Account type</td><td>${escape(input.accountType)}</td></tr>
 </table><p>Create the account from <strong>Administration → Users</strong> to send them an invite.</p>`,
+    ),
+  });
+}
+
+/** The daily digest: only alerts that were not in the previous digest. */
+export function sendAlertDigestMail(input: {
+  to: string;
+  name: string;
+  alerts: NotificationItem[];
+  origin?: string;
+}): Promise<boolean> {
+  const origin = publicOrigin(input.origin);
+  const critical = input.alerts.filter((a) => a.severity === "critical").length;
+  const rows = input.alerts
+    .map(
+      (a) => `<tr><td style="padding:10px 0;border-top:1px solid #e9e6ef">
+<span style="display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${a.severity === "critical" ? "#b3261e" : "#8a5a00"}">${a.severity}</span><br>
+<strong>${escape(a.title)}</strong><br>
+<span style="color:#4b4458">${escape(a.detail)}</span>${a.href ? `<br><a href="${origin}${a.href}" style="color:#5b2cf0">Open in SENSO</a>` : ""}
+</td></tr>`,
+    )
+    .join("");
+  return sendEmail({
+    to: input.to,
+    subject: `SENSO: ${input.alerts.length} new alert${input.alerts.length === 1 ? "" : "s"}${critical ? ` (${critical} critical)` : ""}`,
+    html: layout(
+      `${input.alerts.length} new alert${input.alerts.length === 1 ? "" : "s"} on the creators you track`,
+      `Hi ${escape(input.name)}, since your last digest SENSO detected the following on your shortlisted creators.<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:8px">${rows}</table>
+<p style="margin-top:16px"><a href="${origin}/notifications" style="color:#5b2cf0">All notifications</a></p>`,
     ),
   });
 }

@@ -35,7 +35,10 @@ export default async function DiscoveryPage() {
       <Suspense
         fallback={
           <div className="min-w-0 flex-1">
-            <div className="border-b border-line bg-surface px-4 py-3 sm:px-6">
+            {/* Decorative: while the real toolbar streams in, a second search
+                field with the same name would be announced twice and matched
+                twice. */}
+            <div aria-hidden className="border-b border-line bg-surface px-4 py-3 sm:px-6">
               <div className="flex flex-wrap items-center gap-2">
                 <SearchInput
                   disabled

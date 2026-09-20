@@ -12,8 +12,11 @@ export const dynamic = "force-dynamic";
 export function GET() {
   const creators = readRecords().influencers.length;
   const ok = creators > 0;
+  // The database is resident, so memory is the capacity gauge (D42); the
+  // healthcheck warns before the heap limit does.
+  const memoryMb = Math.round(process.memoryUsage().rss / 1048576);
   return NextResponse.json(
-    { ok, creators, uptimeSeconds: Math.round(process.uptime()) },
+    { ok, creators, memoryMb, uptimeSeconds: Math.round(process.uptime()) },
     { status: ok ? 200 : 503, headers: { "cache-control": "no-store" } },
   );
 }

@@ -8,6 +8,17 @@
  */
 export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
+
+  // One process, by design (CLAUDE.md D29/D42): the workspace read model,
+  // sessions' rate limits and the scheduler all live in this process's
+  // memory, and a second instance would answer from a copy that never sees
+  // the first one's writes. PM2 numbers cluster workers from 0; refuse to be
+  // anything but the first rather than serve stale data quietly.
+  if (Number(process.env.NODE_APP_INSTANCE ?? 0) > 0) {
+    throw new Error(
+      "SENSO runs as a single process: its read model is in memory. Run one PM2 instance (fork mode); add Redis before scaling out.",
+    );
+  }
   const { warmIngestedStore } = await import("@/server/data/ingested-store");
   await warmIngestedStore();
 
@@ -25,6 +36,7 @@ export async function register(): Promise<void> {
     campaigns: seedWorkspace.campaigns,
     api_keys: seedApiKeys,
     usage: () => [],
+    digests: () => [],
   });
 
   // Score every creator once now, in the background, so the first request
@@ -66,8 +78,9 @@ export async function onRequestError(
 
   const { sendSlack } = await import("@/server/services/notification-service");
   const stack = error instanceof Error && error.stack ? error.stack.split("\n").slice(0, 6).join("\n") : "";
+  const host = process.env.APP_URL?.replace(/^https?:\/\//, "") ?? "unknown host";
   await sendSlack(
-    `:rotating_light: *SENSO ${context.routeType} error* \`${request.method} ${request.path}\` (${context.routePath})\n` +
+    `:rotating_light: *SENSO ${context.routeType} error* on ${host} \`${request.method} ${request.path}\` (${context.routePath})\n` +
       "```" + `${message}\n${stack}` + "```",
   ).catch(() => false);
 }

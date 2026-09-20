@@ -339,6 +339,40 @@ What follows from it, and is intended:
   footer are now deep forest rather than graphite. A light marketing redesign is a
   separate piece of work.
 
+**D42 — One process with a measured ceiling, a staging twin, and CI on a slice of the database.**
+*(Amends D29's "~10k creators".)* Measured on the VPS on 2026-09-20: 8,678 creators,
+425k content rows and 33k snapshots resident cost `next-server` 947 MB RSS — about
+110 MB per thousand creators — and Node's default heap on that box is 2 GB, so the
+real limit was ~18k, three weeks away at the ~600 creators a day the crons add.
+`ecosystem.config.cjs` now runs production with a 4 GB heap (the box has 8), which
+moves the wall to ~35k; `/api/internal/health` reports `memoryMb` and the cron
+healthcheck posts a capacity warning to Slack once a day past 3 GB or 25k creators.
+That warning is the trigger for the SQL read path D29 deferred — not before, because
+every read today is a synchronous function over rows already in memory, and
+rewriting that for a ceiling three months out would be the wrong order. The process
+refuses to start as any PM2 cluster worker but the first: sessions' rate limits, the
+workspace read model and the scheduler are all in-process, and a second instance
+would answer from a copy that never sees the first one's writes. Redis is the
+precondition for scaling out, and it is not needed yet.
+
+Staging is the same VPS: `staging.srv1082984.hstgr.cloud` (Hostinger resolves the
+hostname's subdomains, so no DNS work), its own `senso_staging` database restored
+from the newest backup, no daily jobs, no outbound mail, port 3015, deployed with
+`SENSO_TARGET=staging scripts/deploy-vps.sh <ref>`. `scripts/vps/create-staging.sh`
+made it and can be re-run. CI (`.github/workflows/ci.yml`) runs types, lint, unit
+tests, a production build and the full Playwright suite on every push, against the
+development driver over `e2e/fixtures/ingested.json.gz` — 150 creators spread across
+the follower range, cut from the real database by `scripts/e2e-fixture.mjs` (a slice
+of only the largest made every audience-size filter narrow nothing). CI never
+deploys; a person runs the deploy script against a tag.
+
+Also here: alerts are derived (`alert-service.ts`) and the daily digest
+(`digest-service.ts`, a third job on the scheduler, which no longer needs a YouTube
+key to arm) emails each client user only the alerts that were not in their previous
+digest — alerts are state, not events, so a plain daily mail would repeat forever.
+Reports: campaign CSV beside the shortlist one, and "Save as PDF" is the browser's
+print dialog over a print stylesheet that drops the chrome; no rendering service.
+
 **D41 — Accounts are invited, links are emailed, and the server watches itself.**
 Production readiness for the first clients (2026-09-20). Accounts: the public
 registration form is an enquiry emailed to `EMAIL_REPORT_TO`; a super admin creates
