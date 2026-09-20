@@ -35,9 +35,11 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run typecheck
       - run: npm run lint
-      - run: npm test
-      - name: Stage the fixture database for the build's file tracing
+      # The search-service tests and the build's file tracing both read the
+      # database; the fixture slice stands in for it.
+      - name: Stage the fixture database
         run: mkdir -p .data && cp e2e/fixtures/ingested.json.gz .data/
+      - run: npm test
       - run: npm run build
 
   e2e:
