@@ -97,7 +97,7 @@ export function Topbar({
           ref={searchRef}
           type="button"
           onClick={onOpenSearch}
-          aria-label="Search creators or jump to a page"
+          aria-label="Search creators — press /"
           className="press grid size-10 place-items-center rounded-full bg-sunken text-ink-muted hover:bg-sunken-strong hover:text-ink"
         >
           <Search className="size-4.5" aria-hidden />

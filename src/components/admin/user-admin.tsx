@@ -176,6 +176,8 @@ export function UserRowActions({
   const [note, setNote] = React.useState<string | null>(null);
 
   async function toggle() {
+    // One click on a table row must not lock someone out.
+    if (status === "active" && !window.confirm(`Suspend ${email}? They will not be able to sign in until reinstated.`)) return;
     setBusy("status");
     const result = await call("PATCH", { userId, status: status === "active" ? "suspended" : "active" });
     setBusy(null);
