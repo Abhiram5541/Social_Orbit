@@ -28,6 +28,7 @@ export function AppShell({
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [paletteOpen, setPaletteOpen] = React.useState(false);
+  const searchRef = React.useRef<HTMLButtonElement>(null);
 
   // Close the drawer whenever the route changes, including on back/forward.
   // Reset during render rather than in an effect: an effect would paint the
@@ -132,6 +133,7 @@ export function AppShell({
             unreadCount={unreadCount}
             onOpenNav={() => setDrawerOpen(true)}
             onOpenSearch={() => setPaletteOpen(true)}
+            searchRef={searchRef}
           />
         </div>
         <div className="flex min-w-0 flex-1 gap-4">
@@ -145,6 +147,7 @@ export function AppShell({
       <CommandPalette
         open={paletteOpen}
         onClose={() => setPaletteOpen(false)}
+        anchor={searchRef}
         can={can}
         quota={quota}
       />

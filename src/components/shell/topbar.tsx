@@ -27,6 +27,7 @@ export function Topbar({
   homeHref,
   onOpenNav,
   onOpenSearch,
+  searchRef,
   unreadCount = 0,
 }: {
   user: SessionUser;
@@ -36,6 +37,8 @@ export function Topbar({
   homeHref: string;
   onOpenNav: () => void;
   onOpenSearch: () => void;
+  /** The search control, so the palette can open beneath it. */
+  searchRef?: React.Ref<HTMLButtonElement>;
   unreadCount?: number;
 }) {
   const pathname = usePathname();
@@ -91,6 +94,7 @@ export function Topbar({
         {/* Opens the palette — creator search across the database and page
             jumps. A round control rather than a field, as the reference. */}
         <button
+          ref={searchRef}
           type="button"
           onClick={onOpenSearch}
           aria-label="Search creators or jump to a page"

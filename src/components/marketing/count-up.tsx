@@ -1,20 +1,21 @@
 "use client";
 
 import * as React from "react";
+import { formatCompact } from "@/lib/format";
 
 /**
  * A figure that counts up to its value once, when it first comes into view.
  *
  * The server renders the final string, so the number is correct without
  * JavaScript and for anything that reads the page; the count is only ever a
- * flourish on top. Formatting is done by the caller (`formatCompact`), which
- * is why this takes the finished text and a numeric value separately — it
- * animates the digits and keeps the suffix.
+ * flourish on top. Every frame is formatted with the same compact formatter
+ * as the final value — counting the digits of "2.4K" produced "0.6K" halfway,
+ * which is not a number anyone has.
  */
 export function CountUp({
   value,
   text,
-  durationMs = 900,
+  durationMs = 1100,
   className,
 }: {
   value: number;
@@ -30,13 +31,6 @@ export function CountUp({
     if (!node || value <= 0) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const match = text.match(/^([\d.,]+)(.*)$/);
-    if (!match) return;
-    const [, digits, suffix] = match;
-    const decimals = (digits.split(".")[1] ?? "").length;
-    const target = Number(digits.replace(/,/g, ""));
-    if (!Number.isFinite(target)) return;
-
     let frame = 0;
     const observer = new IntersectionObserver(
       (entries) => {
@@ -46,19 +40,12 @@ export function CountUp({
         const tick = (now: number) => {
           const t = Math.min(1, (now - started) / durationMs);
           const eased = 1 - Math.pow(1 - t, 3);
-          const current = target * eased;
-          setShown(
-            current.toLocaleString("en-US", {
-              minimumFractionDigits: decimals,
-              maximumFractionDigits: decimals,
-            }) + suffix,
-          );
+          setShown(t < 1 ? formatCompact(Math.round(value * eased)) : text);
           if (t < 1) frame = requestAnimationFrame(tick);
-          else setShown(text);
         };
         frame = requestAnimationFrame(tick);
       },
-      { threshold: 0.4 },
+      { threshold: 0.5 },
     );
     observer.observe(node);
     return () => {

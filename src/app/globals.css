@@ -564,66 +564,67 @@
   }
 
   /* --- The one reveal recipe -------------------------------------------
-     A block starts slightly low and slightly blurred, and settles when the
-     observer marks it visible. One config for the whole marketing site: the
-     consistency is what reads as considered. `--reveal-delay` sequences
-     siblings. */
-  /* The one entrance (CLAUDE.md D26), now driven by the browser's own scroll
-     timeline: no observer, no script, and — the reason for the change —
-     content is visible by default. The previous version hid every band at
-     opacity 0 until JavaScript marked it shown, so a crawler, a screenshot or
-     a slow hydration saw a blank page. A browser without scroll-driven
-     animations simply shows the content. */
+     A block rises a little and fades in, once, when it first enters the
+     viewport (CLAUDE.md D40). `Reveal` marks it `is-in`; until then it is
+     hidden — but only where scripts run, so a crawler or a browser without
+     JavaScript sees every band. Time-based rather than scroll-scrubbed: a
+     reveal tied to the scrollbar sits half-shown whenever the reader pauses,
+     and reverses when they scroll back. */
   @keyframes rise {
     from {
       opacity: 0;
-      transform: translate3d(0, 14px, 0);
-      filter: blur(6px);
+      transform: translate3d(0, 16px, 0);
     }
     to {
       opacity: 1;
       transform: none;
-      filter: none;
     }
   }
 
-  @supports (animation-timeline: view()) {
-    .reveal {
-      animation: rise var(--duration-reveal) var(--ease-out-quick) both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 28%;
-      animation-delay: var(--reveal-delay, 0ms);
-    }
-
-    /* Marketing surfaces play their instrument entrances as they scroll into
-       view rather than on mount — on mount they would have finished long
-       before anyone scrolled to them. The application keeps the mount
-       versions: there the surface is the page. */
-    .mk-surface .animate-extend {
-      animation-name: so-extend;
-      animation-timeline: view();
-      animation-range: entry 10% entry 55%;
-      animation-delay: 0ms;
-    }
-    .mk-surface .animate-sweep {
-      animation-timeline: view();
-      animation-range: entry 5% entry 60%;
-    }
-    /* Table rows arrive in reading order: each row's range starts a little
-       further down the scroll than the one above it. */
-    .mk-rows > tr {
-      animation: rise var(--duration-base) var(--ease-out-quick) both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 30%;
-    }
+  /* Above the fold nothing scrolls into view, so the hero plays the same
+     entrance once on load — pure CSS, so it starts on first paint rather
+     than after hydration. */
+  .reveal-load {
+    animation: rise var(--duration-reveal) var(--ease-out-quick) both;
+    animation-delay: var(--reveal-delay, 0ms);
   }
 
-  /* A surface that leans toward the pointer. Degrees come from PointerGlow;
-     the perspective is shallow so it reads as material, not as a card trick. */
-  .pointer-tilt {
-    transform: perspective(1400px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-    transition: transform 240ms var(--ease-out-quick);
-    will-change: transform;
+  .reveal,
+  .reveal-stagger > * {
+    transition:
+      opacity var(--duration-reveal) var(--ease-out-quick),
+      transform var(--duration-reveal) var(--ease-out-quick);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  /* Children arrive in reading order. Six steps covers the longest strip on
+     the page; later children share the last delay rather than queueing. */
+  .reveal-stagger > *:nth-child(2) { transition-delay: 70ms; }
+  .reveal-stagger > *:nth-child(3) { transition-delay: 140ms; }
+  .reveal-stagger > *:nth-child(4) { transition-delay: 210ms; }
+  .reveal-stagger > *:nth-child(5) { transition-delay: 280ms; }
+  .reveal-stagger > *:nth-child(n + 6) { transition-delay: 350ms; }
+
+  @media (scripting: enabled) {
+    .reveal:not(.is-in),
+    .reveal-stagger:not(.is-in) > * {
+      opacity: 0;
+      transform: translate3d(0, 16px, 0);
+    }
+
+    /* Instrument entrances inside a block wait for it: on mount they would
+       have finished long before anyone scrolled to them. `both` keeps the
+       arc at empty while it waits — its inline dashoffset is the final
+       value, and without the backwards fill it would render full, snap to
+       empty and sweep. The application keeps the mount versions: there the
+       surface is the page. */
+    .reveal:not(.is-in) .animate-extend,
+    .reveal:not(.is-in) .animate-sweep {
+      animation-play-state: paused;
+    }
+    .reveal .animate-sweep {
+      animation-fill-mode: both;
+    }
   }
 
   /* Interactive surfaces. Fast, never bouncy. */
@@ -668,32 +669,15 @@
       transparent 1.5px 6px
     );
   }
-
-  /* A cursor-tracked violet wash on a dark surface. The component sets --mx
-     and --my on pointer move; with no pointer the element is simply inert. */
-  .pointer-glow::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    opacity: 0;
-    background: radial-gradient(
-      18rem circle at var(--mx, 50%) var(--my, 0%),
-      rgb(143 107 255 / 0.18),
-      transparent 65%
-    );
-    transition: opacity var(--duration-base) var(--ease-out-quick);
-    pointer-events: none;
-  }
-
-  .pointer-glow:hover::before {
-    opacity: 1;
-  }
 }
 
 /* Native <dialog> entrance. `allow-discrete` lets the closed state animate. */
 @layer base {
   dialog {
+    /* The preflight zeroes every margin, which takes away the UA's
+       `margin: auto` — the thing that centres a modal. Put it back here so
+       no dialog has to remember to. */
+    margin: auto;
     opacity: 0;
     translate: 0 8px;
     scale: 0.99;
@@ -768,14 +752,12 @@
   }
 
   /* The reveal must never leave content invisible when its transition is
-     disabled — the observer still runs, but the resting state is the shown
-     state. */
+     disabled: the resting state is the shown state. */
   .reveal,
-  .mk-rows > tr {
+  .reveal-load,
+  .reveal-stagger > * {
     animation: none;
-  }
-  .pointer-tilt {
+    opacity: 1;
     transform: none;
-    transition: none;
   }
 }

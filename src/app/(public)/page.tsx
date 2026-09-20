@@ -6,7 +6,7 @@ import { LinkButton } from "@/components/ui/button";
 import { MarketingChrome } from "@/components/shell/marketing-chrome";
 import { CountUp } from "@/components/marketing/count-up";
 import { collectedAgo, landingCreators, landingFacets, landingQualityPoints } from "@/components/marketing/live";
-import { PointerGlow, Reveal } from "@/components/marketing/reveal";
+import { Reveal } from "@/components/marketing/reveal";
 import {
   CampaignDeliveryPanel,
   CampaignLeaderboard,
@@ -41,16 +41,19 @@ export const dynamic = "force-dynamic";
  * The page is the product's own material — the soft canvas and white cards
  * the application is built from — rather than a dark housing around it.
  *
- * Two rules govern the composition:
+ * Three rules govern the composition (CLAUDE.md D40):
  *
  *   1. The product carries the argument. Every section leads with a surface
  *      composed from the application's own components, and the prose around it
  *      is at most two lines. A visitor who reads nothing should still be able
  *      to see discovery, evaluation, verification, campaigns and analysis.
- *   2. No two bands share a shape. The repeated eyebrow-heading-paragraph-card
- *      rhythm is the specific thing that made the old page read as generated.
- *      Full-bleed surfaces, a sticky split, an open panel, offset layers and a
- *      single oversized canvas each appear exactly once.
+ *   2. One grid. Every band sits in the same container with its heading on
+ *      the same left edge; the previous page mixed three widths and two
+ *      alignments, and the gutter jumping from band to band was most of what
+ *      made it read as assembled rather than designed.
+ *   3. One ground. The page is the canvas throughout, with white surfaces on
+ *      it — no alternating bands, no rule between sections, and nothing
+ *      overlapping anything else. Depth is spent on the product surfaces only.
  *
  * Specimen creators are fictional and disclosed once, under the hero and again
  * in the footer. Every aggregate figure is live.
@@ -115,6 +118,29 @@ const PIPELINE = [
   { label: "AI enrichment", note: "Explained and evidenced", inferred: true },
 ];
 
+const WRAP = "mx-auto max-w-6xl px-5 sm:px-8";
+
+/** Every band opens the same way: a numbered kicker, a heading, at most one lede. */
+function SectionHeader({
+  kicker,
+  title,
+  lede,
+  className,
+}: {
+  kicker: string;
+  title: string;
+  lede?: string;
+  className?: string;
+}) {
+  return (
+    <Reveal className={className}>
+      <p className="label-caps text-brand-ink">{kicker}</p>
+      <h2 className="display-sm mt-3 max-w-2xl text-ink">{title}</h2>
+      {lede && <p className="mt-4 max-w-2xl text-md leading-7 text-ink-muted">{lede}</p>}
+    </Reveal>
+  );
+}
+
 export default function LandingPage() {
   // Real coverage from the running database. The only unmarked figures on the
   // page, because they are the only ones that were measured.
@@ -137,24 +163,17 @@ export default function LandingPage() {
     <MarketingChrome>
       {/* ============================================================== HERO
           The product's own material: the soft canvas the application sits
-          on, and the creator surface set in it as a white card. The page no
-          longer opens inside a dark housing — the people who buy this are
-          marketing teams, and the first screen should look like the tool
-          they will use, not the instrument it is built on. */}
-      <section className="relative overflow-hidden bg-canvas">
+          on, and the creator surface set in it as a white card. */}
+      <section className="relative overflow-hidden">
         {/* One soft bloom behind the surface: the page's single decorative
             gradient, and it sits behind a product surface rather than on one. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-40 top-10 size-[38rem] rounded-full bg-brand/10 blur-3xl lg:-right-20"
+          className="pointer-events-none absolute -right-40 top-0 size-[40rem] rounded-full bg-brand/10 blur-3xl lg:-right-10"
         />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-x-14 gap-y-12 px-4 pb-16 pt-14 sm:px-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:pb-24 lg:pt-20">
-          <Reveal>
-            <p className="inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1.5 text-sm font-medium text-ink-muted card-shadow">
-              <span aria-hidden className="size-1.5 rounded-full bg-brand" />
-              Influencer intelligence for marketing teams
-            </p>
-            <h1 className="display-lg mt-6 text-ink">
+        <div className={`${WRAP} relative grid items-center gap-x-16 gap-y-12 pb-16 pt-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:pb-20 lg:pt-24`}>
+          <Reveal load>
+            <h1 className="display-lg text-ink">
               Find the creators worth betting your brand on.
             </h1>
             <p className="mt-6 max-w-xl text-md leading-7 text-ink-muted">
@@ -185,10 +204,8 @@ export default function LandingPage() {
             </dl>
           </Reveal>
 
-          <Reveal delay={120} className="min-w-0 lg:-mr-6 xl:-mr-12">
-            <PointerGlow tilt className="rounded-2xl bg-surface text-ink shadow-lifted">
-              <DossierMasthead live={dossier} />
-            </PointerGlow>
+          <Reveal load delay={140} className="min-w-0">
+            <DossierMasthead live={dossier} />
             {/* The page's one disclosure. Repeating it on every surface would
                 read as defensiveness; withholding it, on a product whose pitch
                 is that its numbers are checkable, worse. */}
@@ -199,59 +216,62 @@ export default function LandingPage() {
             </p>
           </Reveal>
         </div>
-      </section>
 
-      {/* =========================================================== JOURNEY
-          The five stops, stated once as one divided strip. Every band after
-          this demonstrates one of them, in this order. */}
-      <section className="border-y border-line bg-surface">
-        <ol className="mx-auto grid max-w-6xl divide-y divide-rule px-4 sm:px-6 md:grid-cols-5 md:divide-x md:divide-y-0">
-          {JOURNEY.map((stop, index) => (
-            <li key={stop.href}>
-              <a
-                href={stop.href}
-                className="group block py-5 md:px-5 md:first:pl-0 md:last:pr-0"
-              >
-                <span className="font-num text-xs text-ink-subtle">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <span className="mt-1 flex items-center gap-1.5 text-md font-semibold text-ink">
-                  {stop.label}
-                  <ArrowRight
-                    className="size-3.5 text-ink-subtle transition-transform group-hover:translate-x-0.5"
-                    aria-hidden
-                  />
-                </span>
-                <span className="mt-1 block text-sm leading-5 text-ink-muted">
-                  {stop.note}
-                </span>
-              </a>
-            </li>
-          ))}
-        </ol>
+        {/* The five stops, stated once. Every band after this demonstrates one
+            of them, in this order. */}
+        <div className={`${WRAP} pb-4`}>
+          <Reveal
+            as="ol"
+            stagger
+            className="grid divide-y divide-rule rounded-2xl bg-surface shadow-popover md:grid-cols-5 md:divide-x md:divide-y-0"
+          >
+            {JOURNEY.map((stop, index) => (
+              <li key={stop.href}>
+                <a href={stop.href} className="group block px-5 py-5">
+                  <span className="font-num text-xs text-ink-subtle">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span className="mt-1 flex items-center gap-1.5 text-md font-semibold text-ink">
+                    {stop.label}
+                    <ArrowRight
+                      className="size-3.5 text-ink-subtle transition-transform group-hover:translate-x-0.5"
+                      aria-hidden
+                    />
+                  </span>
+                  <span className="mt-1 block text-sm leading-5 text-ink-muted">
+                    {stop.note}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </Reveal>
+        </div>
       </section>
 
       {/* ========================================================= 1 DISCOVER
           The surface is the section: one line of copy, then the product at
           full width. */}
-      <section id="discover" className="bg-canvas">
-        <div className="mx-auto max-w-7xl px-4 pb-16 pt-20 sm:px-6 lg:pb-20 lg:pt-24">
-          <Reveal className="mx-auto max-w-3xl text-center">
-            <p className="label-caps text-brand-ink">01 · Discover</p>
-            <h2 className="display-sm mt-3 text-ink">
-              Don&apos;t choose creators by follower count.
-            </h2>
-          </Reveal>
+      <section id="discover" className="scroll-mt-16">
+        <div className={`${WRAP} py-16 lg:py-20`}>
+          <SectionHeader
+            kicker="01 · Discover"
+            title="Don't choose creators by follower count."
+            lede="Search a real index on audience quality. Every facet carries a live count, and the sort is the score, not the size."
+          />
 
-          <div className="mt-10">
+          <Reveal className="mt-10">
             <DiscoverySurface
               rows={rows.length >= 5 ? rows : undefined}
               facets={rows.length >= 5 ? facets : undefined}
               matching={rows.length >= 5 ? stats.totalInfluencers : undefined}
             />
-          </div>
+          </Reveal>
 
-          <dl className="mt-10 grid divide-y divide-line border-t border-line md:grid-cols-3 md:divide-x md:divide-y-0">
+          <Reveal
+            as="dl"
+            stagger
+            className="mt-10 grid divide-y divide-line border-t border-line md:grid-cols-3 md:divide-x md:divide-y-0"
+          >
             {DISCOVER_OUTCOMES.map((outcome) => (
               <div key={outcome.title} className="py-5 md:px-6 md:first:pl-0 md:last:pr-0">
                 <dt className="text-md font-semibold text-ink">{outcome.title}</dt>
@@ -260,68 +280,69 @@ export default function LandingPage() {
                 </dd>
               </div>
             ))}
-          </dl>
+          </Reveal>
         </div>
       </section>
 
       {/* ========================================================= 2 EVALUATE
           Sticky split: the copy holds while the dossier scrolls past it. */}
-      <section id="evaluate" className="border-t border-line bg-surface">
-        <div className="mx-auto grid max-w-6xl gap-x-12 gap-y-8 px-4 py-20 sm:px-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start lg:py-24">
+      <section id="evaluate" className="scroll-mt-16">
+        <div className={`${WRAP} grid gap-x-16 gap-y-10 py-20 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-start lg:py-24`}>
           <div className="lg:sticky lg:top-24">
-            <p className="label-caps text-brand-ink">02 · Evaluate</p>
-            <h2 className="display-sm mt-3 text-ink">
-              Understand the creator behind the audience.
-            </h2>
-            <dl className="mt-8 divide-y divide-rule border-t border-rule">
+            <SectionHeader
+              kicker="02 · Evaluate"
+              title="Understand the creator behind the audience."
+            />
+            <Reveal as="dl" stagger className="mt-8 divide-y divide-rule border-t border-rule">
               {EVALUATE_POINTS.map((point) => (
                 <div key={point.title} className="py-4">
                   <dt className="text-base font-semibold text-ink">{point.title}</dt>
                   <dd className="mt-1 text-base leading-6 text-ink-muted">{point.body}</dd>
                 </div>
               ))}
-            </dl>
+            </Reveal>
           </div>
 
-          <div className="min-w-0">
+          <Reveal className="min-w-0">
             <CreatorDossier live={dossier} />
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* =========================================================== 3 VERIFY
           The interaction is the explanation: the panel drawn open beside the
           figure it explains. */}
-      <section id="verify" className="border-t border-line bg-canvas">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:py-24">
-          <div className="grid items-start gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-            <div>
-              <p className="label-caps text-brand-ink">03 · Verify</p>
-              <h2 className="display-sm mt-3 text-ink">
-                Every important number carries its evidence.
-              </h2>
-              <p className="mt-5 max-w-md text-md leading-6 text-ink-muted">
-                Most tools hand you a confident figure and no way to check it. Ours shows
-                its working — on any number you might have to defend in a meeting.
-              </p>
-            </div>
-            <ProvenanceDossier
-              live={
-                dossier
-                  ? {
-                      engagement: dossier.creator.engagement,
-                      collected: collectedAgo(dossier.profile),
-                      confidence: dossier.creator.confidence,
-                      sourceUrl: dossier.profile.socialAccounts[0]?.url ?? null,
-                    }
-                  : null
-              }
+      <section id="verify" className="scroll-mt-16">
+        <div className={`${WRAP} py-16 lg:py-20`}>
+          <div className="grid items-start gap-x-16 gap-y-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+            <SectionHeader
+              kicker="03 · Verify"
+              title="Every important number carries its evidence."
+              lede="Most tools hand you a confident figure and no way to check it. Ours shows its working — on any number you might have to defend in a meeting."
             />
+            <Reveal className="min-w-0">
+              <ProvenanceDossier
+                live={
+                  dossier
+                    ? {
+                        engagement: dossier.creator.engagement,
+                        collected: collectedAgo(dossier.profile),
+                        confidence: dossier.creator.confidence,
+                        sourceUrl: dossier.profile.socialAccounts[0]?.url ?? null,
+                      }
+                    : null
+                }
+              />
+            </Reveal>
           </div>
 
-          <ol className="mt-12 grid divide-y divide-line rounded-xl bg-surface px-5 card-shadow lg:grid-cols-5 lg:divide-x lg:divide-y-0 lg:px-0">
+          <Reveal
+            as="ol"
+            stagger
+            className="mt-12 grid divide-y divide-rule rounded-2xl bg-surface shadow-popover md:grid-cols-5 md:divide-x md:divide-y-0"
+          >
             {FACT_STATES.map((state) => (
-              <li key={state.label} className="py-4 lg:px-5">
+              <li key={state.label} className="px-5 py-4">
                 <p className="flex items-center gap-1.5">
                   <state.icon className={`size-3.5 ${state.tone}`} aria-hidden />
                   <span className="label-caps text-ink">{state.label}</span>
@@ -329,33 +350,33 @@ export default function LandingPage() {
                 <p className="mt-1.5 text-sm leading-5 text-ink-muted">{state.detail}</p>
               </li>
             ))}
-          </ol>
+          </Reveal>
 
-          <p className="mt-6 max-w-3xl text-base text-ink-muted">
+          <Reveal as="p" className="mt-6 max-w-3xl text-base leading-6 text-ink-muted">
             Sources are ranked, and the ranking is visible. An official API measurement
             outranks permitted public research, which outranks model inference — and where
             two sources disagree, the conflict is raised for a human rather than silently
             resolved in the platform&apos;s favour.
-          </p>
+          </Reveal>
         </div>
       </section>
 
       {/* =============================================================== 4 AI
           The output on one side, the constraint on the other. The constraint
           is the sales argument, so it is set as plainly as the output. */}
-      <section id="intelligence" className="border-t border-line bg-surface">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:py-24">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="label-caps text-brand-ink">Intelligence layer</p>
-            <h2 className="display-sm mt-3 text-ink">
-              AI explains the score. It never sets it.
-            </h2>
-          </div>
+      <section id="intelligence" className="scroll-mt-16">
+        <div className={`${WRAP} py-16 lg:py-20`}>
+          <SectionHeader
+            kicker="Intelligence layer"
+            title="AI explains the score. It never sets it."
+          />
 
-          <div className="mt-10 grid items-start gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)]">
-            <EnrichmentExtract />
+          <div className="mt-10 grid items-start gap-x-16 gap-y-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+            <Reveal className="min-w-0">
+              <EnrichmentExtract />
+            </Reveal>
 
-            <div>
+            <Reveal>
               <p className="text-base leading-6 text-ink-muted">
                 Models classify, extract and explain. They are asked for one object
                 matching a schema, in strict mode, and the reply is re-validated before
@@ -380,60 +401,53 @@ export default function LandingPage() {
                 Every AI output stores its provider, model, prompt version, schema version
                 and the evidence behind each claim.
               </p>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
 
       {/* ========================================================= 5 ACTIVATE
-          Offset layers — the one place two surfaces sit at different
-          elevations. */}
-      <section id="activate" className="border-t border-line bg-canvas">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:py-24">
-          <div className="mx-auto max-w-3xl">
-            <p className="label-caps text-brand-ink">04 · Activate</p>
-            <h2 className="display-sm mt-3 text-ink">
-              From creator selection to measurable delivery.
-            </h2>
-            <p className="mt-4 text-md leading-6 text-ink-muted">
-              Select talent from a shortlist, record the agreed rate, set a tracking
-              hashtag, and SENSO attributes what each creator actually delivered.
-            </p>
-          </div>
+          Two surfaces side by side, the campaign readout and the roster it
+          scores — at one elevation, on one grid. */}
+      <section id="activate" className="scroll-mt-16">
+        <div className={`${WRAP} py-16 lg:py-20`}>
+          <SectionHeader
+            kicker="04 · Activate"
+            title="From creator selection to measurable delivery."
+            lede="Select talent from a shortlist, record the agreed rate, set a tracking hashtag, and SENSO attributes what each creator actually delivered."
+          />
 
-          <div className="relative mt-10 lg:grid lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start lg:gap-0">
-            <div className="lg:relative lg:z-10 lg:mt-10">
+          <div className="mt-10 grid items-start gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+            <Reveal>
               <CampaignDeliveryPanel />
-            </div>
-            <div className="mt-5 min-w-0 lg:-ml-10 lg:mt-0 lg:pl-10">
+            </Reveal>
+            <Reveal delay={100} className="min-w-0">
               <CampaignLeaderboard />
-            </div>
+            </Reveal>
           </div>
 
-          <p className="mt-8 max-w-3xl text-base text-ink-muted">
+          <Reveal as="p" className="mt-8 max-w-3xl text-base leading-6 text-ink-muted">
             A creator&apos;s campaign performance is scored separately from their
             SENSO Health — the first answers &ldquo;how did they do for us?&rdquo;,
             the second &ldquo;who are they?&rdquo;. The two are never merged, and both
             carry their own formula version.
-          </p>
+          </Reveal>
         </div>
       </section>
 
       {/* ========================================================== 6 MEASURE
           One oversized canvas. The section is the chart. */}
-      <section id="measure" className="border-t border-line bg-surface">
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-24">
+      <section id="measure" className="scroll-mt-16">
+        <div className={`${WRAP} py-16 lg:py-20`}>
           <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
-            <div className="max-w-2xl">
-              <p className="label-caps text-brand-ink">05 · Measure</p>
-              <h2 className="display-sm mt-3 text-ink">
-                Quality on one axis. Evidence on the other.
-              </h2>
-            </div>
-            <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-muted">
+            <SectionHeader
+              kicker="05 · Measure"
+              title="Quality on one axis. Evidence on the other."
+            />
+            <Reveal as="ul" className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-muted">
               {[
                 ["bg-positive", "Excellent"],
-                ["bg-positive", "Strong"],
+                ["bg-series-1", "Strong"],
                 ["bg-caution", "Fair"],
                 ["bg-critical", "Needs review"],
               ].map(([dot, label]) => (
@@ -442,89 +456,83 @@ export default function LandingPage() {
                   {label}
                 </li>
               ))}
-            </ul>
+            </Reveal>
           </div>
 
-          <div className="mt-8 overflow-hidden rounded-xl bg-surface card-shadow">
-            <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-rule px-5 py-3">
+          <Reveal className="mt-8 overflow-hidden rounded-xl bg-surface shadow-overlay">
+            <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line bg-sunken px-4 py-2.5">
               <span className="label-caps text-ink-muted">
                 Data confidence against SENSO Health
               </span>
               <span className="text-sm text-ink-subtle">
-                Every scored profile in the cohort
+                Every scored profile in the index
               </span>
             </div>
             <div className="px-5 py-5">
               <QualityCanvas points={quality.length >= 50 ? quality : undefined} />
             </div>
-            <div className="border-t border-rule bg-sunken/50 px-5 py-3 text-base text-ink-muted">
+            <div className="border-t border-rule px-5 py-3.5 text-base leading-6 text-ink-muted">
               {quality.length >= 50
-                ? "Every creator in the index, as scored today. Confidence sits in the middle band for all of them: the index is read from official platform APIs, and no creator has yet connected an account. A creator scoring 90 on that evidence is exactly the case this axis exists to expose — and exactly what every other tool in this category would have shown you as a clean 90."
-                : "The top-right quadrant is where a shortlist should be drawn from: creators scoring above 70 on evidence that is itself above 70% confident. The cluster low and to the right is the case this axis exists to expose — a strong score standing on history too thin to rely on, which every other tool in this category would have shown you as a clean number."}
+                ? "Confidence sits in the middle band for every creator: the index is read from official platform APIs, and no creator has yet connected an account. A creator scoring 90 on that evidence is exactly the case this axis exists to expose — and what every other tool would show you as a clean 90."
+                : "Draw a shortlist from the top-right quadrant: creators scoring above 70 on evidence that is itself above 70% confident. The cluster low and to the right is the case this axis exists to expose — a strong score on history too thin to rely on."}
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* ======================================================== FOUNDATION
           The live figures and the pipeline behind them, in one band. */}
-      <section className="border-t border-line bg-canvas">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:py-24">
-          <div className="grid gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-            <div>
-              <p className="label-caps text-brand-ink">Foundation</p>
-              <h2 className="display-sm mt-3 text-ink">
-                Where the numbers come from.
-              </h2>
-              <p className="mt-4 text-base leading-6 text-ink-muted">
-                Live from the SENSO database as this page rendered. Collected from
-                official platform APIs and creator-authorised accounts — no prohibited
-                scraping, and no purchased list.
-              </p>
-              <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-6">
-                {live.map((figure) => (
-                  <div key={figure.label} className="min-w-0">
-                    <dd className="font-num text-metric font-semibold leading-none text-ink">
-                      {figure.value}
-                    </dd>
-                    <dt className="mt-1.5 text-sm text-ink-subtle">{figure.label}</dt>
-                  </div>
-                ))}
-              </dl>
-            </div>
+      <section className="scroll-mt-16">
+        <div className={`${WRAP} grid gap-x-16 gap-y-10 py-20 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:py-24`}>
+          <div>
+            <SectionHeader
+              kicker="Foundation"
+              title="Where the numbers come from."
+              lede="Live from the SENSO database as this page rendered. Collected from official platform APIs and creator-authorised accounts — no prohibited scraping, and no purchased list."
+            />
+            <Reveal as="dl" stagger className="mt-8 grid grid-cols-2 gap-x-6 gap-y-6">
+              {live.map((figure) => (
+                <div key={figure.label} className="min-w-0">
+                  <dd className="font-num text-metric font-semibold leading-none text-ink">
+                    <CountUp value={figure.raw} text={figure.value} />
+                  </dd>
+                  <dt className="mt-1.5 text-sm text-ink-subtle">{figure.label}</dt>
+                </div>
+              ))}
+            </Reveal>
+          </div>
 
-            <ol className="grid divide-y divide-rule rounded-xl bg-surface px-5 card-shadow sm:grid-cols-2 sm:divide-x sm:divide-y-0 md:grid-cols-5 md:px-0">
-              {PIPELINE.map((stage, index) => (
-                <li key={stage.label} className="py-4 sm:px-4 md:px-4">
-                  <span className="font-num text-xs text-ink-subtle">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
+          <Reveal
+            as="ol"
+            stagger
+            className="divide-y divide-rule self-start rounded-2xl bg-surface px-6 shadow-popover"
+          >
+            {PIPELINE.map((stage, index) => (
+              <li key={stage.label} className="grid grid-cols-[2.5rem_1fr] items-baseline gap-x-4 py-4">
+                <span className="font-num text-sm text-ink-subtle">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-0.5">
                   <p
-                    className={`mt-1.5 text-base font-semibold ${
+                    className={`text-md font-semibold ${
                       stage.inferred ? "text-inferred" : "text-ink"
                     }`}
                   >
                     {stage.label}
                   </p>
-                  <p className="mt-0.5 text-sm leading-5 text-ink-muted">{stage.note}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
-
-          <p className="mt-8 max-w-3xl text-sm text-ink-subtle">
-            A cohort of fewer than eight creators publishes no percentile. A rank computed
-            against two accounts is noise wearing the costume of a statistic, and it would
-            be the most quotable number on the page.
-          </p>
+                  <p className="text-sm text-ink-muted">{stage.note}</p>
+                </div>
+              </li>
+            ))}
+          </Reveal>
         </div>
       </section>
 
       {/* =============================================================== CTA
           The one feature card on the page: the mark's tile, used once. */}
-      <section className="border-t border-line bg-canvas">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-          <div className="relative overflow-hidden rounded-2xl bg-instrument px-6 py-12 text-instrument-ink sm:px-10 lg:px-14 lg:py-16">
+      <section>
+        <div className={`${WRAP} pb-16 pt-2 lg:pb-20`}>
+          <Reveal className="relative overflow-hidden rounded-3xl bg-instrument px-6 py-12 text-instrument-ink sm:px-10 lg:px-14 lg:py-16">
             <div
               aria-hidden
               className="pointer-events-none absolute -right-24 -top-24 size-80 rounded-full bg-brand-glow/25 blur-3xl"
@@ -534,7 +542,7 @@ export default function LandingPage() {
                 <h2 className="display-sm text-instrument-ink">
                   Bring your own shortlist.
                 </h2>
-                <p className="mt-4 text-md leading-6 text-instrument-muted">
+                <p className="mt-4 text-md leading-7 text-instrument-muted">
                   Start with five searches a month, free. Saved profiles, shortlists and
                   comparisons stay available whether or not you have searches left.
                 </p>
@@ -553,7 +561,7 @@ export default function LandingPage() {
                 </LinkButton>
               </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
     </MarketingChrome>

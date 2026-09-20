@@ -44,11 +44,15 @@ const COMMANDS: Command[] = [
 export function CommandPalette({
   open,
   onClose,
+  anchor,
   can,
   quota,
 }: {
   open: boolean;
   onClose: () => void;
+  /** The control that opens the palette; the panel drops from under it,
+   *  right-aligned. Without one it is centred near the top. */
+  anchor?: React.RefObject<HTMLElement | null>;
   can: (permission: Permission) => boolean;
   /** Metered plans show the spend before the user commits to a full search. */
   quota?: SearchQuota | null;
@@ -63,14 +67,33 @@ export function CommandPalette({
     const node = ref.current;
     if (!node) return;
     if (open && !node.open) {
+      // The palette is the search control's own panel, so it opens where the
+      // control is — top-layer, so it is measured rather than laid out. The
+      // preflight zeroes a dialog's UA `margin: auto`, which is why the
+      // fallback centres explicitly.
       node.showModal();
+      const box = anchor?.current?.getBoundingClientRect();
+      if (box) {
+        // Right edge under the control's, unless that would push the panel
+        // off the left of a narrow screen — then it keeps the page gutter.
+        const gutter = 16;
+        const right = Math.max(
+          gutter,
+          Math.min(window.innerWidth - box.right, window.innerWidth - gutter - node.offsetWidth),
+        );
+        node.style.top = `${Math.round(box.bottom + 8)}px`;
+        node.style.right = `${Math.round(right)}px`;
+        node.style.left = "auto";
+        node.style.bottom = "auto";
+        node.style.margin = "0";
+      }
       setQuery("");
       setCursor(0);
       inputRef.current?.focus();
     } else if (!open && node.open) {
       node.close();
     }
-  }, [open]);
+  }, [open, anchor]);
 
   const commands = React.useMemo(
     () =>
@@ -164,7 +187,7 @@ export function CommandPalette({
       onClick={(event) => {
         if (event.target === ref.current) onClose();
       }}
-      className="mt-[9vh] w-[calc(100vw-2rem)] max-w-2xl rounded-2xl bg-surface p-0 text-ink shadow-overlay"
+      className="mx-auto mt-[9vh] w-[calc(100vw-2rem)] max-w-2xl rounded-2xl bg-surface p-0 text-ink shadow-overlay"
     >
       <div onClick={(event) => event.stopPropagation()}>
         <div className="flex items-center gap-2.5 border-b border-line px-4 transition-colors focus-within:border-brand">

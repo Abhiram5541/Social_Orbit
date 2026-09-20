@@ -322,7 +322,7 @@ export function DiscoverySurface({
               </th>
             </tr>
           </thead>
-          <tbody className="mk-rows divide-y divide-rule">
+          <tbody className="divide-y divide-rule">
             {rows.map((creator) => (
               <tr key={creator.handle}>
                 <td className="max-w-[17rem] px-3 py-2">
@@ -462,7 +462,7 @@ export function CreatorDossier({ live }: { live?: LiveDossier | null }) {
       </div>
 
       {/* The instrument: the one dark surface the product allows itself. */}
-      <div className="mk-surface bg-instrument px-5 py-5 text-instrument-ink">
+      <div className="bg-instrument px-5 py-5 text-instrument-ink">
         <div className="flex flex-wrap items-center gap-6">
           <ScoreRing value={c.health} size={128} tone="instrument" />
           <div className="min-w-56 flex-1">
@@ -584,31 +584,36 @@ export function ProvenanceDossier({
   const collected = live?.collected ?? "2 hours ago";
   const confidence = live?.confidence ?? 94;
   return (
-    <div className="grid items-start gap-5 sm:grid-cols-[minmax(0,14rem)_minmax(0,20rem)]">
-      <div className="rounded-xl bg-surface card-shadow px-5 py-5">
+    <SurfaceFrame
+      label="Creator profile"
+      meta="Engagement rate · click for its working"
+      bodyClassName="grid sm:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] sm:divide-x sm:divide-rule"
+    >
+      {/* The figure as the profile prints it: a dotted rule under it is the
+          affordance, and the panel beside it is what the click opens. */}
+      <div className="border-b border-rule px-5 py-5 sm:border-b-0">
         <p className="label-caps-sm text-ink-subtle">Engagement rate</p>
-        <p className="mt-2 font-num text-metric-lg font-medium leading-none text-ink underline decoration-line-strong decoration-dotted underline-offset-8">
+        <p className="mt-2 inline-block font-num text-metric-lg font-medium leading-none text-ink underline decoration-brand decoration-dotted decoration-2 underline-offset-8">
           {engagement}
         </p>
-        <p className="mt-4 text-sm text-ink-muted">
-          Every figure on a profile carries this. Click it and the platform shows its
-          working.
+        <p className="mt-5 text-sm leading-5 text-ink-muted">
+          Every figure on a profile carries this rule. Click it and the platform
+          shows its working.
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-xl bg-surface shadow-popover">
-        <div className="border-b border-rule px-3 py-2.5">
-          <p className="label-caps-sm text-ink-subtle">Engagement rate</p>
-          <p className="mt-1 flex items-baseline gap-2">
+      <div className="bg-sunken/40">
+        <div className="border-b border-rule px-4 py-2.5">
+          <p className="flex items-baseline gap-2">
             <span className="font-num text-stat font-medium text-ink">{engagement}</span>
-            <span className="inline-flex items-center gap-1 rounded-sm border border-line bg-sunken px-1 py-px text-2xs font-semibold uppercase tracking-[0.06em] text-ink-muted">
+            <span className="inline-flex items-center gap-1 rounded-sm border border-line bg-surface px-1 py-px text-2xs font-semibold uppercase tracking-[0.06em] text-ink-muted">
               <Sigma className="size-2.5" aria-hidden />
               Derived
             </span>
           </p>
         </div>
 
-        <dl className="divide-y divide-rule px-3 text-sm">
+        <dl className="divide-y divide-rule px-4 text-sm">
           <ProvenanceRow
             term="Method"
             detail="Calculated by SENSO from observed values using a published formula."
@@ -634,7 +639,7 @@ export function ProvenanceDossier({
           />
         </dl>
 
-        <div className="border-t border-rule px-3 py-2.5">
+        <div className="border-t border-rule px-4 py-2.5">
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-sm text-ink-muted">Field confidence</span>
             <span className="font-num text-sm font-medium text-ink">{confidence}%</span>
@@ -647,7 +652,7 @@ export function ProvenanceDossier({
           </div>
         </div>
       </div>
-    </div>
+    </SurfaceFrame>
   );
 }
 

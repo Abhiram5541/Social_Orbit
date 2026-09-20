@@ -47,7 +47,7 @@ The frontend was redesigned at product level, not restyled. The thesis is record
 | Topbar | org chip, search, quota, bell, help, account | search, quota, help, bell — identity and account moved into the rail |
 | Screen opening | a white band with a hero figure | one `Instrument` band per screen carrying the headline reading |
 | Score | cobalt ring | brass-graduated dial, arc sweeping once on mount |
-| Marketing | white hero, fixed display type | graphite hero with live coverage figures, fluid display type, one scroll-reveal recipe |
+| Marketing | white hero, fixed display type | light hero on the canvas with live creators and coverage figures, one grid, one observer-driven reveal (D40) |
 | Accent | cobalt | cobalt for intent, brass for measurement only |
 
 Nothing about the data contract moved: no new figure is displayed, no delta was
@@ -140,7 +140,7 @@ covered by the responsive suite.
 | AI enrichment | **Live.** OpenAI structured-output classification: category, creator type, commercial intent, brand safety and comment quality, the last judged from comments actually read from the platform. Every output stores provider, model, prompt and schema version, and its evidence. Operator control on `/admin/ai` | Gemini as the second opinion, and therefore the DPR UC-12 conflict queue, which has nothing to compare yet. No worker, so enrichment is a batched operator action |
 | Reports | Report types, provenance guarantees, generation UI | Async generation, PDF/CSV rendering, storage |
 | Verification | Full status model, creator-facing flow, admin review queue | The OAuth round trip itself |
-| Notifications | Alert model, real detections from tracked creators, both inboxes | Delivery (email/webhook), read state |
+| Notifications | Alert model, real detections from tracked creators, both inboxes; account mail (reset, invite, enquiry) and ops alerts (server errors, healthcheck) delivered | Alert delivery (email/webhook digests), read state |
 | Billing | Plan model, usage metering, plan comparison | Payment provider, self-serve plan changes |
 
 ---
