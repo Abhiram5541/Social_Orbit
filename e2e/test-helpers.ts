@@ -76,8 +76,17 @@ export async function openFilters(page: Page): Promise<FilterSurface> {
 
   // Filters sit beside the search field at every width: a popover from `lg`
   // up, a sheet below it. There is no persistent rail.
-  await page.getByRole("button", { name: /^Filters/ }).click();
+  //
+  // The button is server-rendered before React attaches its handler, and on
+  // a slow runner a click can land in that window and open nothing — which
+  // is also what a person does: click again.
   const scope = page.getByRole("dialog", { name: "Filters" });
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    await page.getByRole("button", { name: /^Filters/ }).click();
+    if (await scope.waitFor({ state: "visible", timeout: 2_500 }).then(() => true, () => false)) break;
+    await page.waitForTimeout(500);
+  }
+  await expect(scope).toBeVisible();
 
   if (width >= 1024) return { scope, commit: async () => {} };
 
