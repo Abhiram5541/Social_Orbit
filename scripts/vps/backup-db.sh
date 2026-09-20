@@ -6,6 +6,7 @@
 # Restore: scripts/vps/restore-drill.sh <dump>   (verifies into a scratch database)
 #          pg_restore --clean --if-exists -d "$DATABASE_URL" <dump>   (for real)
 set -euo pipefail
+cd /tmp   # `find` restores the caller's cwd, which may be unreadable under sudo -u
 APP_DIR=${APP_DIR:-/home/senso/htdocs/srv1082984.hstgr.cloud}
 OUT_DIR=${OUT_DIR:-/home/senso/backups/databases}
 KEEP_DAYS=${KEEP_DAYS:-30}
