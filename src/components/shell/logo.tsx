@@ -96,3 +96,40 @@ export function Wordmark({
     </span>
   );
 }
+
+/**
+ * A client organisation's own mark, where their workspace would otherwise
+ * show the SENSO wordmark. The image sits in a white tile at wordmark height
+ * so any logo — light, dark, wide — reads on the pill; the organisation's
+ * name follows it. Product terms elsewhere (SENSO Health, SENSO Verified)
+ * are unchanged: this brands the workspace, not the measurement.
+ */
+export function OrgMark({
+  name,
+  logoUrl,
+  compact = false,
+  className,
+}: {
+  name: string;
+  logoUrl: string;
+  compact?: boolean;
+  className?: string;
+}) {
+  return (
+    <span className={cn("flex items-center gap-2.5", className)}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- static asset, no optimisation pass wanted */}
+      <img
+        src={logoUrl}
+        alt={`${name} logo`}
+        className="h-9 w-auto max-w-40 rounded-md object-contain"
+        referrerPolicy="no-referrer"
+      />
+      {!compact && (
+        <span className="flex flex-col leading-none">
+          <span className="font-display text-md font-extrabold tracking-wide text-ink">{name}</span>
+          <span className="label-caps-sm mt-0.5 text-ink-subtle">Influencer Intelligence</span>
+        </span>
+      )}
+    </span>
+  );
+}

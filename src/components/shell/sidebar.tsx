@@ -193,12 +193,22 @@ export function OrgBlock({ user }: { user: SessionUser }) {
             {...props}
             className="press flex w-full items-center gap-2.5 rounded-lg bg-sunken px-2.5 py-2 text-left hover:bg-sunken-strong"
           >
-            <span
-              aria-hidden
-              className="grid size-8 shrink-0 place-items-center rounded-sm bg-instrument font-display text-sm font-bold text-instrument-ink"
-            >
-              {user.orgName.slice(0, 1).toUpperCase()}
-            </span>
+            {user.orgLogoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- static asset
+              <img
+                src={user.orgLogoUrl}
+                alt=""
+                aria-hidden
+                className="size-8 shrink-0 rounded-sm bg-white object-contain"
+              />
+            ) : (
+              <span
+                aria-hidden
+                className="grid size-8 shrink-0 place-items-center rounded-sm bg-instrument font-display text-sm font-bold text-instrument-ink"
+              >
+                {user.orgName.slice(0, 1).toUpperCase()}
+              </span>
+            )}
             <span className="min-w-0 flex-1">
               <span className="block truncate text-base font-semibold text-ink">
                 {user.orgName}

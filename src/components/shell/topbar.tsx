@@ -8,7 +8,7 @@ import { cn } from "@/lib/class-names";
 import { ROLE_WORKSPACE, type SessionUser } from "@/lib/contracts/auth";
 import type { SearchQuota } from "@/lib/contracts/search";
 import { isActive, type NavItem } from "@/lib/navigation";
-import { Wordmark } from "./logo";
+import { OrgMark, Wordmark } from "./logo";
 import { AccountMenu } from "./sidebar";
 
 /* ---------------------------------------------------------------------------
@@ -58,8 +58,20 @@ export function Topbar({
       {/* One node, not a phone/desktop pair: two nodes toggled by media
           rules render stacked the moment a stylesheet is stale. On a phone
           only the tagline is dropped. */}
-      <Link href={homeHref} className="shrink-0 rounded-md" aria-label="SENSO home">
-        <Wordmark className="[&_.label-caps-sm]:hidden sm:[&_.label-caps-sm]:block" />
+      <Link
+        href={homeHref}
+        className="shrink-0 rounded-md"
+        aria-label={user.orgLogoUrl ? `${user.orgName} home` : "SENSO home"}
+      >
+        {user.orgLogoUrl ? (
+          <OrgMark
+            name={user.orgName}
+            logoUrl={user.orgLogoUrl}
+            className="[&_.label-caps-sm]:hidden sm:[&_.label-caps-sm]:block"
+          />
+        ) : (
+          <Wordmark className="[&_.label-caps-sm]:hidden sm:[&_.label-caps-sm]:block" />
+        )}
       </Link>
 
       <nav aria-label="Primary" className="mx-auto hidden lg:block">

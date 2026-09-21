@@ -9,7 +9,7 @@ import { ROLE_PERMISSIONS, ROLE_WORKSPACE } from "@/lib/contracts/auth";
 import type { SearchQuota } from "@/lib/contracts/search";
 import { visibleNav, WORKSPACE_HOME } from "@/lib/navigation";
 import { Sheet } from "@/components/ui/dialog";
-import { Wordmark } from "./logo";
+import { OrgMark, Wordmark } from "./logo";
 import { AccountMenu, IconRail, OrgBlock, SidebarNav } from "./sidebar";
 import { Topbar } from "./topbar";
 import { CommandPalette } from "./command-palette";
@@ -99,9 +99,13 @@ export function AppShell({
             <Link
               href={WORKSPACE_HOME[workspace]}
               className="inline-block rounded-md py-1"
-              aria-label="SENSO home"
+              aria-label={user.orgLogoUrl ? `${user.orgName} home` : "SENSO home"}
             >
-              <Wordmark />
+              {user.orgLogoUrl ? (
+                <OrgMark name={user.orgName} logoUrl={user.orgLogoUrl} />
+              ) : (
+                <Wordmark />
+              )}
             </Link>
           </div>
           <div className="pt-3">

@@ -23,6 +23,8 @@ export interface Org {
   plan: Plan;
   createdAt: string;
   seatsUsed: number;
+  /** The organisation's own mark (a path under /brand/clients or a URL). */
+  logoUrl?: string | null;
 }
 
 export interface UserRecord {
@@ -131,7 +133,12 @@ export async function listOrgs(): Promise<Org[]> {
 }
 
 /** A new organisation. Seats count the users created into it. */
-export async function createOrg(input: { name: string; kind: OrgKind; plan: Plan }): Promise<Org> {
+export async function createOrg(input: {
+  name: string;
+  kind: OrgKind;
+  plan: Plan;
+  logoUrl?: string | null;
+}): Promise<Org> {
   const org: Org = {
     id: `org_${Date.now().toString(36)}`,
     name: input.name.trim(),
@@ -139,8 +146,23 @@ export async function createOrg(input: { name: string; kind: OrgKind; plan: Plan
     plan: input.plan,
     createdAt: new Date().toISOString(),
     seatsUsed: 0,
+    logoUrl: input.logoUrl?.trim() || null,
   };
   orgs().push(org);
+  persist("orgs", [org]);
+  return org;
+}
+
+/** Renames, re-plans or re-brands an organisation. Absent fields are left alone. */
+export async function updateOrg(
+  orgId: string,
+  patch: { name?: string; plan?: Plan; logoUrl?: string | null },
+): Promise<Org> {
+  const org = orgs().find((entry) => entry.id === orgId);
+  if (!org) throw new Error("No such organisation.");
+  if (patch.name !== undefined) org.name = patch.name.trim();
+  if (patch.plan !== undefined) org.plan = patch.plan;
+  if (patch.logoUrl !== undefined) org.logoUrl = patch.logoUrl?.trim() || null;
   persist("orgs", [org]);
   return org;
 }
@@ -256,6 +278,7 @@ export function toSessionUser(user: UserRecord, org: Org): SessionUser {
     orgName: org.name,
     orgKind: org.kind,
     plan: org.plan,
+    orgLogoUrl: org.logoUrl ?? null,
     influencerId: user.influencerId,
   };
 }

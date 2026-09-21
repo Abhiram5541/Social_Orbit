@@ -225,6 +225,10 @@ export const SessionUser = z.object({
   orgName: z.string(),
   orgKind: OrgKind,
   plan: Plan,
+  /** A client organisation's own mark, shown in place of the SENSO wordmark
+   *  inside their workspace. Optional so sessions issued before it existed
+   *  still parse. */
+  orgLogoUrl: z.string().nullable().optional(),
   /** Set only for role `influencer` — the creator record they own. */
   influencerId: z.string().nullable(),
 });

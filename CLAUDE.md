@@ -339,6 +339,17 @@ What follows from it, and is intended:
   footer are now deep forest rather than graphite. A light marketing redesign is a
   separate piece of work.
 
+**D43 — A client organisation may carry its own mark; the product keeps its name.**
+`Org.logoUrl` (set at creation from the New account dialog, or `PATCH
+/api/internal/admin/orgs`) travels on the session as `orgLogoUrl`, and inside that
+organisation's workspace the topbar, the drawer and the org block show the client's
+logo and name (`OrgMark`) where the SENSO wordmark would be — and nowhere else. The
+marketing site, the sign-in page and every other organisation are untouched, and the
+product's own terms (SENSO Health, SENSO Verified, the provenance labels) do not
+change, because they name the measurement, not the customer. Logos live under
+`public/brand/clients/` as trimmed PNGs; a `/brand/…` path or an https URL is
+accepted. First client: Kolors Health Care, 2026-09-21.
+
 **D42 — One process with a measured ceiling, a staging twin, and CI on a slice of the database.**
 *(Amends D29's "~10k creators".)* Measured on the VPS on 2026-09-20: 8,678 creators,
 425k content rows and 33k snapshots resident cost `next-server` 947 MB RSS — about

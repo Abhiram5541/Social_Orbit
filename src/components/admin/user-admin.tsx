@@ -54,7 +54,12 @@ export function NewAccountButton({ orgs }: { orgs: OrgOption[] }) {
       role: form.get("role"),
     };
     if (orgMode === "new") {
-      body.org = { name: form.get("orgName"), kind: "client", plan: form.get("plan") };
+      body.org = {
+        name: form.get("orgName"),
+        kind: "client",
+        plan: form.get("plan"),
+        logoUrl: form.get("logoUrl") || undefined,
+      };
     } else {
       body.orgId = form.get("orgId");
     }
@@ -140,6 +145,12 @@ export function NewAccountButton({ orgs }: { orgs: OrgOption[] }) {
                       </option>
                     ))}
                   </Select>
+                </Field>
+                <Field
+                  label="Logo"
+                  hint="Optional. Shown in place of the SENSO wordmark inside their workspace: a /brand/clients/… path or an https URL."
+                >
+                  <Input name="logoUrl" placeholder="/brand/clients/acme.png" autoComplete="off" />
                 </Field>
               </>
             )}

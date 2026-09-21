@@ -32,7 +32,15 @@ const CreateUser = z.object({
   role: Role,
   orgId: z.string().trim().min(1).optional(),
   /** Create the organisation in the same call, when it does not exist yet. */
-  org: z.object({ name: z.string().trim().min(1).max(120), kind: OrgKind, plan: Plan }).optional(),
+  org: z
+    .object({
+      name: z.string().trim().min(1).max(120),
+      kind: OrgKind,
+      plan: Plan,
+      /** Their mark, shown in place of the SENSO wordmark in their workspace. */
+      logoUrl: z.string().trim().max(500).optional(),
+    })
+    .optional(),
   password: z.string().min(12).max(200).optional(),
 });
 
