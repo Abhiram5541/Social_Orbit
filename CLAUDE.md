@@ -541,7 +541,8 @@ audience is this codebase and renaming it risks the launch for no visible gain:
 the `SOCIALORBIT_*` env vars, the `so_session` cookie, the `socialorbit-postgres`
 container and its volume, the `socialorbit.dev.store` registry symbol, the
 `docs/` blueprints and the product-rule tables in this file. Rename them after
-launch, together, or never. The domain is `senso360.com` (Hostinger, registered 2026-09-16); the public
+launch, together, or never. The working folder and the GitHub repository were renamed to
+`senso` on 2026-09-21. The domain is `senso360.com` (Hostinger, registered 2026-09-16); the public
 API is served from it at `/api/v1` rather than from an `api.` subdomain.
 
 **D30 — The database feeds itself: two daily jobs, one clock, one bookkeeping row each.**
