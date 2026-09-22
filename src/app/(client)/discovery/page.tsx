@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { AskPanel } from "@/components/discovery/ask-panel";
 import { SlidersHorizontal } from "lucide-react";
 import { formatCompact } from "@/lib/format";
 import { requirePagePermission } from "@/server/auth/rbac";
@@ -32,6 +33,13 @@ export default async function DiscoveryPage() {
       {/* The fallback mirrors the loaded frame — toolbar band above the table —
           so a cold navigation paints the chrome once instead of popping it in
           around a naked skeleton. */}
+      {/* Ask in a sentence, see the filters it becomes, then run it. Above
+          the toolbar because it is a way *into* a search, not a filter on
+          one. */}
+      <div className="px-4 pb-3 sm:px-6">
+        <AskPanel />
+      </div>
+
       <Suspense
         fallback={
           <div className="min-w-0 flex-1">
