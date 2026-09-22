@@ -42,6 +42,9 @@ export async function register(): Promise<void> {
     outreach_messages: () => [],
     proposals: () => [],
     submissions: () => [],
+    contract_templates: () => [],
+    contracts: () => [],
+    payments: () => [],
   });
 
   // Score every creator once now, in the background, so the first request
