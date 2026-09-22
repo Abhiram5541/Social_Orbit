@@ -32,8 +32,9 @@ import { sendEmail } from "./notification-service";
  * same as one that was ignored.
  * ------------------------------------------------------------------------ */
 
-interface TemplateRow extends OutreachTemplate {}
-interface MessageRow extends Omit<OutreachMessage, "displayName"> {}
+type TemplateRow = OutreachTemplate;
+/** The creator's name is resolved from the index on read, never stored. */
+type MessageRow = Omit<OutreachMessage, "displayName">;
 
 const templates = () => appRows<TemplateRow>("outreach_templates", () => []);
 const messages = () => appRows<MessageRow>("outreach_messages", () => []);
