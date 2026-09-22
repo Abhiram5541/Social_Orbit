@@ -120,7 +120,8 @@ covered by the responsive suite.
 - Comparison: up to five creators, best-in-row marking, incomparable metrics flagged
 - Shortlists: create, add, note, remove, compare-from-list, campaign hand-off
 - Campaigns: create with a required unique tracking hashtag, participants, rate gaps,
-  hashtag-attributed performance scored separately from health
+  deliverable requirements, and performance attributed from real indexed posts
+  (hashtag or caption match, manual include/exclude), scored separately from health
 - Creator portal: overview, profile, connections, verification, own analytics, corrections
 - Admin: overview, database stats, connector health, AI provider status, four review queues,
   ingestion, analytics, benchmarks, users, orgs, API management, audit, system health

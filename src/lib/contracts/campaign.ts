@@ -67,6 +67,62 @@ export const CampaignInput = z.object({
 export type CampaignInput = z.infer<typeof CampaignInput>;
 
 /** Per-influencer campaign results — Arch §11. Only from attributed posts. */
+/* --- Deliverables — what each creator agreed to publish ----------------- */
+
+export const DeliverableFormat = z.enum(["post", "video", "story", "reel", "short"]);
+export type DeliverableFormat = z.infer<typeof DeliverableFormat>;
+
+export const DELIVERABLE_FORMAT_LABEL: Record<DeliverableFormat, string> = {
+  post: "Post",
+  video: "Video",
+  story: "Story",
+  reel: "Reel",
+  short: "Short",
+};
+
+/** One requirement, asked of every participant on the campaign. */
+export const CampaignDeliverable = z.object({
+  id: z.string(),
+  label: z.string(),
+  platform: Platform,
+  format: DeliverableFormat,
+  /** How many of this deliverable each participant owes. */
+  quantity: z.number().int().min(1),
+  dueOn: z.string().date().nullable(),
+});
+export type CampaignDeliverable = z.infer<typeof CampaignDeliverable>;
+
+export const DeliverableInput = z.object({
+  label: z.string().trim().min(2, "Name the deliverable").max(80),
+  platform: Platform,
+  format: DeliverableFormat,
+  quantity: z.number().int().min(1).max(50).default(1),
+  dueOn: z.string().date().nullable().default(null),
+});
+export type DeliverableInput = z.infer<typeof DeliverableInput>;
+
+/**
+ * Progress against those requirements, counted from posts the tracker
+ * actually attributed — never from a status somebody set by hand.
+ */
+export const DeliverableFulfilment = z.object({
+  required: z.number().int(),
+  published: z.number().int(),
+  /** Null when the campaign defines no deliverables. */
+  percent: z.number().min(0).max(100).nullable(),
+  state: z.enum(["none_required", "not_started", "in_progress", "fulfilled", "missed"]),
+  dueOn: z.string().date().nullable(),
+});
+export type DeliverableFulfilment = z.infer<typeof DeliverableFulfilment>;
+
+export const FULFILMENT_LABEL: Record<DeliverableFulfilment["state"], string> = {
+  none_required: "No deliverables set",
+  not_started: "Not started",
+  in_progress: "In progress",
+  fulfilled: "Fulfilled",
+  missed: "Overdue",
+};
+
 export const CampaignPerformance = z.object({
   reach: z.number().int().nullable(),
   views: z.number().int().nullable(),
@@ -81,6 +137,11 @@ export const CampaignPerformance = z.object({
   costPerEngagement: z.number().nullable(),
   formulaVersion: z.string(),
   computedAt: z.string().datetime().nullable(),
+  /** How these posts were found, so a reader can check the attribution. */
+  attributionVersion: z.string(),
+  /** Posts an operator added or removed by hand, over automatic detection. */
+  manualIncludes: z.number().int(),
+  manualExcludes: z.number().int(),
 });
 export type CampaignPerformance = z.infer<typeof CampaignPerformance>;
 
@@ -102,6 +163,7 @@ export const CampaignParticipant = z.object({
   healthScore: z.number().nullable(),
   campaignFit: z.number().nullable(),
   performance: CampaignPerformance,
+  fulfilment: DeliverableFulfilment,
 });
 export type CampaignParticipant = z.infer<typeof CampaignParticipant>;
 
@@ -122,6 +184,9 @@ export const CampaignSummary = z.object({
   totalReach: z.number().int().nullable(),
   totalEngagements: z.number().int().nullable(),
   attributedPosts: z.number().int(),
+  /** Share of every participant's required posts that have been published. */
+  fulfilmentPercent: z.number().min(0).max(100).nullable(),
+  deliverableCount: z.number().int(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
@@ -129,6 +194,7 @@ export type CampaignSummary = z.infer<typeof CampaignSummary>;
 
 export const CampaignDetail = CampaignSummary.extend({
   brief: z.string().nullable(),
+  deliverables: z.array(CampaignDeliverable),
   participants: z.array(CampaignParticipant),
   /** Daily attributed performance, for the campaign trend chart. */
   timeline: z.array(
@@ -153,6 +219,8 @@ export const CampaignDetail = CampaignSummary.extend({
       views: z.number().int().nullable(),
       engagements: z.number().int().nullable(),
       matchedAt: z.string().datetime(),
+      /** "hashtag" when the tracker found it, "manual" when a person added it. */
+      matchedBy: z.enum(["hashtag", "manual"]),
     }),
   ),
 });

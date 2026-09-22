@@ -1,4 +1,5 @@
 import type { SessionUser } from "@/lib/contracts/auth";
+import type { Platform } from "@/lib/contracts/common";
 import type {
   CampaignDetail,
   CampaignParticipant,
@@ -6,7 +7,18 @@ import type {
   Shortlist,
   ShortlistDetail,
   ShortlistItem,
+  CampaignDeliverable,
+  DeliverableFulfilment,
+  DeliverableInput,
 } from "@/lib/contracts/campaign";
+import {
+  ATTRIBUTION_VERSION,
+  CAMPAIGN_FORMULA_VERSION,
+  attributedPostsFor,
+  campaignScoreOf,
+  totalsOf,
+  type AttributionWindow,
+} from "@/server/services/attribution-service";
 import { ApiFailure, assertTenantAccess } from "@/server/auth/rbac";
 import { appRows, persist } from "@/server/data/app-store";
 import { readRecords } from "@/server/data/records";
@@ -54,6 +66,9 @@ interface CampaignRow {
     clientRate: number | null;
     agreedRate: number | null;
   }[];
+  deliverables?: CampaignDeliverable[];
+  /** Operator corrections to automatic hashtag detection, by content id. */
+  attribution?: { include: string[]; exclude: string[] };
 }
 
 /**
@@ -100,6 +115,66 @@ function seedShortlists(pick: (index: number) => string | null): ShortlistRow[] 
   return rows.map(withResolvedItems);
 }
 
+/**
+ * A demonstration campaign still has to demonstrate attribution, and
+ * attribution only finds posts that exist. So the seed reads the chosen
+ * participants' own catalogue and adopts a tag they genuinely used, over a
+ * window that covers those posts: the campaign is a demonstration, but every
+ * post it attributes is a real upload with a real URL and real figures.
+ *
+ * Falls back to the written tag and window when the database holds nothing —
+ * a fresh clone then shows the honest "no posts matched yet" state.
+ */
+function realTagWindow(
+  influencerIds: (string | null)[],
+  platforms: Platform[],
+  fallback: { hashtag: string; startsOn: string; endsOn: string },
+): { hashtag: string; startsOn: string; endsOn: string } {
+  const ids = new Set(influencerIds.filter((id): id is string => id !== null));
+  if (ids.size === 0) return fallback;
+  const onPlatform = new Set(platforms);
+
+  const byTag = new Map<string, { influencerId: string; day: string }[]>();
+  for (const item of readRecords().content) {
+    if (!ids.has(item.influencerId) || !onPlatform.has(item.platform)) continue;
+    for (const raw of item.hashtags) {
+      const tag = raw.replace(/^#+/, "").toLowerCase();
+      if (!/^[a-z0-9_]{3,60}$/.test(tag)) continue;
+      const entry = byTag.get(tag) ?? [];
+      entry.push({ influencerId: item.influencerId, day: item.publishedAt.slice(0, 10) });
+      byTag.set(tag, entry);
+    }
+  }
+
+  // A campaign runs for weeks, so a tag is judged on the posts inside one
+  // eight-week window — the window ending at its newest post. Ranking on the
+  // whole catalogue instead picked tags whose posts were years apart and left
+  // the demonstration campaign with one attributed post.
+  const WINDOW_DAYS = 56;
+  let best: { tag: string; startsOn: string; endsOn: string; posts: number; creators: number } | null =
+    null;
+  for (const [tag, entries] of byTag) {
+    const endsOn = entries.map((entry) => entry.day).sort().at(-1)!;
+    const opened = new Date(`${endsOn}T00:00:00.000Z`);
+    opened.setUTCDate(opened.getUTCDate() - WINDOW_DAYS);
+    const startsOn = opened.toISOString().slice(0, 10);
+    const inWindow = entries.filter((entry) => entry.day >= startsOn);
+    const creators = new Set(inWindow.map((entry) => entry.influencerId)).size;
+    // A tag one creator used twice is not a campaign.
+    if (creators < 2 && inWindow.length < 4) continue;
+    const candidate = { tag, startsOn, endsOn, posts: inWindow.length, creators };
+    if (
+      best === null ||
+      candidate.creators > best.creators ||
+      (candidate.creators === best.creators && candidate.posts > best.posts)
+    ) {
+      best = candidate;
+    }
+  }
+  if (!best) return fallback;
+  return { hashtag: best.tag, startsOn: best.startsOn, endsOn: best.endsOn };
+}
+
 function seedCampaigns(pick: (index: number) => string | null): CampaignRow[] {
   const rows: RawCampaignSeed[] = [
   {
@@ -122,6 +197,10 @@ function seedCampaigns(pick: (index: number) => string | null): CampaignRow[] {
       { influencerId: pick(2), status: "confirmed", talentRate: 340_000, clientRate: 300_000, agreedRate: 320_000 },
       { influencerId: pick(3), status: "negotiating", talentRate: 880_000, clientRate: 600_000, agreedRate: null },
     ],
+    deliverables: [
+      { id: "dl_orbit_video", label: "Long-form review", platform: "youtube", format: "video", quantity: 1, dueOn: "2026-09-15" },
+      { id: "dl_orbit_reel", label: "Launch reel", platform: "instagram", format: "reel", quantity: 2, dueOn: "2026-09-25" },
+    ],
   },
   {
     id: "cmp_summer_beauty",
@@ -141,9 +220,19 @@ function seedCampaigns(pick: (index: number) => string | null): CampaignRow[] {
       { influencerId: pick(4), status: "delivered", talentRate: 450_000, clientRate: 400_000, agreedRate: 420_000 },
       { influencerId: pick(5), status: "delivered", talentRate: 260_000, clientRate: 240_000, agreedRate: 250_000 },
     ],
+    deliverables: [
+      { id: "dl_glow_reel", label: "Edit reel", platform: "instagram", format: "reel", quantity: 1, dueOn: "2026-06-20" },
+    ],
   },
   ];
-  return rows.map(withResolvedParticipants);
+  return rows.map(withResolvedParticipants).map((row) => ({
+    ...row,
+    ...realTagWindow(
+      row.participants.map((participant) => participant.influencerId),
+      row.platforms,
+      { hashtag: row.hashtag, startsOn: row.startsOn, endsOn: row.endsOn },
+    ),
+  }));
 }
 
 // Anchored on the process-wide store so a write from a route handler is
@@ -177,9 +266,16 @@ type RawCampaignSeed = Omit<CampaignRow, "participants"> & {
 
 /** Ids of the largest creators in the database, in a stable order. */
 function seedCreatorIds(): (index: number) => string | null {
-  const ids = [...readRecords().influencers]
-    .sort((a, b) => a.id.localeCompare(b.id))
-    .map((influencer) => influencer.id);
+  // Real creators first. Demonstration records sort ahead of everything else
+  // on id (`demo_…`), so the seeded shortlists and campaigns were built
+  // entirely from the four fictional ones — and a campaign then attributed
+  // fictional posts. They stay as a fallback for a database holding nothing
+  // else.
+  const all = [...readRecords().influencers].sort((a, b) => a.id.localeCompare(b.id));
+  const ids = [
+    ...all.filter((influencer) => !influencer.isDemo),
+    ...all.filter((influencer) => influencer.isDemo),
+  ].map((influencer) => influencer.id);
   return (index) => ids[index] ?? null;
 }
 
@@ -338,64 +434,94 @@ export function setShortlistNote(
 
 /* --- Campaigns ---------------------------------------------------------- */
 
+/** The attribution window a campaign row describes. */
+function windowOf(row: CampaignRow): AttributionWindow {
+  return {
+    hashtag: row.hashtag,
+    platforms: row.platforms,
+    startsOn: row.startsOn,
+    endsOn: row.endsOn,
+    overrides: row.attribution,
+  };
+}
+
+/** Posts every participant owes: the sum of the campaign's deliverables. */
+function requiredPostsOf(row: CampaignRow): number {
+  return (row.deliverables ?? []).reduce((sum, deliverable) => sum + deliverable.quantity, 0);
+}
+
+/** The earliest deliverable deadline, which is when a creator is first late. */
+function earliestDueOn(row: CampaignRow): string | null {
+  const dates = (row.deliverables ?? [])
+    .map((deliverable) => deliverable.dueOn)
+    .filter((date): date is string => date !== null)
+    .sort();
+  return dates[0] ?? null;
+}
+
 /**
- * Campaign performance is built only from posts attributed to the tracking
- * hashtag. A participant with no attributed posts reports nulls and a zero
- * post count — never a borrowed figure from their general profile.
+ * Campaign performance, built only from posts this platform actually indexed
+ * and matched to the tracking hashtag. A participant with no attributed posts
+ * reports nulls and a zero post count — never a borrowed figure from their
+ * general profile, and never a modelled one.
  */
 function participantPerformance(
   row: CampaignRow,
   influencerId: string,
+  now: Date = new Date(),
 ): CampaignParticipant["performance"] {
-  const summary = toSummary(influencerId, EPOCH);
-  const participant = row.participants.find((p) => p.influencerId === influencerId)!;
-  const delivered = participant.status === "delivered" || participant.status === "delivering";
-
-  if (!delivered || !summary) {
-    return {
-      reach: null, views: null, likes: null, comments: null, shares: null,
-      engagementRate: null, attributedPosts: 0, campaignScore: null,
-      costPerEngagement: null, formulaVersion: "campaign-1.0.0", computedAt: null,
-    };
-  }
-
-  // Derived from this creator's own observed performance over the campaign
-  // window, not invented: attributed posts × their measured median reach.
-  const posts = participant.status === "delivered" ? 3 : 2;
-  const views = (summary.medianViews ?? 0) * posts;
-  const rate = summary.engagementRate ?? 0;
-  const engagements = Math.round((views * rate) / 100);
-  const likes = Math.round(engagements * 0.86);
-  const comments = Math.round(engagements * 0.09);
-  const shares = engagements - likes - comments;
-
-  const spend = participant.agreedRate ?? 0;
+  const posts = attributedPostsFor(influencerId, windowOf(row));
+  const totals = totalsOf(posts);
+  const participant = row.participants.find((entry) => entry.influencerId === influencerId);
+  const spend = participant?.agreedRate ?? 0;
+  const matched = new Set(posts.map((post) => post.id));
 
   return {
-    reach: Math.round(views * 1.08),
-    views,
-    likes,
-    comments,
-    shares,
-    engagementRate: rate,
-    attributedPosts: posts,
-    campaignScore: campaignScore(views, rate, posts),
-    costPerEngagement: engagements > 0 && spend > 0 ? Number((spend / engagements).toFixed(2)) : null,
-    formulaVersion: "campaign-1.0.0",
-    computedAt: EPOCH.toISOString(),
+    // Reach is not a figure any of these APIs publishes; views are what was
+    // observed, so reach stays null rather than restating views under a name
+    // that promises unique people.
+    reach: null,
+    views: totals.views,
+    likes: totals.likes,
+    comments: totals.comments,
+    shares: totals.shares,
+    engagementRate: totals.engagementRate,
+    attributedPosts: totals.posts,
+    campaignScore: campaignScoreOf(totals, requiredPostsOf(row)),
+    costPerEngagement:
+      totals.engagements && totals.engagements > 0 && spend > 0
+        ? Number((spend / totals.engagements).toFixed(2))
+        : null,
+    formulaVersion: CAMPAIGN_FORMULA_VERSION,
+    computedAt: totals.posts === 0 ? null : now.toISOString(),
+    attributionVersion: ATTRIBUTION_VERSION,
+    manualIncludes: (row.attribution?.include ?? []).filter((id) => matched.has(id)).length,
+    manualExcludes: (row.attribution?.exclude ?? []).length,
   };
 }
 
-/**
- * Campaign performance score — deterministic and versioned, and deliberately
- * distinct from the health score. It answers "how did this creator perform for
- * this campaign?", which is a different question from "who are they?".
- */
-function campaignScore(views: number, engagementRate: number, posts: number): number {
-  const reachScore = Math.min(100, Math.log10(1 + views) * 16);
-  const engagementScore = Math.min(100, engagementRate * 18);
-  const deliveryScore = Math.min(100, posts * 30);
-  return Number((reachScore * 0.4 + engagementScore * 0.4 + deliveryScore * 0.2).toFixed(1));
+/** Progress against the campaign's deliverables, counted from real posts. */
+function fulfilmentOf(
+  row: CampaignRow,
+  published: number,
+  now: Date = new Date(),
+): DeliverableFulfilment {
+  const required = requiredPostsOf(row);
+  const dueOn = earliestDueOn(row);
+  if (required === 0) {
+    return { required: 0, published, percent: null, state: "none_required", dueOn };
+  }
+  const percent = Number(Math.min(100, (published / required) * 100).toFixed(1));
+  const overdue = dueOn !== null && now.toISOString().slice(0, 10) > dueOn;
+  const state: DeliverableFulfilment["state"] =
+    published >= required
+      ? "fulfilled"
+      : overdue
+        ? "missed"
+        : published === 0
+          ? "not_started"
+          : "in_progress";
+  return { required, published, percent, state, dueOn };
 }
 
 function toCampaignSummary(row: CampaignRow): CampaignSummary {
@@ -418,7 +544,12 @@ function toCampaignSummary(row: CampaignRow): CampaignSummary {
     budgetCurrency: row.budgetCurrency,
     budgetAmount: row.budgetAmount,
     spentAmount: row.participants.reduce((sum, p) => sum + (p.agreedRate ?? 0), 0),
-    totalReach: attributedPosts === 0 ? null : performances.reduce((sum, p) => sum + (p.reach ?? 0), 0),
+    // Views, not "reach": these APIs publish views, and a campaign total is
+    // the sum of what was observed or nothing at all.
+    totalReach:
+      performances.every((p) => p.views === null)
+        ? null
+        : performances.reduce((sum, p) => sum + (p.views ?? 0), 0),
     totalEngagements:
       attributedPosts === 0
         ? null
@@ -427,6 +558,16 @@ function toCampaignSummary(row: CampaignRow): CampaignSummary {
             0,
           ),
     attributedPosts,
+    fulfilmentPercent:
+      requiredPostsOf(row) === 0 || row.participants.length === 0
+        ? null
+        : Number(
+            Math.min(
+              100,
+              (attributedPosts / (requiredPostsOf(row) * row.participants.length)) * 100,
+            ).toFixed(1),
+          ),
+    deliverableCount: (row.deliverables ?? []).length,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -447,6 +588,7 @@ export function getCampaign(user: SessionUser, id: string): CampaignDetail | nul
     .map((participant) => {
       const summary = toSummary(participant.influencerId, EPOCH);
       if (!summary) return null;
+      const performance = participantPerformance(row, participant.influencerId);
       return {
         id: `${row.id}:${participant.influencerId}`,
         influencerId: summary.id,
@@ -462,38 +604,51 @@ export function getCampaign(user: SessionUser, id: string): CampaignDetail | nul
         currency: row.budgetCurrency,
         healthScore: summary.healthScore,
         campaignFit: summary.campaignFit,
-        performance: participantPerformance(row, participant.influencerId),
+        performance,
+        fulfilment: fulfilmentOf(row, performance.attributedPosts),
       } satisfies CampaignParticipant;
     })
     .filter((item): item is CampaignParticipant => item !== null);
 
+  // The real posts, with their real URLs, captions and figures. The previous
+  // version synthesised one object per attributed post with an
+  // `example.invalid` URL and an invented caption — a fabricated observation
+  // on the one screen a client uses to check what they paid for.
+  const included = new Set(row.attribution?.include ?? []);
   const attributedContent = participants
-    .filter((participant) => participant.performance.attributedPosts > 0)
     .flatMap((participant) =>
-      Array.from({ length: participant.performance.attributedPosts }, (_, index) => ({
-        id: `${participant.influencerId}_post_${index}`,
+      attributedPostsFor(participant.influencerId, windowOf(row)).map((post) => ({
+        id: post.id,
         influencerId: participant.influencerId,
         influencerName: participant.displayName,
-        platform: participant.primaryPlatform,
-        url: `https://example.invalid/${participant.primaryHandle}/${index}`,
-        thumbnailUrl: null,
-        caption: `Working with Northwind on the launch. #${row.hashtag}`,
-        publishedAt: new Date(EPOCH.getTime() - (index + 1) * 5 * 86_400_000).toISOString(),
-        views: Math.round((participant.performance.views ?? 0) / participant.performance.attributedPosts),
-        engagements: Math.round(
-          ((participant.performance.likes ?? 0) +
-            (participant.performance.comments ?? 0) +
-            (participant.performance.shares ?? 0)) /
-            participant.performance.attributedPosts,
-        ),
-        matchedAt: new Date(EPOCH.getTime() - index * 5 * 86_400_000).toISOString(),
+        platform: post.platform,
+        url: post.url,
+        thumbnailUrl: post.thumbnailUrl,
+        caption: post.caption || post.title,
+        publishedAt: post.publishedAt,
+        views: post.views,
+        engagements:
+          post.likes === null && post.comments === null && post.shares === null
+            ? null
+            : (post.likes ?? 0) + (post.comments ?? 0) + (post.shares ?? 0),
+        // The tracker reads the indexed catalogue, so a post is known from the
+        // moment it was collected — that time, not a minted one.
+        matchedAt: post.publishedAt,
+        matchedBy: included.has(post.id) ? ("manual" as const) : ("hashtag" as const),
       })),
     )
     .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
 
   const timeline = buildTimeline(attributedContent);
 
-  return { ...toCampaignSummary(row), brief: row.brief, participants, attributedContent, timeline };
+  return {
+    ...toCampaignSummary(row),
+    brief: row.brief,
+    deliverables: row.deliverables ?? [],
+    participants,
+    attributedContent,
+    timeline,
+  };
 }
 
 
@@ -559,6 +714,65 @@ export function createCampaign(
 }
 
 /** Creator ids on a shortlist, for pre-filling a campaign. */
+/**
+ * Replaces a campaign's deliverables. Requirements are campaign-wide — every
+ * participant owes the same set — because per-creator requirements without a
+ * per-creator contract is a promise the platform cannot keep track of yet.
+ */
+export function setCampaignDeliverables(
+  user: SessionUser,
+  campaignId: string,
+  input: DeliverableInput[],
+): CampaignDetail {
+  const row = campaigns().find((entry) => entry.id === campaignId);
+  if (!row) throw new ApiFailure("not_found", "Campaign not found.");
+  assertTenantAccess(user, row.orgId);
+
+  row.deliverables = input.map((deliverable, index) => ({
+    id: `dl_${row.id}_${index}_${Date.now().toString(36)}`,
+    label: deliverable.label,
+    platform: deliverable.platform,
+    format: deliverable.format,
+    quantity: deliverable.quantity,
+    dueOn: deliverable.dueOn,
+  }));
+  row.updatedAt = new Date().toISOString();
+  persist("campaigns", [row]);
+  return getCampaign(user, campaignId)!;
+}
+
+/**
+ * An operator's correction to automatic detection: a post the tracker missed,
+ * or one it matched that does not belong to this campaign. Recorded as an
+ * override rather than by editing the post, so the detection rule and the
+ * correction stay separately visible.
+ */
+export function setAttributionOverride(
+  user: SessionUser,
+  campaignId: string,
+  contentId: string,
+  action: "include" | "exclude" | "clear",
+): CampaignDetail {
+  const row = campaigns().find((entry) => entry.id === campaignId);
+  if (!row) throw new ApiFailure("not_found", "Campaign not found.");
+  assertTenantAccess(user, row.orgId);
+
+  const current = row.attribution ?? { include: [], exclude: [] };
+  const without = {
+    include: current.include.filter((id) => id !== contentId),
+    exclude: current.exclude.filter((id) => id !== contentId),
+  };
+  row.attribution =
+    action === "include"
+      ? { ...without, include: [...without.include, contentId] }
+      : action === "exclude"
+        ? { ...without, exclude: [...without.exclude, contentId] }
+        : without;
+  row.updatedAt = new Date().toISOString();
+  persist("campaigns", [row]);
+  return getCampaign(user, campaignId)!;
+}
+
 export function shortlistMemberIds(user: SessionUser, shortlistId: string): string[] {
   const row = shortlists().find((entry) => entry.id === shortlistId);
   if (!row) return [];

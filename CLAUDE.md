@@ -339,6 +339,50 @@ What follows from it, and is intended:
   footer are now deep forest rather than graphite. A light marketing redesign is a
   separate piece of work.
 
+**D44 — Campaign performance is attributed from indexed posts, not modelled.**
+*(Closes the "live hashtag attribution is not wired" limitation.)* The old
+`participantPerformance` invented a campaign: it credited a delivered participant
+with three posts at their own median views, split engagements 86/9/5 and drew reach
+at 1.08 x views, then `getCampaign` synthesised one object per invented post with an
+`example.invalid` URL and a written caption. On the one screen a client opens to
+check what they paid for, every figure and every row was manufactured — the exact
+failure the rest of the product exists to prevent.
+
+`attribution-service.ts` replaces it. A campaign post is a row in the same `content`
+table every profile is scored from: it belongs to a participant, carries the tracking
+hashtag, sits inside the campaign window and is on one of the campaign's platforms.
+190k of the 434k indexed posts carry hashtags, so this finds real posts with their
+real URLs, captions, publish times and figures. Detection is exact-token over both
+the structured hashtags and the title/caption (`#launch` must not match
+`#launchday`), because Instagram returns one caption string and YouTube creators
+often tag in the title.
+
+What follows, and is intended:
+
+- **Absent stays absent.** A metric no platform reported sums to null, not zero:
+  Instagram publishes no view count, so a campaign's views are the sum of what was
+  observed or nothing at all. `reach` is now always null and the column says
+  **Views** — these APIs publish views, and restating them under a word that
+  promises unique people was the quieter half of the same lie.
+- **No posts means no score.** `campaignScore` is null until something is attributed,
+  and it scores only the components that were observed, renormalising like the health
+  score does (`campaign-2.0.0`).
+- **Deliverables are the denominator.** A campaign defines what each participant owes
+  (platform, format, quantity, due date) and fulfilment is counted from attributed
+  posts — never from a status somebody set by hand. States: not started, in progress,
+  fulfilled, overdue.
+- **Manual correction is evidence too.** Detection misses posts and over-matches, so
+  an operator can include or exclude a post by id; the override is stored separately
+  from the rule, counted on the performance record (`manualIncludes` /
+  `manualExcludes`) and each attributed row says whether it was matched by hashtag or
+  by hand.
+- **The seeded campaigns adopt a tag their participants really used**, over the
+  eight-week window holding the most of those posts, so the demonstration campaign
+  demonstrates real attribution. The seeds also prefer real creators over the four
+  demonstration records, which sorted first on id and had quietly made every seeded
+  shortlist and campaign fictional. A database with no match falls back to the written
+  tag and shows the honest "no posts matched yet" state.
+
 **D43 — A client organisation may carry its own mark; the product keeps its name.**
 `Org.logoUrl` (set at creation from the New account dialog, or `PATCH
 /api/internal/admin/orgs`) travels on the session as `orgLogoUrl`, and inside that

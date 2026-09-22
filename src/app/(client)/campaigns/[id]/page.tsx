@@ -2,9 +2,11 @@ import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ExternalLink, Hash } from "lucide-react";
+import { ClipboardList, ExternalLink, Hash } from "lucide-react";
 import {
   CAMPAIGN_STATUS_LABEL,
+  DELIVERABLE_FORMAT_LABEL,
+  FULFILMENT_LABEL,
   type CampaignDetail,
   type CampaignParticipant,
 } from "@/lib/contracts/campaign";
@@ -88,7 +90,9 @@ export default async function CampaignDetailPage({
   // computed gets no bar, not a measured-looking zero-height one.
   const scored = delivered.filter((p) => p.performance.campaignScore !== null);
   const unscored = delivered.length - scored.length;
-  const reachMeasured = delivered.filter((p) => p.performance.reach !== null);
+  // Views, not reach: these platform APIs publish a view count and no reach
+  // figure, so the column names what was actually observed.
+  const viewsMeasured = delivered.filter((p) => p.performance.views !== null);
 
   return (
     <>
@@ -188,7 +192,8 @@ export default async function CampaignDetailPage({
                   <Th numeric>Our rate</Th>
                   <Th numeric>Agreed</Th>
                   <Th numeric>Posts</Th>
-                  <Th numeric>Reach</Th>
+                  <Th>Deliverables</Th>
+                  <Th numeric>Views</Th>
                   <Th numeric>Engagement</Th>
                   <Th numeric>Cost / eng.</Th>
                   {/* A `th` takes its accessible name from its content, so
@@ -265,30 +270,93 @@ export default async function CampaignDetailPage({
 
             <Card>
               <CardHeader>
-                <CardTitle>Reach by creator</CardTitle>
+                <CardTitle>Views by creator</CardTitle>
               </CardHeader>
               <CardContent>
-                {reachMeasured.length > 0 ? (
+                {viewsMeasured.length > 0 ? (
                   <CategoryBars
-                    data={reachMeasured.map((participant) => ({
+                    data={viewsMeasured.map((participant) => ({
                       label: `@${participant.primaryHandle}`,
-                      value: participant.performance.reach as number,
+                      value: participant.performance.views as number,
                     }))}
-                    valueLabel="reach"
-                    ariaLabel="Attributed reach for each delivering creator"
+                    valueLabel="views"
+                    ariaLabel="Attributed views for each delivering creator"
                     height={200}
                   />
                 ) : (
                   <EmptyState
                     variant="panel"
-                    title="No reach measured yet"
-                    description="Reach appears once attributed posts report it."
+                    title="No views measured yet"
+                    description="Views appear once attributed posts report them."
                   />
                 )}
               </CardContent>
             </Card>
           </div>
         )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Deliverables</CardTitle>
+            <span className="text-sm text-ink-muted">
+              {campaign.deliverables.length === 0
+                ? "None set"
+                : `Asked of each of ${pluralise(campaign.participants.length, "participant")}`}
+            </span>
+          </CardHeader>
+          {campaign.deliverables.length === 0 ? (
+            <EmptyState
+              icon={ClipboardList}
+              title="No deliverables set"
+              description="Set what each creator owes — a video, a reel, a story — and fulfilment is counted from the posts the tracker attributes, never from a status someone sets by hand."
+            />
+          ) : (
+            <TableWrap label="Campaign deliverables">
+              <Table>
+                <Thead>
+                  <Tr>
+                    <Th>Deliverable</Th>
+                    <Th>Platform</Th>
+                    <Th>Format</Th>
+                    <Th numeric>Per creator</Th>
+                    <Th>Due</Th>
+                    <Th numeric>Published</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {campaign.deliverables.map((deliverable) => (
+                    <Tr key={deliverable.id}>
+                      <Td className="font-medium text-ink">{deliverable.label}</Td>
+                      <Td>{PLATFORM_LABEL[deliverable.platform]}</Td>
+                      <Td>{DELIVERABLE_FORMAT_LABEL[deliverable.format]}</Td>
+                      <Td numeric>{deliverable.quantity}</Td>
+                      <Td className="whitespace-nowrap">
+                        {deliverable.dueOn ? formatDate(deliverable.dueOn) : NO_VALUE}
+                      </Td>
+                      {/* Fulfilment is counted per creator against the whole
+                          requirement set, so a per-row published count would
+                          imply an attribution this platform cannot make: a
+                          post carries the campaign hashtag, not the
+                          deliverable it satisfies. */}
+                      <Td numeric className="text-ink-subtle">
+                        {NO_VALUE}
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableWrap>
+          )}
+          <p className="border-t border-rule px-4 py-2.5 text-sm text-ink-muted">
+            Campaign fulfilment{" "}
+            <span className="font-num text-ink">
+              {campaign.fulfilmentPercent === null
+                ? NO_VALUE
+                : `${campaign.fulfilmentPercent}%`}
+            </span>{" "}
+            — attributed posts against every participant&apos;s requirement.
+          </p>
+        </Card>
 
         <Card>
           <CardHeader>
@@ -501,7 +569,29 @@ function ParticipantRow({ participant }: { participant: CampaignParticipant }) {
         {formatCurrency(participant.agreedRate, participant.currency, { compact: true })}
       </Td>
       <Td numeric>{performance.attributedPosts}</Td>
-      <Td numeric>{formatCompact(performance.reach)}</Td>
+      <Td>
+        {participant.fulfilment.state === "none_required" ? (
+          <span className="text-ink-subtle">{NO_VALUE}</span>
+        ) : (
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
+            <Badge
+              tone={
+                participant.fulfilment.state === "fulfilled"
+                  ? "positive"
+                  : participant.fulfilment.state === "missed"
+                    ? "critical"
+                    : "neutral"
+              }
+            >
+              {FULFILMENT_LABEL[participant.fulfilment.state]}
+            </Badge>
+            <span className="font-num text-sm text-ink-muted">
+              {participant.fulfilment.published}/{participant.fulfilment.required}
+            </span>
+          </span>
+        )}
+      </Td>
+      <Td numeric>{formatCompact(performance.views)}</Td>
       <Td numeric>{formatPercent(performance.engagementRate)}</Td>
       <Td numeric>
         {performance.costPerEngagement === null
