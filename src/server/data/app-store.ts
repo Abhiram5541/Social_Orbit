@@ -19,9 +19,9 @@ import { encode, postgresDriver, appStateQuery } from "./postgres";
  * write; make the repositories async if that ever matters.
  * ------------------------------------------------------------------------ */
 
-export type AppKind = "shortlists" | "campaigns" | "api_keys" | "users" | "orgs" | "usage" | "digests" | "crm";
+export type AppKind = "shortlists" | "campaigns" | "api_keys" | "users" | "orgs" | "usage" | "digests" | "crm" | "outreach_templates" | "outreach_messages";
 
-export const APP_KINDS: AppKind[] = ["shortlists", "campaigns", "api_keys", "users", "orgs", "usage", "digests", "crm"];
+export const APP_KINDS: AppKind[] = ["shortlists", "campaigns", "api_keys", "users", "orgs", "usage", "digests", "crm", "outreach_templates", "outreach_messages"];
 
 /**
  * The one array for `kind`. Under the Postgres driver this is what

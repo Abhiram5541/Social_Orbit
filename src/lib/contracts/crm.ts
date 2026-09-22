@@ -102,6 +102,9 @@ export const CreatorContact = z.object({
   agency: z.string().nullable(),
   /** Where the address came from — a creator's own bio, or typed by a person. */
   source: z.enum(["manual", "bio", "creator_portal"]).nullable(),
+  /** Set when the creator asked not to be contacted. Nothing is ever sent
+   *  after this, and it cannot be cleared by sending. */
+  optedOutAt: z.string().datetime().nullable().default(null),
 });
 export type CreatorContact = z.infer<typeof CreatorContact>;
 

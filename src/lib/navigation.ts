@@ -24,7 +24,8 @@ import {
   UserCircle,
   Users,
   Plug,
-  Handshake,} from "lucide-react";
+  Handshake,
+  Send,} from "lucide-react";
 import type { Permission, Workspace, OrgKind } from "@/lib/contracts/auth";
 
 /* ---------------------------------------------------------------------------
@@ -104,6 +105,12 @@ const CLIENT_NAV: NavSection[] = [
         icon: Handshake,
         permission: "crm:read",
         matchNested: true,
+      },
+      {
+        href: "/outreach",
+        label: "Outreach",
+        icon: Send,
+        permission: "outreach:send",
       },
       {
         href: "/campaigns",

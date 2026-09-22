@@ -53,6 +53,7 @@ const EMPTY_CONTACT: CrmRecord["contact"] = {
   managerEmail: null,
   agency: null,
   source: null,
+  optedOutAt: null,
 };
 
 export const RELATIONSHIP_FORMULA_VERSION = "relationship-1.0.0";
@@ -280,6 +281,29 @@ export function updateCrm(
   row.updatedAt = new Date().toISOString();
   persist("crm", [row]);
   return toRecord(user, row)!;
+}
+
+/** The address outreach may use, or null when it must not be used at all. */
+export function contactableEmail(user: SessionUser, influencerId: string): string | null {
+  const row = rows().find(
+    (entry) => entry.orgId === user.orgId && entry.influencerId === influencerId,
+  );
+  if (!row || row.contact.optedOutAt) return null;
+  return row.contact.email ?? row.contact.managerEmail ?? null;
+}
+
+/**
+ * Records that a creator asked not to be contacted. Deliberately one-way:
+ * an opt-out cleared by whoever wants to send the next email is not an
+ * opt-out, so removing it is a support action against the record, not a
+ * button in the send flow.
+ */
+export function optOut(user: SessionUser, influencerId: string, note: string): CrmRecord {
+  const row = mutable(user, influencerId);
+  row.contact = { ...row.contact, optedOutAt: new Date().toISOString() };
+  row.updatedAt = new Date().toISOString();
+  persist("crm", [row]);
+  return addInteraction(user, influencerId, { kind: "note", body: `Opted out of outreach. ${note}`.trim() });
 }
 
 export function addInteraction(
