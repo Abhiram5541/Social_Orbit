@@ -37,6 +37,7 @@ export async function register(): Promise<void> {
     api_keys: seedApiKeys,
     usage: () => [],
     digests: () => [],
+    crm: () => [],
   });
 
   // Score every creator once now, in the background, so the first request

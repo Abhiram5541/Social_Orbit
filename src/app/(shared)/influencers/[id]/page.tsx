@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CATEGORY_LABEL } from "@/lib/contracts/common";
 import { discoveryHomeFor } from "@/lib/navigation";
-import { requirePagePermission } from "@/server/auth/rbac";
+import { can, requirePagePermission } from "@/server/auth/rbac";
 import { toProfile } from "@/server/repositories/influencer-repository";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
 import { CalendarDays } from "lucide-react";
@@ -18,6 +18,7 @@ import {
 } from "@/components/profile/profile-bento";
 import { ProfileActions } from "@/components/profile/profile-actions";
 import { ProfileTabs } from "@/components/profile/profile-tabs";
+import { RelationshipPanel } from "@/components/crm/relationship-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -132,6 +133,12 @@ export default async function InfluencerProfilePage({
             <VersionsCard profile={visible} />
           </div>
         </div>
+
+        {/* A client's own record of this creator. Platform staff read across
+            tenants, so there is no single relationship to show them. */}
+        {user.orgKind === "client" && can(user, "crm:read") && (
+          <RelationshipPanel influencerId={visible.id} />
+        )}
 
         <ProfileTabs profile={visible} />
       </PageBody>

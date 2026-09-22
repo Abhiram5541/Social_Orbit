@@ -61,6 +61,8 @@ export const Permission = z.enum([
   // Client-owned artifacts
   "shortlist:read",
   "shortlist:write",
+  "crm:read",
+  "crm:write",
   "campaign:read",
   "campaign:write",
   "report:read",
@@ -108,6 +110,8 @@ const CLIENT_MEMBER: Permission[] = [
   "influencer:export",
   "shortlist:read",
   "shortlist:write",
+  "crm:read",
+  "crm:write",
   "campaign:read",
   "campaign:write",
   "report:read",

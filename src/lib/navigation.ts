@@ -24,7 +24,7 @@ import {
   UserCircle,
   Users,
   Plug,
-} from "lucide-react";
+  Handshake,} from "lucide-react";
 import type { Permission, Workspace, OrgKind } from "@/lib/contracts/auth";
 
 /* ---------------------------------------------------------------------------
@@ -98,6 +98,13 @@ const CLIENT_NAV: NavSection[] = [
   {
     label: "Activate",
     items: [
+      {
+        href: "/relationships",
+        label: "Relationships",
+        icon: Handshake,
+        permission: "crm:read",
+        matchNested: true,
+      },
       {
         href: "/campaigns",
         label: "Campaigns",
