@@ -18,6 +18,10 @@ import { getCampaign, listCampaigns } from "@/server/repositories/workspace-repo
  *     view count, so a share-of-views figure that quietly treated those
  *     posts as zero would understate every Instagram creator in the set.
  *     Each measure reports how much of the set it could actually read.
+ *   - These are a *client's* own intelligence, over watchlists that client
+ *     built, so they are gated on the client workspace's own permissions.
+ *     Gating them on `analytics:read` — a platform-staff permission — left a
+ *     client owner unable to read their own competitor data.
  *   - Networks are not interchangeable. A cross-network total is labelled by
  *     what it sums; an engagement rate is never averaged across platforms
  *     whose denominators differ, it is reported per network.

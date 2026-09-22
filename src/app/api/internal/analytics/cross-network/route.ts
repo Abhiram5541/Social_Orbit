@@ -12,7 +12,7 @@ const Body = z.object({
 /** One roster read per network, with nothing averaged across them. */
 export async function POST(request: NextRequest) {
   return handler(async () => {
-    await requirePermission("analytics:read");
+    await requirePermission("influencer:read");
     const parsed = Body.safeParse(await request.json().catch(() => null));
     if (!parsed.success) throw new ApiFailure("validation_failed", parsed.error.issues[0].message);
     const to = parsed.data.to ?? new Date().toISOString().slice(0, 10);

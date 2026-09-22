@@ -70,17 +70,26 @@ test.describe("campaigns", () => {
     });
     expect(missing.status()).toBe(422);
 
-    // Hashtag already tracking a live campaign.
+    // Hashtag already tracking a live campaign. The campaign is created by
+    // this test rather than assumed from the seed: the seeded campaigns adopt
+    // a tag their participants really used, so a hard-coded one is free —
+    // and the clash request would then *create* it, making the next run pass
+    // for the wrong reason.
+    const hashtag = `E2EClash${Date.now()}`;
+    const body = {
+      platforms: ["youtube"],
+      startsOn: "2026-09-01",
+      endsOn: "2026-09-30",
+      budgetCurrency: "INR",
+      budgetAmount: null,
+    };
+    const first = await request.post("/api/internal/campaigns", {
+      data: { ...body, name: "Original", hashtag },
+    });
+    expect(first.status()).toBe(201);
+
     const clash = await request.post("/api/internal/campaigns", {
-      data: {
-        name: "Clashing",
-        hashtag: "OrbitSeries2026",
-        platforms: ["youtube"],
-        startsOn: "2026-09-01",
-        endsOn: "2026-09-30",
-        budgetCurrency: "INR",
-        budgetAmount: null,
-      },
+      data: { ...body, name: "Clashing", hashtag },
     });
     expect(clash.status()).toBe(409);
     expect((await clash.json()).error.message).toContain("already tracking");

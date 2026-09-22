@@ -12,14 +12,14 @@ const Body = z.object({
 
 export async function GET() {
   return handler(async () => {
-    const user = await requirePermission("analytics:read");
+    const user = await requirePermission("influencer:read");
     return NextResponse.json({ items: listWatchlists(user) });
   });
 }
 
 export async function POST(request: NextRequest) {
   return handler(async () => {
-    const user = await requirePermission("analytics:read");
+    const user = await requirePermission("crm:write");
     const parsed = Body.safeParse(await request.json().catch(() => null));
     if (!parsed.success) throw new ApiFailure("validation_failed", parsed.error.issues[0].message);
     return NextResponse.json(createWatchlist(user, parsed.data), { status: 201 });

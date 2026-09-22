@@ -5,7 +5,7 @@ import { shareOfVoice } from "@/server/services/comparative-service";
 /** Share of voice across the organisation's watchlists over a window. */
 export async function GET(request: NextRequest) {
   return handler(async () => {
-    const user = await requirePermission("analytics:read");
+    const user = await requirePermission("influencer:read");
     const params = request.nextUrl.searchParams;
     const to = params.get("to") ?? new Date().toISOString().slice(0, 10);
     const from =
