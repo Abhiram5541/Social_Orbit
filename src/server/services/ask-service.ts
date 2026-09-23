@@ -36,10 +36,16 @@ export interface AskResult {
   version: string;
 }
 
-/** 50k, 1.2m, 500 000, "one lakh". */
+/**
+ * 50k, 1.2m, 500 000, "1 lakh".
+ *
+ * Suffixes are listed longest first. With `l` ahead of `lakh` the alternation
+ * matched "1 l" out of "1 lakh" and left "akh" behind, which then became a
+ * free-text filter and narrowed the search to nothing.
+ */
 function parseCount(raw: string): number | null {
   const text = raw.toLowerCase().replace(/[, ]/g, "");
-  const match = /^(\d+(?:\.\d+)?)(k|m|mn|l|lakh|cr|crore)?$/.exec(text);
+  const match = /^(\d+(?:\.\d+)?)(lakh|crore|mn|cr|k|m|l)?$/.exec(text);
   if (!match) return null;
   const value = Number(match[1]);
   const scale: Record<string, number> = {
@@ -103,7 +109,7 @@ export function parseAsk(input: string): AskResult {
 
   /* --- follower ranges ------------------------------------------------- */
   const range = take(
-    /\b([\d.,]+\s*(?:k|m|mn|l|lakh|cr|crore)?)\s*(?:-|–|to|and)\s*([\d.,]+\s*(?:k|m|mn|l|lakh|cr|crore)?)\s*(?:followers|subs|subscribers|audience)/.exec(text),
+    /\b([\d.,]+\s*(?:lakh|crore|mn|cr|k|m|l)?)\s*(?:-|–|to|and)\s*([\d.,]+\s*(?:lakh|crore|mn|cr|k|m|l)?)\s*(?:followers|subs|subscribers|audience)/.exec(text),
   );
   if (range) {
     const min = parseCount(range[1]);
@@ -115,7 +121,7 @@ export function parseAsk(input: string): AskResult {
     }
   } else {
     const over = take(
-      /\b(?:over|above|more than|at least|>)\s*([\d.,]+\s*(?:k|m|mn|l|lakh|cr|crore)?)\s*(?:followers|subs|subscribers|audience)?/.exec(text),
+      /\b(?:over|above|more than|at least|>)\s*([\d.,]+\s*(?:lakh|crore|mn|cr|k|m|l)?)\s*(?:followers|subs|subscribers|audience)?/.exec(text),
     );
     if (over) {
       const min = parseCount(over[1]);
@@ -125,7 +131,7 @@ export function parseAsk(input: string): AskResult {
       }
     }
     const under = take(
-      /\b(?:under|below|less than|fewer than|<)\s*([\d.,]+\s*(?:k|m|mn|l|lakh|cr|crore)?)\s*(?:followers|subs|subscribers|audience)?/.exec(text),
+      /\b(?:under|below|less than|fewer than|<)\s*([\d.,]+\s*(?:lakh|crore|mn|cr|k|m|l)?)\s*(?:followers|subs|subscribers|audience)?/.exec(text),
     );
     if (under) {
       const max = parseCount(under[1]);

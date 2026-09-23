@@ -55,3 +55,17 @@ describe("Ask SENSO", () => {
     expect((dropped.query as unknown as Record<string, string>).category).toBe("fitness");
   });
 });
+
+describe("scale suffixes", () => {
+  it("reads a lakh and a crore whole, rather than matching the shorter suffix first", () => {
+    const lakh = parseAsk("beauty creators in india over 1 lakh followers");
+    expect(String(lakh.query.followersMin)).toBe("100000");
+    expect(lakh.unparsed).not.toContain("akh");
+    // The leftovers must not become a free-text filter either.
+    expect(lakh.query.q ?? "").not.toContain("akh");
+
+    expect(String(parseAsk("creators under 2 crore followers").query.followersMax)).toBe("20000000");
+    expect(String(parseAsk("50k to 500k followers").query.followersMin)).toBe("50000");
+    expect(String(parseAsk("50k to 500k followers").query.followersMax)).toBe("500000");
+  });
+});
