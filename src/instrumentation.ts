@@ -48,6 +48,9 @@ export async function register(): Promise<void> {
     rules: () => [],
     watchlists: () => [],
     applications: () => [],
+    jobs: () => [],
+    report_schedules: () => [],
+    reports: () => [],
   });
 
   // Score every creator once now, in the background, so the first request
@@ -59,6 +62,13 @@ export async function register(): Promise<void> {
   // them (SOCIALORBIT_DAILY_JOBS=true). Vercel uses the cron routes instead.
   const { startScheduler } = await import("@/server/services/daily-jobs");
   startScheduler();
+
+  // Background jobs — scheduled reports and anything else queued. Registering
+  // the handlers is a side effect of importing the services that own them,
+  // so they are imported before the runner starts.
+  await import("@/server/services/report-service");
+  const { startQueue } = await import("@/server/services/job-queue");
+  startQueue();
 }
 
 /* ---------------------------------------------------------------------------

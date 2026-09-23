@@ -190,6 +190,12 @@ export function startScheduler(): void {
         const discovery = await runDiscoveryJob(now);
         if (discovery) console.log(`[jobs] discover: ${discovery.ingested} new creators`);
       }
+      // Scheduled reports are queued rather than generated here: the daily
+      // clock decides *what is due*, the queue decides when it runs.
+      const { queueDueReports } = await import("./report-service");
+      const queued = queueDueReports(now);
+      if (queued > 0) console.log(`[jobs] queued ${queued} scheduled report(s)`);
+
       const digest = await runDigestJob(now);
       if (digest) console.log(`[jobs] digest: ${digest.emailed} of ${digest.users} users emailed, ${digest.alerts} alerts`);
     } catch (error) {
