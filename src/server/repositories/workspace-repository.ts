@@ -773,6 +773,69 @@ export function setAttributionOverride(
   return getCampaign(user, campaignId)!;
 }
 
+/**
+ * Every campaign a creator participates in, across every organisation.
+ *
+ * Deliberately not tenant-scoped: this is the creator's own record, read by
+ * the creator. A client sees their campaign; the creator sees the campaigns
+ * they are on. The caller must already have proven it is that creator —
+ * `requireOwnProfile` does — and only the fields a creator is entitled to
+ * are returned, so one client's roster is never visible to another's.
+ */
+export function campaignsForCreator(influencerId: string): {
+  campaignId: string;
+  campaignName: string;
+  orgId: string;
+  hashtag: string;
+  brief: string | null;
+  status: CampaignSummary["status"];
+  startsOn: string;
+  endsOn: string;
+  deliverables: CampaignDeliverable[];
+  me: CampaignParticipant;
+}[] {
+  const out: ReturnType<typeof campaignsForCreator> = [];
+  for (const row of campaigns()) {
+    if (!row.participants.some((entry) => entry.influencerId === influencerId)) continue;
+    const performance = participantPerformance(row, influencerId);
+    const summary = toSummary(influencerId, EPOCH);
+    const participant = row.participants.find((entry) => entry.influencerId === influencerId)!;
+    if (!summary) continue;
+    out.push({
+      campaignId: row.id,
+      campaignName: row.name,
+      orgId: row.orgId,
+      hashtag: row.hashtag,
+      brief: row.brief,
+      status: row.status,
+      startsOn: row.startsOn,
+      endsOn: row.endsOn,
+      deliverables: row.deliverables ?? [],
+      me: {
+        id: `${row.id}:${influencerId}`,
+        influencerId,
+        displayName: summary.displayName,
+        primaryHandle: summary.primaryHandle,
+        avatarUrl: summary.avatarUrl,
+        primaryPlatform: summary.primaryPlatform,
+        followers: summary.followers,
+        status: participant.status,
+        talentRate: participant.talentRate,
+        // A creator sees what was agreed with them, never what the client
+        // internally budgeted for them.
+        clientRate: null,
+        agreedRate: participant.agreedRate,
+        currency: row.budgetCurrency,
+        healthScore: summary.healthScore,
+        campaignFit: summary.campaignFit,
+        performance,
+        fulfilment: fulfilmentOf(row, performance.attributedPosts),
+      },
+    });
+  }
+  return out.sort((a, b) => b.startsOn.localeCompare(a.startsOn));
+}
+
 export function shortlistMemberIds(user: SessionUser, shortlistId: string): string[] {
   const row = shortlists().find((entry) => entry.id === shortlistId);
   if (!row) return [];
