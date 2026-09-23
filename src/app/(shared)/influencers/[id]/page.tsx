@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { CATEGORY_LABEL } from "@/lib/contracts/common";
 import { discoveryHomeFor } from "@/lib/navigation";
 import { can, requirePagePermission } from "@/server/auth/rbac";
+import { sentimentBlockedReason, sentimentFor } from "@/server/services/sentiment-service";
+import { visualBlockedReason, visualFor } from "@/server/services/visual-service";
 import { toProfile } from "@/server/repositories/influencer-repository";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
 import { CalendarDays } from "lucide-react";
@@ -18,6 +20,8 @@ import {
 } from "@/components/profile/profile-bento";
 import { ProfileActions } from "@/components/profile/profile-actions";
 import { ProfileTabs } from "@/components/profile/profile-tabs";
+import { SentimentPanel } from "@/components/listening/sentiment-panel";
+import { VisualPanel } from "@/components/listening/visual-panel";
 import { RelationshipPanel } from "@/components/crm/relationship-panel";
 
 export const dynamic = "force-dynamic";
@@ -139,6 +143,24 @@ export default async function InfluencerProfilePage({
         {user.orgKind === "client" && can(user, "crm:read") && (
           <RelationshipPanel influencerId={visible.id} />
         )}
+
+        {/* Two readings that cost an external call, so they exist only once
+            somebody has asked for them. Both say "not measured" rather than
+            showing a neutral figure. */}
+        <div className="grid min-w-0 gap-4 xl:grid-cols-2">
+          <SentimentPanel
+            record={sentimentFor("creator", visible.id)}
+            blocked={sentimentBlockedReason()}
+            subject={{ kind: "creator", id: visible.id }}
+            canRun={can(user, "analytics:read")}
+          />
+          <VisualPanel
+            record={visualFor(visible.id)}
+            blocked={visualBlockedReason()}
+            influencerId={visible.id}
+            canRun={can(user, "analytics:read")}
+          />
+        </div>
 
         <ProfileTabs profile={visible} />
       </PageBody>

@@ -87,6 +87,12 @@ export async function extract<S extends z.ZodType>(
     user: string;
     /** Reasoning models spend budget before writing; too low returns empty content. */
     maxTokens?: number;
+    /**
+     * Images the model should look at, by URL. Used for reading thumbnails —
+     * the platform serves them, so they are passed by link rather than
+     * downloaded and re-uploaded by us.
+     */
+    images?: string[];
   },
 ): Promise<AiCall<z.infer<S>>> {
   const model = openAiModel();
@@ -107,7 +113,15 @@ export async function extract<S extends z.ZodType>(
         model,
         messages: [
           { role: "system", content: options.system },
-          { role: "user", content: options.user },
+          {
+            role: "user",
+            content: options.images?.length
+              ? [
+                  { type: "text", text: options.user },
+                  ...options.images.map((url) => ({ type: "image_url", image_url: { url } })),
+                ]
+              : options.user,
+          },
         ],
         max_completion_tokens: options.maxTokens ?? 4096,
         response_format: {

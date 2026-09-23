@@ -339,6 +339,24 @@ What follows from it, and is intended:
   footer are now deep forest rather than graphite. A light marketing redesign is a
   separate piece of work.
 
+**D48 — A thumbnail is read one image at a time, and a visual safety flag is evidence rather than a verdict.**
+Everything SENSO knew about a creator's content was words. The thumbnail is
+the part of a post an audience sees first and the part a brand is judged
+beside, and it was invisible to the platform.
+
+`visual-service.ts` passes recent thumbnails to a vision model under a
+per-image schema and counts the descriptions here. The model is never asked
+how *many* thumbnails show a face — only whether this one does — because a
+count is arithmetic, and arithmetic is not a thing to ask a model for. An
+index outside the batch describes an image that was not sent, so it is
+discarded rather than attached to the wrong post.
+
+Two limits are deliberate. Images go to the provider by URL as the platform
+serves them: SENSO does not download, store or re-host a creator's artwork.
+And a visual safety flag names the thumbnail it came from and links the post,
+because an unreviewable safety claim about somebody's livelihood is worse
+than no claim — the panel says so in as many words.
+
 **D47 — Sentiment is counted from labelled comments; listening is over the creators SENSO indexed, and says so.**
 The requirement asked for sentiment analysis and consumer intelligence. One
 is buildable as asked, the other is half buildable, and the naming says which
