@@ -235,6 +235,9 @@ export const SessionUser = z.object({
    *  inside their workspace. Optional so sessions issued before it existed
    *  still parse. */
   orgLogoUrl: z.string().nullable().optional(),
+  /** Agency workflow: the clients this person handles. Null or empty means
+   *  the whole organisation. Optional so older sessions still parse. */
+  brandIds: z.array(z.string()).nullable().optional(),
   /** Set only for role `influencer` — the creator record they own. */
   influencerId: z.string().nullable(),
 });

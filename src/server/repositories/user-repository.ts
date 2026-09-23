@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import type { OrgKind, Plan, Role, SessionUser } from "@/lib/contracts/auth";
+import { PLAN_CONFIG, type OrgKind, type Plan, type Role, type SessionUser } from "@/lib/contracts/auth";
 import { hashPassword, verifyPassword, equaliseTiming } from "@/server/auth/password";
 import { appRows, persist } from "@/server/data/app-store";
 import { postgresDriver } from "@/server/data/postgres";
@@ -42,6 +42,8 @@ export interface UserRecord {
   /** An outstanding emailed link — a reset or an invite. Only its hash is
    *  kept, so a database read cannot be replayed as the link. */
   passwordToken?: { hash: string; expiresAt: string; purpose: "reset" | "invite" } | null;
+  /** Agency workflow: the clients this person handles. Empty = the whole org. */
+  brandIds?: string[];
 }
 
 const ORGS: Org[] = [
@@ -184,6 +186,21 @@ export async function createUser(input: {
   if (!org) throw new Error("No such organisation.");
   if (await findUserByEmail(input.email)) throw new Error("An account with that email already exists.");
 
+  // Seats are a plan limit, so they are enforced where the seat is taken.
+  // Counting live rows rather than trusting `seatsUsed` — a counter that
+  // drifts is a limit that silently stops being one.
+  const seats = PLAN_CONFIG[org.plan].seats;
+  if (seats !== null) {
+    const active = (await load()).filter(
+      (user) => user.orgId === org.id && user.status === "active",
+    ).length;
+    if (active >= seats) {
+      throw new Error(
+        `The ${PLAN_CONFIG[org.plan].label} plan includes ${seats} seats and ${active} are in use. Upgrade the plan or suspend an account first.`,
+      );
+    }
+  }
+
   const user: UserRecord = {
     id: `usr_${Date.now().toString(36)}`,
     email: input.email.trim().toLowerCase(),
@@ -263,8 +280,68 @@ export async function findUserByEmail(email: string): Promise<UserRecord | null>
   return all.find((user) => user.email.toLowerCase() === normalised) ?? null;
 }
 
-export async function listUsers(): Promise<UserRecord[]> {
-  return [...(await load())];
+export async function listUsers(orgId?: string): Promise<UserRecord[]> {
+  const all = await load();
+  return orgId ? all.filter((user) => user.orgId === orgId) : [...all];
+}
+
+/** Limits a colleague to a set of agency clients. Empty restores full access. */
+export async function setUserBrands(
+  orgId: string,
+  userId: string,
+  brandIds: string[],
+): Promise<string[]> {
+  const user = (await load()).find((entry) => entry.id === userId);
+  // Scoped by org here rather than at the call site: changing who can see
+  // what is exactly the kind of write a missing tenant check leaks.
+  if (!user || user.orgId !== orgId) throw new Error("No such user.");
+  user.brandIds = brandIds;
+  persist("users", [user]);
+  return brandIds;
+}
+
+/**
+ * The caller's current brand restriction, read from the user record rather
+ * than from their session. An access change has to bite immediately — a
+ * cookie minted before it lasts a week, and "you keep seeing that client
+ * until you sign out" is not an access control.
+ *
+ * Falls back to the session's copy only before the rows are loaded, which is
+ * the one moment the record cannot be consulted.
+ */
+export function currentBrandIds(user: SessionUser): string[] {
+  const rows = postgresDriver() ? appRows<UserRecord>("users", () => []) : users;
+  const row = rows?.find((entry) => entry.id === user.id);
+  return row?.brandIds ?? user.brandIds ?? [];
+}
+
+/**
+ * Re-reads the parts of a session that the *organisation* owns rather than
+ * the person: plan, name, mark, and the client restriction.
+ *
+ * A session cookie is signed at sign-in and lives a week. Everything above
+ * decides on it — what the plan includes, what quota is left, which clients
+ * are visible — so without this an approved upgrade would not take effect for
+ * seven days and a revoked access would not either. Identity stays whatever
+ * was signed; only the org's own fields are refreshed.
+ *
+ * Synchronous on purpose: both stores are already in memory (D29), and a
+ * session read happens on every request.
+ */
+export function freshenSession(user: SessionUser): SessionUser {
+  const org = orgs().find((entry) => entry.id === user.orgId);
+  const rows = postgresDriver() ? appRows<UserRecord>("users", () => []) : users;
+  const row = rows?.find((entry) => entry.id === user.id);
+  if (!org && !row) return user;
+  return {
+    ...user,
+    plan: org?.plan ?? user.plan,
+    orgName: org?.name ?? user.orgName,
+    orgKind: org?.kind ?? user.orgKind,
+    orgLogoUrl: org ? (org.logoUrl ?? null) : (user.orgLogoUrl ?? null),
+    brandIds: row?.brandIds ?? user.brandIds ?? null,
+    role: row?.role ?? user.role,
+  };
 }
 
 export function toSessionUser(user: UserRecord, org: Org): SessionUser {
@@ -279,6 +356,7 @@ export function toSessionUser(user: UserRecord, org: Org): SessionUser {
     orgKind: org.kind,
     plan: org.plan,
     orgLogoUrl: org.logoUrl ?? null,
+    brandIds: user.brandIds ?? null,
     influencerId: user.influencerId,
   };
 }

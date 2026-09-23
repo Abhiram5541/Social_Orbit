@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { errorResponse, handler, requirePermission } from "@/server/auth/rbac";
 import { getCampaign } from "@/server/repositories/workspace-repository";
+import { assertFeature } from "@/server/services/billing-service";
+import { incrementUsage } from "@/server/repositories/usage-repository";
 
 /*
  * Campaign performance CSV — one row per participant, exactly what the
@@ -17,6 +19,9 @@ const cell = (value: string | number | null): string =>
 export async function GET(_request: Request, { params }: Params) {
   return handler(async () => {
     const user = await requirePermission("campaign:read");
+    // Exports are a plan entitlement and a metered one, so both happen here
+    // rather than wherever a button happens to be drawn.
+    assertFeature(user, "exports");
     const { id } = await params;
 
     const campaign = getCampaign(user, id);
@@ -76,6 +81,7 @@ export async function GET(_request: Request, { params }: Params) {
     const csv = [header.map(cell).join(","), ...rows].join("\r\n") + "\r\n";
     const stem = campaign.name.replace(/[^\w-]+/g, "-").replace(/^-+|-+$/g, "") || "campaign";
 
+    incrementUsage(user.orgId, "export");
     return new NextResponse(csv, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",

@@ -339,6 +339,76 @@ What follows from it, and is intended:
   footer are now deep forest rather than graphite. A light marketing redesign is a
   separate piece of work.
 
+**D46 — The assistant translates and narrates; it never produces a figure, and search finds meaning in the corpus rather than in a substring.**
+Two halves of the same requirement, built so neither needs a model to be
+useful.
+
+The assistant (`assistant-service.ts`) splits the work by what each side is
+good for. The deterministic grammar (D-era `ask-service`) runs first and wins
+wherever it read something, so a sentence the product already understands
+never becomes a model call. The model is asked only about the words the
+grammar left behind, and its schema holds filter values only — there is no
+field a follower count could arrive in. It then narrates rows it was handed,
+under a schema of prose and creator ids, and the narration is checked against
+those rows before it is shown: a figure in the sentence that is not in the
+data drops the whole answer (`isGrounded`), and a highlight pointing at a
+creator who is not on screen is discarded as a hallucinated citation. Every
+number a person reads is rendered by this application from the search result.
+With no key, or with the provider down, the answer is the matches plus a note
+saying which part is missing — the search itself never depended on AI.
+
+Semantic search (`analytics/semantic-index.ts`) is TF-IDF with cosine over
+the creators' own text — bios, upload titles, captions — built from the
+corpus in process and rebuilt when the store revision changes. Deliberately
+not embeddings: it needs no provider, so it works on a deployment with no AI
+key; it cannot invent a creator into a result; and its ranking reports the
+terms that earned it, which on a product whose pitch is checkable numbers
+matters more than the last few points of recall. It is additive — the
+existing exact-match filter is untouched — and the assistant falls back to it
+when the filters match nothing, labelled as "closest by meaning" rather than
+passed off as a filter match. "Telugu cooking in Hyderabad" returned nothing
+before and now returns Telugu cooks in Hyderabad.
+
+**D45 — An agency's clients are books of work inside one org, and a session's authority is re-read on every request.**
+Two things the tenancy model was missing, and one that was quietly wrong.
+
+A brand (`src/lib/contracts/agency.ts`, `agency-service.ts`) is a client *of*
+a client: a row inside the agency's own organisation that a campaign, a
+shortlist and a report may be filed under. Giving each brand its own org was
+the obvious move and the wrong one — the agency would lose the only view it
+needs (everything it runs, across clients), its seats would multiply, and its
+team would sign in somewhere different per account. So tenant isolation is
+untouched and brand scoping sits *inside* it: `assertTenantAccess` still runs
+first everywhere. A member limited to some clients sees only those clients'
+work, and that includes work filed under no client, because an unfiled
+shortlist is the agency's own. A report shared for a brand goes out under the
+brand's name and mark (D43 extended past the org), falling back to the
+agency's rather than going out unbranded.
+
+Plan management is self-serve (`billing-service.ts`), and stops exactly where
+honesty requires. A downgrade is the customer's to make: it is scheduled for
+the end of the period they already paid for, refused if more accounts are
+active than the smaller plan seats, and re-checked when it comes due — an org
+that grew in the meantime has its downgrade held rather than its people cut
+off. An upgrade is recorded and applied by SENSO once the commercial side is
+agreed, because there is no payment processor and a checkout that charges
+nothing is a worse lie than saying so. `applyChange` is the seam when one is
+added. Statements state what was used, not what is owed; closed periods are
+archived on rollover so a statement can describe more than today.
+
+Entitlements are now enforced where they are spent rather than where a button
+is drawn: seats at `createUser` (counted from live rows — a `seatsUsed`
+counter that drifts is a limit that has stopped being one), campaigns and
+exports through `assertFeature`, exports and reports metered like API calls.
+
+The quiet wrong thing: every one of those decisions read the *session cookie*,
+which is signed at sign-in and lives a week. An approved upgrade would not
+have taken effect for seven days, and a revoked client access would not
+either — which makes it an access control in name only. `getSession` now
+overlays the organisation's own fields (plan, name, mark, role, brand access)
+from the store on every read, synchronously, because both are already in
+memory (D29). Identity stays whatever was signed; only authority is refreshed.
+
 **D44 — Campaign performance is attributed from indexed posts, not modelled.**
 *(Closes the "live hashtag attribution is not wired" limitation.)* The old
 `participantPerformance` invented a campaign: it credited a delivered participant

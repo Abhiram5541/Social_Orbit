@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
-import { FileText } from "lucide-react";
 import { requirePagePermission } from "@/server/auth/rbac";
 import { listCampaigns, listShortlists } from "@/server/repositories/workspace-repository";
+import { listBrands } from "@/server/services/agency-service";
+import { listReports, listSchedules } from "@/server/services/report-service";
+import { ReportArchive } from "@/components/reports/report-archive";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
 import { LinkButton } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { EmptyState, Notice } from "@/components/ui/states";
+import { Notice } from "@/components/ui/states";
 
 export const metadata: Metadata = { title: "Reports" };
 export const dynamic = "force-dynamic";
@@ -68,6 +70,9 @@ export default async function ReportsPage() {
   const user = await requirePagePermission("report:read", "/reports");
   const campaigns = listCampaigns(user);
   const shortlists = listShortlists(user);
+  const reports = listReports(user);
+  const schedules = listSchedules(user);
+  const brands = listBrands(user);
 
   return (
     <>
@@ -77,12 +82,48 @@ export default async function ReportsPage() {
         description="Export what SENSO holds, with the provenance intact — every figure states whether it was verified, observed, derived, estimated or AI-inferred. A number that leaves the platform without that context is a number someone will eventually misquote."
       />
       <PageBody className="space-y-4">
-        <Notice tone="info" title="Exports run from the record, not from here">
-          Open a creator, a shortlist or a campaign: <strong>Export CSV</strong> downloads the
-          rows as the screen shows them, and <strong>Save as PDF</strong> prints the screen
-          itself through your browser, provenance labels included. Scheduled generation and
-          a report archive are not built, so this page does not pretend to offer them.
+        <Notice tone="info" title="A report is a snapshot, not a live view">
+          Generating one freezes the figures as they stand, so a link sent today still shows
+          what was sent when it is opened next month. <strong>Export CSV</strong> from a
+          creator, shortlist or campaign downloads the rows as that screen shows them, and
+          <strong> Save as PDF</strong> prints the screen through your browser with the
+          provenance labels intact.
         </Notice>
+
+        <ReportArchive
+          reports={reports.map((report) => ({
+            id: report.id,
+            name: report.name,
+            kind: report.kind,
+            token: report.token,
+            publicLink: report.publicLink,
+            generatedAt: report.generatedAt,
+            scheduleId: report.scheduleId,
+          }))}
+          schedules={schedules.map((schedule) => ({
+            id: schedule.id,
+            name: schedule.name,
+            kind: schedule.kind,
+            cadence: schedule.cadence,
+            nextRunAt: schedule.nextRunAt,
+            lastRunAt: schedule.lastRunAt,
+            enabled: schedule.enabled,
+            recipients: schedule.recipients,
+          }))}
+          subjects={[
+            ...campaigns.map((campaign) => ({
+              id: campaign.id,
+              name: campaign.name,
+              kind: "campaign" as const,
+            })),
+            ...shortlists.map((shortlist) => ({
+              id: shortlist.id,
+              name: shortlist.name,
+              kind: "shortlist" as const,
+            })),
+          ]}
+          brands={brands.map((brand) => ({ id: brand.id, name: brand.name }))}
+        />
 
         <Card>
           <CardHeader>
@@ -116,31 +157,6 @@ export default async function ReportsPage() {
           </ul>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Generated reports</CardTitle>
-          </CardHeader>
-          <EmptyState
-            icon={FileText}
-            title="No reports generated yet"
-            description={
-              campaigns.length > 0 || shortlists.length > 0
-                ? "Exports download immediately from a creator, shortlist or campaign; nothing is kept here yet."
-                : "Create a shortlist or a campaign first — a report needs something to report on."
-            }
-            action={
-              campaigns.length > 0 ? (
-                <LinkButton href={`/campaigns/${campaigns[0].id}`} size="sm">
-                  Open {campaigns[0].name}
-                </LinkButton>
-              ) : (
-                <LinkButton href="/discovery" size="sm">
-                  Go to discovery
-                </LinkButton>
-              )
-            }
-          />
-        </Card>
       </PageBody>
     </>
   );

@@ -3,12 +3,13 @@ import { Check, Minus } from "lucide-react";
 import { cn } from "@/lib/class-names";
 import { PLAN_CONFIG, Plan } from "@/lib/contracts/auth";
 import { formatDate, formatNumber, formatRelativeTime } from "@/lib/format";
-import { requirePagePermission } from "@/server/auth/rbac";
+import { can, requirePagePermission } from "@/server/auth/rbac";
 import { quotaFor } from "@/server/repositories/usage-repository";
+import { entitlements, pendingChange, statements } from "@/server/services/billing-service";
+import { PlanManager } from "@/components/agency/plan-manager";
 import { usageSnapshot } from "@/server/services/search-service";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
 import { Badge } from "@/components/ui/badge";
-import { LinkButton } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuotaMeter } from "@/components/intelligence/quota-meter";
 import { StatRow, StatTile } from "@/components/intelligence/stat";
@@ -41,6 +42,10 @@ export default async function UsagePage() {
   const quota = quotaFor(user.orgId, user.plan);
   const usage = usageSnapshot(user.orgId);
   const plan = PLAN_CONFIG[user.plan];
+  const limits = await entitlements(user.orgId, user.plan);
+  const pending = pendingChange(user.orgId);
+  const periods = await statements(user.orgId, user.plan);
+  const canWrite = can(user, "billing:write");
 
   return (
     <>
@@ -158,24 +163,59 @@ export default async function UsagePage() {
             </table>
           </div>
           <CardContent className="border-t border-line">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-base text-ink-muted">
-                Plan changes are handled by your account manager while self-serve billing is
-                being built.
-              </p>
-              <LinkButton
-                href={`mailto:accounts@senso360.com?subject=${encodeURIComponent(
-                  `Plan change — ${user.orgName}`,
-                )}&body=${encodeURIComponent(
-                  `Organisation: ${user.orgName}\nCurrent plan: ${plan.label}\n\nWhat we need:\n`,
-                )}`}
-                variant="primary"
-              >
-                Email your account manager
-              </LinkButton>
-            </div>
+            <PlanManager plan={user.plan} pending={pending} canWrite={canWrite} />
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>What your plan includes, and what you have used</CardTitle>
+          </CardHeader>
+          <ul className="divide-y divide-rule">
+            {limits.map((item) => (
+              <li key={item.key} className="flex items-center gap-3 px-4 py-2.5">
+                <span className="min-w-0 flex-1 text-ink">{item.label}</span>
+                <span className="font-num text-ink">
+                  {formatNumber(item.used)}
+                  <span className="text-ink-subtle">
+                    {" / "}
+                    {item.limit === null ? "unlimited" : formatNumber(item.limit)}
+                  </span>
+                </span>
+                {item.exceeded && <Badge tone="critical">Over</Badge>}
+              </li>
+            ))}
+          </ul>
+        </Card>
+
+        {periods.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Usage by period</CardTitle>
+            </CardHeader>
+            <ul className="divide-y divide-rule">
+              {periods.map((period) => (
+                <li key={period.periodStart} className="px-4 py-3">
+                  <p className="flex items-center gap-2 font-medium text-ink">
+                    {formatDate(period.periodStart)}
+                    {period.current && <Badge tone="neutral">Open</Badge>}
+                  </p>
+                  <p className="mt-0.5 font-num text-sm text-ink-muted">
+                    {period.lines
+                      .map((line) => `${line.label}: ${formatNumber(line.count)}`)
+                      .join(" · ")}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            <CardContent className="border-t border-line">
+              <p className="text-sm text-ink-subtle">
+                What was used, not what is owed — SENSO holds no price list, so this is a
+                usage statement rather than an invoice.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </PageBody>
     </>
   );

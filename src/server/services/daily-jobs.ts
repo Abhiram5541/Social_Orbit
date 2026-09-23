@@ -192,6 +192,10 @@ export function startScheduler(): void {
       }
       // Scheduled reports are queued rather than generated here: the daily
       // clock decides *what is due*, the queue decides when it runs.
+      const { applyDuePlanChanges } = await import("./billing-service");
+      const downgrades = await applyDuePlanChanges(now);
+      if (downgrades > 0) console.log(`[jobs] billing: ${downgrades} scheduled plan changes applied`);
+
       const { queueDueReports } = await import("./report-service");
       const queued = queueDueReports(now);
       if (queued > 0) console.log(`[jobs] queued ${queued} scheduled report(s)`);

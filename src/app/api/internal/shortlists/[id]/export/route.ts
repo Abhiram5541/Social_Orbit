@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { errorResponse, handler, requirePermission } from "@/server/auth/rbac";
 import { getShortlist } from "@/server/repositories/workspace-repository";
+import { assertFeature } from "@/server/services/billing-service";
+import { incrementUsage } from "@/server/repositories/usage-repository";
 
 /*
  * Shortlist CSV export — the vendor-neutral CRM path (see the integrations
@@ -18,6 +20,9 @@ const cell = (value: string | number | null): string =>
 export async function GET(_request: Request, { params }: Params) {
   return handler(async () => {
     const user = await requirePermission("shortlist:read");
+    // Exports are a plan entitlement and a metered one, so both happen here
+    // rather than wherever a button happens to be drawn.
+    assertFeature(user, "exports");
     const { id } = await params;
 
     const shortlist = getShortlist(user, id);
@@ -55,6 +60,7 @@ export async function GET(_request: Request, { params }: Params) {
     const csv = [header.map(cell).join(","), ...rows].join("\r\n") + "\r\n";
     const stem = shortlist.name.replace(/[^\w-]+/g, "-").replace(/^-+|-+$/g, "") || "shortlist";
 
+    incrementUsage(user.orgId, "export");
     return new NextResponse(csv, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",

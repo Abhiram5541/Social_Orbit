@@ -170,6 +170,8 @@ export type CampaignParticipant = z.infer<typeof CampaignParticipant>;
 export const CampaignSummary = z.object({
   id: z.string(),
   orgId: z.string(),
+  /** Agency workflow: the client this belongs to, when the org runs brands. */
+  brandId: z.string().nullable().optional(),
   name: z.string(),
   hashtag: z.string(),
   status: CampaignStatus,
@@ -248,6 +250,8 @@ export type ShortlistItem = z.infer<typeof ShortlistItem>;
 export const Shortlist = z.object({
   id: z.string(),
   orgId: z.string(),
+  /** Agency workflow: the client this belongs to, when the org runs brands. */
+  brandId: z.string().nullable().optional(),
   name: z.string(),
   description: z.string().nullable(),
   itemCount: z.number().int(),

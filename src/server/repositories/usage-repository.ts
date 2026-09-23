@@ -26,6 +26,27 @@ interface Counter {
 
 const counters = () => appRows<Counter>("usage", () => []);
 
+/**
+ * Closed periods. A counter only ever holds the *current* month, so a period
+ * that rolls over is archived on the way out — otherwise last month's usage
+ * is gone and a statement can only ever describe today.
+ */
+export interface UsagePeriod {
+  id: string;
+  orgId: string;
+  metric: UsageMetric;
+  periodStart: string;
+  count: number;
+}
+
+const history = () => appRows<UsagePeriod>("usage_history", () => []);
+
+export function usageHistory(orgId: string): UsagePeriod[] {
+  return history()
+    .filter((row) => row.orgId === orgId)
+    .sort((a, b) => b.periodStart.localeCompare(a.periodStart));
+}
+
 function key(orgId: string, metric: UsageMetric): string {
   return `${orgId}:${metric}`;
 }
@@ -61,6 +82,19 @@ export function incrementUsage(
   const { start } = currentPeriod(now);
   const id = key(orgId, metric);
   const existing = find(id);
+  if (existing && existing.periodStart !== start.toISOString() && existing.count > 0) {
+    const closed: UsagePeriod = {
+      id: `${id}:${existing.periodStart}`,
+      orgId,
+      metric,
+      periodStart: existing.periodStart,
+      count: existing.count,
+    };
+    if (!history().some((row) => row.id === closed.id)) {
+      history().push(closed);
+      persist("usage_history", [closed]);
+    }
+  }
   const next: Counter =
     existing && existing.periodStart === start.toISOString()
       ? { id, count: existing.count + 1, periodStart: existing.periodStart }

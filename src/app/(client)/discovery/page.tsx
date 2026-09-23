@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AskPanel } from "@/components/discovery/ask-panel";
+import { AssistantPanel } from "@/components/discovery/assistant-panel";
 import { SlidersHorizontal } from "lucide-react";
 import { formatCompact } from "@/lib/format";
 import { requirePagePermission } from "@/server/auth/rbac";
@@ -36,7 +37,11 @@ export default async function DiscoveryPage() {
       {/* Ask in a sentence, see the filters it becomes, then run it. Above
           the toolbar because it is a way *into* a search, not a filter on
           one. */}
-      <div className="px-4 pb-3 sm:px-6">
+      <div className="space-y-3 px-4 pb-3 sm:px-6">
+        {/* The assistant answers; the panel below shows what a sentence
+            became before a search is spent on it. Both are ways *into* a
+            search rather than filters on one. */}
+        <AssistantPanel />
         <AskPanel />
       </div>
 

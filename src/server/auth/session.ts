@@ -80,10 +80,19 @@ export function decodeSession(cookieValue: string | undefined): SessionUser | nu
   }
 }
 
-/** The session for the current request, or null. Safe in RSCs and handlers. */
+/**
+ * The session for the current request, or null. Safe in RSCs and handlers.
+ *
+ * The cookie is the identity; the organisation's own fields (plan, name,
+ * mark, client access, role) are re-read from the store, because a decision
+ * made on a week-old copy of them is a decision made on stale authority.
+ */
 export async function getSession(): Promise<SessionUser | null> {
   const store = await cookies();
-  return decodeSession(store.get(SESSION_COOKIE)?.value);
+  const user = decodeSession(store.get(SESSION_COOKIE)?.value);
+  if (!user) return null;
+  const { freshenSession } = await import("@/server/repositories/user-repository");
+  return freshenSession(user);
 }
 
 export async function setSessionCookie(user: SessionUser): Promise<void> {

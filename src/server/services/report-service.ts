@@ -2,6 +2,7 @@ import type { SessionUser } from "@/lib/contracts/auth";
 import { ApiFailure, assertTenantAccess } from "@/server/auth/rbac";
 import { appRows, persist } from "@/server/data/app-store";
 import { findOrg } from "@/server/repositories/user-repository";
+import { brandingFor } from "./agency-service";
 import { getCampaign, getShortlist, listCampaigns } from "@/server/repositories/workspace-repository";
 import { toSummary } from "@/server/repositories/influencer-repository";
 import { campaignSpend } from "./deal-service";
@@ -35,6 +36,8 @@ export interface ReportSchedule {
   /** Campaign or shortlist id; null for a portfolio report. */
   subjectId: string | null;
   cadence: Cadence;
+  /** Agency workflow: the client this report goes out under. */
+  brandId?: string | null;
   /** Addresses the finished report is emailed to. */
   recipients: string[];
   /** Whether the share link may be opened without a session. */
@@ -53,6 +56,7 @@ export interface GeneratedReport {
   name: string;
   kind: ReportKind;
   subjectId: string | null;
+  brandId?: string | null;
   /** The frozen figures. */
   snapshot: Record<string, unknown>;
   branding: { orgName: string; logoUrl: string | null };
@@ -164,9 +168,15 @@ export async function buildSnapshot(
 
 export async function generateReport(
   user: SessionUser,
-  input: { name: string; kind: ReportKind; subjectId: string | null; scheduleId?: string | null; publicLink?: boolean },
+  input: {
+    name: string;
+    kind: ReportKind;
+    subjectId: string | null;
+    scheduleId?: string | null;
+    publicLink?: boolean;
+    brandId?: string | null;
+  },
 ): Promise<GeneratedReport> {
-  const org = await findOrg(user.orgId);
   const report: GeneratedReport = {
     id: nextId("rep"),
     orgId: user.orgId,
@@ -174,11 +184,13 @@ export async function generateReport(
     name: input.name,
     kind: input.kind,
     subjectId: input.subjectId,
+    brandId: input.brandId ?? null,
     snapshot: await buildSnapshot(user, input.kind, input.subjectId),
     // The client's own mark travels with the report, so a shared link is
     // theirs rather than SENSO's (D43 applies to what leaves the workspace
-    // too).
-    branding: { orgName: org?.name ?? user.orgName, logoUrl: org?.logoUrl ?? null },
+    // too) — and inside an agency, the *brand's* mark rather than the
+    // agency's, because the stakeholder reading it works for the brand.
+    branding: await brandingFor(user.orgId, input.brandId ?? null),
     token: token(),
     publicLink: input.publicLink ?? false,
     generatedAt: new Date().toISOString(),
@@ -220,6 +232,7 @@ export function createSchedule(
     cadence: Cadence;
     recipients: string[];
     publicLink?: boolean;
+    brandId?: string | null;
   },
 ): ReportSchedule {
   const now = new Date();
@@ -230,6 +243,7 @@ export function createSchedule(
     kind: input.kind,
     subjectId: input.subjectId,
     cadence: input.cadence,
+    brandId: input.brandId ?? null,
     recipients: [...new Set(input.recipients.map((address) => address.trim().toLowerCase()))],
     publicLink: input.publicLink ?? false,
     nextRunAt: now.toISOString(),
@@ -296,6 +310,7 @@ registerJob("report.run", async (job) => {
     subjectId: row.subjectId,
     scheduleId: row.id,
     publicLink: row.publicLink,
+    brandId: row.brandId ?? null,
   });
 
   row.lastRunAt = new Date().toISOString();

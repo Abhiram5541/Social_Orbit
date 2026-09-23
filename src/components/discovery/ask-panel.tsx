@@ -73,7 +73,7 @@ export function AskPanel() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Ask SENSO</CardTitle>
+        <CardTitle>Search in a sentence</CardTitle>
         <span className="text-sm text-ink-muted">
           Your words become filters you can check before they run
         </span>
@@ -96,7 +96,7 @@ export function AskPanel() {
                 : "Find 20 technology creators in India with 50K–500K followers"
             }
             className="min-w-56 flex-1"
-            aria-label="Ask SENSO"
+            aria-label="Search in a sentence"
           />
           <Button type="submit" variant="primary" loading={busy} className="gap-1.5">
             <Sparkles className="size-4" aria-hidden />

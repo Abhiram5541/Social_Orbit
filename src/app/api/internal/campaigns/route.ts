@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { CampaignInput } from "@/lib/contracts/campaign";
 import { errorResponse, handler, requirePermission } from "@/server/auth/rbac";
 import { createCampaign, listCampaigns } from "@/server/repositories/workspace-repository";
+import { assertFeature } from "@/server/services/billing-service";
 import { z } from "zod";
 
 const CreateCampaign = CampaignInput.extend({
@@ -21,6 +22,8 @@ export async function GET() {
 export async function POST(request: Request) {
   return handler(async () => {
     const user = await requirePermission("campaign:write");
+    // A plan limit hidden behind a missing button is not a limit.
+    assertFeature(user, "campaigns");
     const parsed = CreateCampaign.safeParse(await request.json().catch(() => null));
     if (!parsed.success) {
       const details: Record<string, string[]> = {};

@@ -23,6 +23,7 @@ import { ApiFailure, assertTenantAccess } from "@/server/auth/rbac";
 import { appRows, persist } from "@/server/data/app-store";
 import { readRecords } from "@/server/data/records";
 import { toSummary } from "./influencer-repository";
+import { currentBrandIds } from "./user-repository";
 import { EPOCH } from "@/server/data/records";
 
 /* ---------------------------------------------------------------------------
@@ -37,6 +38,7 @@ import { EPOCH } from "@/server/data/records";
 interface ShortlistRow {
   id: string;
   orgId: string;
+  brandId?: string | null;
   name: string;
   description: string | null;
   createdAt: string;
@@ -48,6 +50,7 @@ interface ShortlistRow {
 interface CampaignRow {
   id: string;
   orgId: string;
+  brandId?: string | null;
   name: string;
   brief: string | null;
   hashtag: string;
@@ -282,6 +285,18 @@ function seedCreatorIds(): (index: number) => string | null {
 /** Read through a function: under Postgres the array is installed at boot, after this module loads. */
 const shortlists = () => appRows<ShortlistRow>("shortlists", () => seedShortlists(seedCreatorIds()));
 const campaigns = () => appRows<CampaignRow>("campaigns", () => seedCampaigns(seedCreatorIds()));
+/**
+ * Agency brand scoping (D45). A member limited to a set of clients sees only
+ * those clients' work — including work filed under no client, which is the
+ * agency's own. The restriction rides on the session, so every list applies
+ * it without a second lookup.
+ */
+function brandVisible(user: SessionUser, brandId: string | null | undefined): boolean {
+  const allowed = currentBrandIds(user);
+  if (allowed.length === 0) return true;
+  return brandId != null && allowed.includes(brandId);
+}
+
 export const seedWorkspace = {
   shortlists: () => seedShortlists(seedCreatorIds()),
   campaigns: () => seedCampaigns(seedCreatorIds()),
@@ -293,6 +308,7 @@ function toShortlist(row: ShortlistRow): Shortlist {
   return {
     id: row.id,
     orgId: row.orgId,
+    brandId: row.brandId ?? null,
     name: row.name,
     description: row.description,
     itemCount: row.items.length,
@@ -303,9 +319,18 @@ function toShortlist(row: ShortlistRow): Shortlist {
 }
 
 export function listShortlists(user: SessionUser): Shortlist[] {
-  return shortlists().filter((row) =>
-    user.orgKind === "platform" ? true : row.orgId === user.orgId,
-  ).map(toShortlist);
+  return shortlists()
+    .filter((row) => (user.orgKind === "platform" ? true : row.orgId === user.orgId))
+    .filter((row) => brandVisible(user, row.brandId))
+    .map(toShortlist);
+}
+
+/** The creators on a shortlist, for a roll-up that only needs the ids. */
+export function shortlistCreatorIds(user: SessionUser, shortlistId: string): string[] {
+  const row = shortlists().find((entry) => entry.id === shortlistId);
+  if (!row) return [];
+  assertTenantAccess(user, row.orgId);
+  return row.items.map((item) => item.influencerId);
 }
 
 export function getShortlist(user: SessionUser, id: string): ShortlistDetail | null {
@@ -531,6 +556,7 @@ function toCampaignSummary(row: CampaignRow): CampaignSummary {
   return {
     id: row.id,
     orgId: row.orgId,
+    brandId: row.brandId ?? null,
     name: row.name,
     hashtag: row.hashtag,
     status: row.status,
@@ -574,9 +600,29 @@ function toCampaignSummary(row: CampaignRow): CampaignSummary {
 }
 
 export function listCampaigns(user: SessionUser): CampaignSummary[] {
-  return campaigns().filter((row) =>
-    user.orgKind === "platform" ? true : row.orgId === user.orgId,
-  ).map(toCampaignSummary);
+  return campaigns()
+    .filter((row) => (user.orgKind === "platform" ? true : row.orgId === user.orgId))
+    .filter((row) => brandVisible(user, row.brandId))
+    .map(toCampaignSummary);
+}
+
+/** Files a shortlist or campaign under one of the agency's clients. */
+export function setBrand(
+  user: SessionUser,
+  kind: "shortlist" | "campaign",
+  id: string,
+  brandId: string | null,
+): void {
+  const row =
+    kind === "shortlist"
+      ? shortlists().find((entry) => entry.id === id)
+      : campaigns().find((entry) => entry.id === id);
+  if (!row) throw new ApiFailure("not_found", "Not found.");
+  assertTenantAccess(user, row.orgId);
+  if (!brandVisible(user, row.brandId)) throw new ApiFailure("forbidden", "Not yours to move.");
+  row.brandId = brandId;
+  row.updatedAt = new Date().toISOString();
+  persist(kind === "shortlist" ? "shortlists" : "campaigns", [row]);
 }
 
 export function getCampaign(user: SessionUser, id: string): CampaignDetail | null {

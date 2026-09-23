@@ -120,6 +120,13 @@ const CLIENT_NAV: NavSection[] = [
         matchNested: true,
       },
       {
+        href: "/clients",
+        label: "Clients",
+        icon: Building2,
+        permission: "campaign:read",
+        matchNested: true,
+      },
+      {
         href: "/reports",
         label: "Reporting",
         icon: FileText,
