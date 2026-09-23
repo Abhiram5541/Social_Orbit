@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { ChevronDown } from "lucide-react";
+import { formatCompact, formatNumber, formatRelativeTime, pluralise } from "@/lib/format";
 import { PLATFORM_LABEL } from "@/lib/contracts/common";
-import { formatCompact, formatRelativeTime, pluralise } from "@/lib/format";
 import { requirePagePermission } from "@/server/auth/rbac";
 import { connectorStatuses } from "@/server/repositories/ops-repository";
 import { PageBand, PageBody, PageHeader } from "@/components/shell/app-shell";
+import { AUTHORISED_ONLY, coverageByPlatform } from "@/server/analytics/coverage";
 import { Badge } from "@/components/ui/badge";
 import { Panel, PanelBody, PanelHead, PanelTitle, RowList } from "@/components/ui/panel";
 import { Notice } from "@/components/ui/states";
@@ -17,6 +18,7 @@ export const metadata: Metadata = { title: "Connectors" };
 export const dynamic = "force-dynamic";
 
 export default async function ConnectorsPage() {
+  const coverage = coverageByPlatform();
   await requirePagePermission("admin:connectors", "/admin/connectors");
   const connectors = connectorStatuses();
 
@@ -194,6 +196,53 @@ export default async function ConnectorsPage() {
                 the configured flag rather than the key itself. */}
             <ConnectorProbe disabled={!process.env.YOUTUBE_API_KEY} />
             <XProbe disabled={!process.env.X_API_KEY || !process.env.X_API_SECRET} />
+          </PanelBody>
+        </Panel>
+
+        {/* Measured, not written down: what each connector actually returned,
+            counted from the rows it wrote. A field at 0% is a platform limit,
+            and the note below says which ones need the creator's own
+            authorisation to lift rather than more engineering. */}
+        <Panel>
+          <PanelHead>
+            <PanelTitle>What each platform gives us</PanelTitle>
+          </PanelHead>
+          <PanelBody className="space-y-4">
+            {coverage.map((platform) => (
+              <div key={platform.platform}>
+                <p className="font-medium text-ink">
+                  {PLATFORM_LABEL[platform.platform]}{" "}
+                  <span className="font-num text-sm text-ink-muted">
+                    {formatNumber(platform.creators)} creators ·{" "}
+                    {formatNumber(platform.posts)} posts
+                  </span>
+                </p>
+                <ul className="mt-2 divide-y divide-rule">
+                  {platform.fields.map((field) => (
+                    <li key={field.field} className="flex items-center gap-3 py-1.5">
+                      <span className="min-w-0 flex-1 text-sm text-ink-muted">{field.label}</span>
+                      <span
+                        className="h-1.5 w-32 overflow-hidden rounded-full bg-sunken"
+                        aria-hidden
+                      >
+                        <span
+                          className={field.share === 0 ? "block h-full bg-critical" : "block h-full bg-brand"}
+                          style={{ width: `${Math.max(field.share, field.share === 0 ? 100 : 2)}%` }}
+                        />
+                      </span>
+                      <span className="font-num w-16 text-right text-sm text-ink">
+                        {field.share === 0 ? "none" : `${field.share}%`}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+            <Notice tone="info" title="Some fields no public API publishes at all">
+              {AUTHORISED_ONLY.join(" · ")}. These need the creator&rsquo;s own authorisation
+              through the portal, or a licensed data provider — no amount of harvesting
+              produces them, and SENSO shows them as absent rather than estimating them.
+            </Notice>
           </PanelBody>
         </Panel>
       </PageBody>
