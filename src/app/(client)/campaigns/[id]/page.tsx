@@ -20,7 +20,8 @@ import {
   pluralise,
   NO_VALUE,
 } from "@/lib/format";
-import { requirePagePermission } from "@/server/auth/rbac";
+import { can, requirePagePermission } from "@/server/auth/rbac";
+import { campaignSentiment, sentimentBlockedReason } from "@/server/services/sentiment-service";
 import { getCampaign } from "@/server/repositories/workspace-repository";
 import { Download } from "lucide-react";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
@@ -33,6 +34,7 @@ import { InfoHint } from "@/components/ui/overlay";
 import { EmptyState } from "@/components/ui/states";
 import { Table, TableWrap, Tbody, Td, Th, Thead, Tr } from "@/components/ui/table";
 import { ScorePill, ScoreRing } from "@/components/intelligence/score";
+import { SentimentPanel } from "@/components/listening/sentiment-panel";
 import { StatRow, StatTile } from "@/components/intelligence/stat";
 import { CategoryBars } from "@/components/charts/trend-chart";
 import {
@@ -177,6 +179,13 @@ export default async function CampaignDetailPage({
             />
           </StatRow>
         </div>
+
+        <SentimentPanel
+          record={campaignSentiment(user, campaign.id)}
+          blocked={sentimentBlockedReason()}
+          subject={{ kind: "campaign", id: campaign.id }}
+          canRun={can(user, "campaign:write")}
+        />
 
         <Card>
           <CardHeader>

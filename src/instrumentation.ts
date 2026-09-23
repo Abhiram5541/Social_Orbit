@@ -54,6 +54,8 @@ export async function register(): Promise<void> {
     brands: () => [],
     plan_changes: () => [],
     usage_history: () => [],
+    sentiment: () => [],
+    listening: () => [],
   });
 
   // Score every creator once now, in the background, so the first request

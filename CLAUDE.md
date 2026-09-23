@@ -339,6 +339,40 @@ What follows from it, and is intended:
   footer are now deep forest rather than graphite. A light marketing redesign is a
   separate piece of work.
 
+**D47 — Sentiment is counted from labelled comments; listening is over the creators SENSO indexed, and says so.**
+The requirement asked for sentiment analysis and consumer intelligence. One
+is buildable as asked, the other is half buildable, and the naming says which
+is which rather than shipping the second under the first's name.
+
+Sentiment (`sentiment-service.ts`): the connector supplies real comments (1
+quota unit a video, no OAuth), the model labels each one it is shown, and
+this file counts the labels. No percentage is ever asked of the model, and a
+label for a comment that was not shown is dropped rather than attached to the
+wrong text. Spam and neutral leave the denominator — a comment with no
+opinion is not a lukewarm endorsement, and counting it as one flatters every
+creator whose comments are mostly emoji. The record carries its sample size
+beside the share, because a positive share over forty comments and one over
+four hundred are different claims. With no key, or with comments disabled,
+there is no record rather than a neutral score: "we did not measure this" and
+"the audience feels nothing" are different statements.
+
+Listening (`listening-service.ts`): 434k indexed posts with their titles,
+captions, hashtags and figures are a corpus you can track a brand or a theme
+through — who is talking about it, how often, with what reach, which tags
+travel with it, week by week. That is *creator* listening, and an influencer
+platform is uniquely placed to do it. Consumer listening is not built, because
+SENSO holds no consumer posts, reviews or forum threads and no public API
+offers them. So every read prints what it searched — creators indexed, posts
+in the window — and the page says in as many words that this is not a share
+of the platform. A share of voice without its denominator is the single most
+quotable wrong number a listening tool can produce.
+
+Also here: `handler` now maps an upstream failure (AI or connector) to 503
+with the reason, instead of "something went wrong" — the person reading it is
+usually the one who can fix it — and a *credential* rejection is logged in
+full but reported in outline, because the upstream's own message quotes part
+of the key back.
+
 **D46 — The assistant translates and narrates; it never produces a figure, and search finds meaning in the corpus rather than in a substring.**
 Two halves of the same requirement, built so neither needs a model to be
 useful.

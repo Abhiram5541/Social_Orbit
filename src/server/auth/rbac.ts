@@ -141,6 +141,25 @@ export function handler<T>(
     // A redirect thrown by next/navigation must be allowed through.
     if (error && typeof error === "object" && "digest" in error) throw error;
 
+    // An upstream that is missing, rejecting our credential or rate-limiting
+    // us is a state of the world, not a bug in this request. Saying which one
+    // it is beats "something went wrong" — the person reading it is usually
+    // the one who can fix it.
+    if (error instanceof Error && (error.name === "AiUnavailable" || error.name === "ConnectorUnavailable")) {
+      // A credential failure is logged in full and reported in outline: the
+      // upstream's own message quotes part of the key back, and a client
+      // response is not the place for any of it.
+      const credential =
+        "reason" in error && (error.reason === "credentials_missing" || error.reason === "unauthorised");
+      if (credential) console.error("[upstream] credential rejected", error.message);
+      return errorResponse(
+        "connector_unavailable",
+        credential
+          ? "SENSO's credential for that provider was rejected. An administrator needs to update it."
+          : error.message,
+      );
+    }
+
     console.error("[api] unhandled error", error);
     return errorResponse("internal_error", "Something went wrong. The error has been logged.");
   });

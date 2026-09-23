@@ -5,6 +5,7 @@ import {
   Bell,
   Blocks,
   Building2,
+  Radio,
   ChartNoAxesCombined,
   ClipboardList,
   Code2,
@@ -118,6 +119,12 @@ const CLIENT_NAV: NavSection[] = [
         icon: Megaphone,
         permission: "campaign:read",
         matchNested: true,
+      },
+      {
+        href: "/listening",
+        label: "Listening",
+        icon: Radio,
+        permission: "influencer:read",
       },
       {
         href: "/clients",
