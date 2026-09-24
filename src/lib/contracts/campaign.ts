@@ -89,6 +89,15 @@ export const CampaignDeliverable = z.object({
   /** How many of this deliverable each participant owes. */
   quantity: z.number().int().min(1),
   dueOn: z.string().date().nullable(),
+  /**
+   * What the post itself has to carry. Checked against the attributed post
+   * rather than asked of the creator, so "did they tag us" is answered by the
+   * platform's own copy of the caption and not by a checkbox.
+   */
+  requiredHashtags: z.array(z.string()).default([]),
+  requiredMentions: z.array(z.string()).default([]),
+  /** Phrases the caption must contain — a disclosure, a claim, a CTA. */
+  captionMustInclude: z.array(z.string()).default([]),
 });
 export type CampaignDeliverable = z.infer<typeof CampaignDeliverable>;
 
@@ -98,6 +107,9 @@ export const DeliverableInput = z.object({
   format: DeliverableFormat,
   quantity: z.number().int().min(1).max(50).default(1),
   dueOn: z.string().date().nullable().default(null),
+  requiredHashtags: z.array(z.string().trim().min(1).max(60)).max(10).default([]),
+  requiredMentions: z.array(z.string().trim().min(1).max(60)).max(10).default([]),
+  captionMustInclude: z.array(z.string().trim().min(2).max(120)).max(10).default([]),
 });
 export type DeliverableInput = z.infer<typeof DeliverableInput>;
 
@@ -174,6 +186,9 @@ export const CampaignSummary = z.object({
   brandId: z.string().nullable().optional(),
   name: z.string(),
   hashtag: z.string(),
+  /** Handles and phrases that also count as a campaign post. */
+  trackedMentions: z.array(z.string()).default([]),
+  trackedKeywords: z.array(z.string()).default([]),
   status: CampaignStatus,
   platforms: z.array(Platform),
   startsOn: z.string().date(),
@@ -222,7 +237,18 @@ export const CampaignDetail = CampaignSummary.extend({
       engagements: z.number().int().nullable(),
       matchedAt: z.string().datetime(),
       /** "hashtag" when the tracker found it, "manual" when a person added it. */
-      matchedBy: z.enum(["hashtag", "manual"]),
+      matchedBy: z.enum(["hashtag", "mention", "keyword", "manual"]),
+      /** Whether the post carried what the deliverables required. */
+      compliant: z.boolean().nullable().default(null),
+      complianceChecks: z
+        .array(
+          z.object({
+            requirement: z.string(),
+            kind: z.enum(["hashtag", "mention", "phrase"]),
+            met: z.boolean(),
+          }),
+        )
+        .default([]),
     }),
   ),
 });

@@ -16,6 +16,8 @@ import {
   CAMPAIGN_FORMULA_VERSION,
   attributedPostsFor,
   campaignScoreOf,
+  complianceOf,
+  signalFor,
   totalsOf,
   type AttributionWindow,
 } from "@/server/services/attribution-service";
@@ -54,6 +56,8 @@ interface CampaignRow {
   name: string;
   brief: string | null;
   hashtag: string;
+  trackedMentions?: string[];
+  trackedKeywords?: string[];
   status: CampaignSummary["status"];
   platforms: CampaignSummary["platforms"];
   startsOn: string;
@@ -201,8 +205,8 @@ function seedCampaigns(pick: (index: number) => string | null): CampaignRow[] {
       { influencerId: pick(3), status: "negotiating", talentRate: 880_000, clientRate: 600_000, agreedRate: null },
     ],
     deliverables: [
-      { id: "dl_orbit_video", label: "Long-form review", platform: "youtube", format: "video", quantity: 1, dueOn: "2026-09-15" },
-      { id: "dl_orbit_reel", label: "Launch reel", platform: "instagram", format: "reel", quantity: 2, dueOn: "2026-09-25" },
+      { id: "dl_orbit_video", label: "Long-form review", platform: "youtube", format: "video", quantity: 1, dueOn: "2026-09-15", requiredHashtags: [], requiredMentions: [], captionMustInclude: [] },
+      { id: "dl_orbit_reel", label: "Launch reel", platform: "instagram", format: "reel", quantity: 2, dueOn: "2026-09-25", requiredHashtags: [], requiredMentions: [], captionMustInclude: [] },
     ],
   },
   {
@@ -224,7 +228,7 @@ function seedCampaigns(pick: (index: number) => string | null): CampaignRow[] {
       { influencerId: pick(5), status: "delivered", talentRate: 260_000, clientRate: 240_000, agreedRate: 250_000 },
     ],
     deliverables: [
-      { id: "dl_glow_reel", label: "Edit reel", platform: "instagram", format: "reel", quantity: 1, dueOn: "2026-06-20" },
+      { id: "dl_glow_reel", label: "Edit reel", platform: "instagram", format: "reel", quantity: 1, dueOn: "2026-06-20", requiredHashtags: [], requiredMentions: [], captionMustInclude: [] },
     ],
   },
   ];
@@ -467,6 +471,14 @@ function windowOf(row: CampaignRow): AttributionWindow {
     startsOn: row.startsOn,
     endsOn: row.endsOn,
     overrides: row.attribution,
+    mentions: row.trackedMentions ?? [],
+    // Deliverable rules are detection signals too: a campaign that requires
+    // "#ad @brand" in the caption has told us exactly what to look for, and
+    // making the operator retype it as a tracking term would be asking twice.
+    keywords: [
+      ...(row.trackedKeywords ?? []),
+      ...(row.deliverables ?? []).flatMap((deliverable) => deliverable.captionMustInclude),
+    ],
   };
 }
 
@@ -559,6 +571,8 @@ function toCampaignSummary(row: CampaignRow): CampaignSummary {
     brandId: row.brandId ?? null,
     name: row.name,
     hashtag: row.hashtag,
+    trackedMentions: row.trackedMentions ?? [],
+    trackedKeywords: row.trackedKeywords ?? [],
     status: row.status,
     platforms: row.platforms,
     startsOn: row.startsOn,
@@ -680,7 +694,23 @@ export function getCampaign(user: SessionUser, id: string): CampaignDetail | nul
         // The tracker reads the indexed catalogue, so a post is known from the
         // moment it was collected — that time, not a minted one.
         matchedAt: post.publishedAt,
-        matchedBy: included.has(post.id) ? ("manual" as const) : ("hashtag" as const),
+        // Which signal put it here — a hashtag, an @mention, a phrase, or a
+        // person. A row that cannot say why it is in the campaign is not
+        // evidence of anything.
+        matchedBy: included.has(post.id) ? "manual" : (signalFor(post, windowOf(row)) ?? "hashtag"),
+        ...(() => {
+          // Checked against the deliverable for this post's own platform:
+          // an Instagram rule has nothing to say about a YouTube upload.
+          const rules = (row.deliverables ?? []).filter(
+            (deliverable) => deliverable.platform === post.platform,
+          );
+          const compliance = complianceOf(post, {
+            requiredHashtags: rules.flatMap((rule) => rule.requiredHashtags),
+            requiredMentions: rules.flatMap((rule) => rule.requiredMentions),
+            captionMustInclude: rules.flatMap((rule) => rule.captionMustInclude),
+          });
+          return { compliant: compliance.compliant, complianceChecks: compliance.checks };
+        })(),
       })),
     )
     .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
@@ -820,6 +850,9 @@ export function setCampaignDeliverables(
     format: deliverable.format,
     quantity: deliverable.quantity,
     dueOn: deliverable.dueOn,
+    requiredHashtags: deliverable.requiredHashtags ?? [],
+    requiredMentions: deliverable.requiredMentions ?? [],
+    captionMustInclude: deliverable.captionMustInclude ?? [],
   }));
   row.updatedAt = new Date().toISOString();
   persist("campaigns", [row]);

@@ -3,7 +3,13 @@ import type { NotificationItem } from "@/lib/contracts/notifications";
 import { formatDate } from "@/lib/format";
 import { toSummary } from "@/server/repositories/influencer-repository";
 import { quotaFor } from "@/server/repositories/usage-repository";
-import { getShortlist, listShortlists } from "@/server/repositories/workspace-repository";
+import {
+  getCampaign,
+  getShortlist,
+  listCampaigns,
+  listShortlists,
+} from "@/server/repositories/workspace-repository";
+import { expiringContracts } from "./deal-service";
 
 /* ---------------------------------------------------------------------------
  * Alerts for one person: real detections on the creators their organisation
@@ -66,6 +72,60 @@ export function alertsFor(user: SessionUser): NotificationItem[] {
         href: `/influencers/${summary.id}`,
       });
     }
+  }
+
+  // Deliverables: what is due soon and what is already late. Counted from
+  // attributed posts, never from a status somebody set by hand (D44), so the
+  // reminder cannot be silenced by marking a row done.
+  const today = new Date().toISOString().slice(0, 10);
+  const soon = new Date(Date.now() + 5 * 86_400_000).toISOString().slice(0, 10);
+
+  for (const summary of listCampaigns(user)) {
+    if (summary.status === "archived" || summary.status === "completed") continue;
+    const campaign = getCampaign(user, summary.id);
+    if (!campaign) continue;
+
+    for (const participant of campaign.participants) {
+      const { fulfilment } = participant;
+      if (fulfilment.state === "fulfilled" || fulfilment.state === "none_required") continue;
+      const due = fulfilment.dueOn;
+      if (!due) continue;
+
+      const outstanding = Math.max(0, fulfilment.required - fulfilment.published);
+      if (due < today) {
+        items.push({
+          id: `late-${campaign.id}-${participant.influencerId}`,
+          kind: "deliverable_overdue",
+          severity: "critical",
+          title: `${participant.displayName} is late on ${campaign.name}`,
+          detail: `${outstanding} of ${fulfilment.required} still unpublished; due ${formatDate(due)}.`,
+          at: `${due}T00:00:00.000Z`,
+          href: `/campaigns/${campaign.id}`,
+        });
+      } else if (due <= soon) {
+        items.push({
+          id: `due-${campaign.id}-${participant.influencerId}`,
+          kind: "deliverable_due",
+          severity: "warning",
+          title: `${participant.displayName} is due on ${campaign.name}`,
+          detail: `${outstanding} of ${fulfilment.required} outstanding, due ${formatDate(due)}.`,
+          at: `${due}T00:00:00.000Z`,
+          href: `/campaigns/${campaign.id}`,
+        });
+      }
+    }
+  }
+
+  for (const contract of expiringContracts(user, 30)) {
+    items.push({
+      id: `contract-${contract.id}`,
+      kind: "contract_expiring",
+      severity: "warning",
+      title: `Usage rights end soon: ${contract.displayName} on ${contract.campaignName}`,
+      detail: `Rights expire on ${formatDate(contract.usageRights.expiresOn!)}. Renew them or stop running the content.`,
+      at: `${contract.usageRights.expiresOn}T00:00:00.000Z`,
+      href: `/campaigns/${contract.campaignId}`,
+    });
   }
 
   if (quota && quota.limit !== null && (quota.remaining ?? 0) <= 2) {

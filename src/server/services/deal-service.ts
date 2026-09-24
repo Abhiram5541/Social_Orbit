@@ -330,3 +330,23 @@ export function campaignSpend(user: SessionUser, campaignId: string): CampaignSp
     outstanding: Math.max(0, committed - paid),
   };
 }
+
+/**
+ * Signed contracts whose usage rights lapse within `days`.
+ *
+ * The date is already derived from publication plus duration (`withExpiry`),
+ * so this only reads it. It matters because the failure mode is silent: a
+ * brand keeps running an asset it no longer has the right to run, and nobody
+ * finds out until the creator's lawyer does.
+ */
+export function expiringContracts(user: SessionUser, days = 30): Contract[] {
+  const today = new Date().toISOString().slice(0, 10);
+  const horizon = new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
+  return listContracts(user)
+    .filter((contract) => contract.status === "signed")
+    .filter((contract) => {
+      const expires = contract.usageRights.expiresOn;
+      return expires !== null && expires >= today && expires <= horizon;
+    })
+    .sort((a, b) => (a.usageRights.expiresOn ?? "").localeCompare(b.usageRights.expiresOn ?? ""));
+}

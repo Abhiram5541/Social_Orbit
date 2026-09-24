@@ -4,6 +4,8 @@ import {
   Activity,
   BadgeCheck,
   Bell,
+  CalendarClock,
+  FileText,
   KeyRound,
   Link2,
   TrendingDown,
@@ -36,6 +38,9 @@ const ICONS: Record<NotificationItem["kind"], typeof Bell> = {
   ai_conflict: TriangleAlert,
   brand_safety: TriangleAlert,
   quota_warning: KeyRound,
+  deliverable_due: CalendarClock,
+  deliverable_overdue: CalendarClock,
+  contract_expiring: FileText,
   verification: BadgeCheck,
 };
 

@@ -36,10 +36,27 @@ export interface AttributionWindow {
   startsOn: string;
   endsOn: string;
   overrides?: AttributionOverrides;
+  /**
+   * Extra signals a post may carry instead of the tracking hashtag. A creator
+   * who wrote "@brand" and never tagged, or whose caption names the product,
+   * published for the campaign just the same — and on Instagram, where the
+   * caption arrives as one string, this is often the only signal there is.
+   */
+  mentions?: string[];
+  keywords?: string[];
 }
 
 /** `#Launch` and `launch` are the same tag; `#launchday` is not. */
 const normaliseTag = (tag: string): string => tag.trim().replace(/^#+/, "").toLowerCase();
+
+/** `@Brand` and `brand` are the same handle. */
+const normaliseMention = (mention: string): string =>
+  mention.trim().replace(/^@+/, "").toLowerCase();
+
+const escape = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** Why a post was attributed. Kept per post so a row can defend itself. */
+export type MatchSignal = "hashtag" | "mention" | "keyword" | "manual";
 
 /**
  * A post also counts when the creator put the tag in the title or caption
@@ -50,7 +67,34 @@ function carriesTag(item: RawContent, tag: string): boolean {
   if (item.hashtags.some((entry) => normaliseTag(entry) === tag)) return true;
   const text = `${item.title} ${item.caption}`.toLowerCase();
   // Word-boundary either side so `#launchday` does not satisfy `#launch`.
-  return new RegExp(`(^|[^\\w])#${tag}([^\\w]|$)`).test(text);
+  return new RegExp(`(^|[^\\w])#${escape(tag)}([^\\w]|$)`).test(text);
+}
+
+/** An `@handle` in the caption or title. Exact token, same as a hashtag. */
+function carriesMention(item: RawContent, mention: string): boolean {
+  const text = `${item.title} ${item.caption}`.toLowerCase();
+  return new RegExp(`(^|[^\\w])@${escape(mention)}([^\\w]|$)`).test(text);
+}
+
+/**
+ * A phrase in the post's own words. Whole-word so "air" does not match
+ * "airport" — the same rule the brand-safety scanner uses, for the same
+ * reason: a substring match on someone's livelihood is not evidence.
+ */
+function carriesKeyword(item: RawContent, keyword: string): boolean {
+  const text = `${item.title} ${item.caption}`.toLowerCase();
+  return new RegExp(`(^|[^\\w])${escape(keyword.trim().toLowerCase())}([^\\w]|$)`).test(text);
+}
+
+/** Which signal put this post in the campaign, or null if none did. */
+export function signalFor(item: RawContent, window: AttributionWindow): MatchSignal | null {
+  if (window.overrides?.include.includes(item.id)) return "manual";
+  if (carriesTag(item, normaliseTag(window.hashtag))) return "hashtag";
+  if ((window.mentions ?? []).some((mention) => carriesMention(item, normaliseMention(mention)))) {
+    return "mention";
+  }
+  if ((window.keywords ?? []).some((keyword) => carriesKeyword(item, keyword))) return "keyword";
+  return null;
 }
 
 function inWindow(item: RawContent, startsOn: string, endsOn: string): boolean {
@@ -67,7 +111,6 @@ export function attributedPostsFor(
   influencerId: string,
   window: AttributionWindow,
 ): RawContent[] {
-  const tag = normaliseTag(window.hashtag);
   const exclude = new Set(window.overrides?.exclude ?? []);
   const include = new Set(window.overrides?.include ?? []);
   const platforms = new Set(window.platforms);
@@ -80,7 +123,7 @@ export function attributedPostsFor(
         include.has(item.id) ||
         (platforms.has(item.platform) &&
           inWindow(item, window.startsOn, window.endsOn) &&
-          carriesTag(item, tag)),
+          signalFor(item, window) !== null),
     )
     .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
 }
@@ -161,4 +204,56 @@ export function campaignScoreOf(
   const covered = components.reduce((sum, component) => sum + component.weight, 0);
   const total = components.reduce((sum, component) => sum + component.value * component.weight, 0);
   return Number((total / covered).toFixed(1));
+}
+
+/* --- Compliance ----------------------------------------------------------
+ * A post can be attributed and still not be what was asked for. The
+ * deliverable states what the caption has to carry; this checks the
+ * platform's own copy of it rather than asking the creator to confirm.
+ * ---------------------------------------------------------------------- */
+
+export interface ComplianceCheck {
+  /** What was required, in the words the campaign used. */
+  requirement: string;
+  kind: "hashtag" | "mention" | "phrase";
+  met: boolean;
+}
+
+export interface PostCompliance {
+  contentId: string;
+  checks: ComplianceCheck[];
+  /** True when every requirement was met. Null when none were defined. */
+  compliant: boolean | null;
+}
+
+export function complianceOf(
+  item: RawContent,
+  rules: { requiredHashtags: string[]; requiredMentions: string[]; captionMustInclude: string[] },
+): PostCompliance {
+  const checks: ComplianceCheck[] = [
+    ...rules.requiredHashtags.map((tag) => ({
+      requirement: `#${normaliseTag(tag)}`,
+      kind: "hashtag" as const,
+      met: carriesTag(item, normaliseTag(tag)),
+    })),
+    ...rules.requiredMentions.map((mention) => ({
+      requirement: `@${normaliseMention(mention)}`,
+      kind: "mention" as const,
+      met: carriesMention(item, normaliseMention(mention)),
+    })),
+    ...rules.captionMustInclude.map((phrase) => ({
+      requirement: phrase,
+      kind: "phrase" as const,
+      met: carriesKeyword(item, phrase),
+    })),
+  ];
+
+  return {
+    contentId: item.id,
+    checks,
+    // No requirements is not compliance — it is an absence of requirements,
+    // and a green tick against nothing is the kind of reassurance that gets
+    // quoted back at you.
+    compliant: checks.length === 0 ? null : checks.every((check) => check.met),
+  };
 }

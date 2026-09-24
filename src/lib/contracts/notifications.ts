@@ -15,6 +15,9 @@ export interface NotificationItem {
     | "ai_conflict"
     | "brand_safety"
     | "quota_warning"
+    | "deliverable_due"
+    | "deliverable_overdue"
+    | "contract_expiring"
     | "verification";
   title: string;
   detail: string;
