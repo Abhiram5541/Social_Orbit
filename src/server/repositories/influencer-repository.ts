@@ -678,6 +678,18 @@ export function toSummary(id: string, now: Date = new Date()): InfluencerSummary
         ? null
         : new Date(now.getTime() - derived.dormantDays * 86_400_000).toISOString(),
     confidence: confidence.score,
+    // Same model as the profile's cost panel, carried on the summary so a
+    // budget filter is deterministic rather than a second estimate.
+    estimatedPlacementRate: placementRate(
+      derived.medianViews === null || derived.uploadFrequencyPerWeek === null
+        ? null
+        : {
+            currency: "USD",
+            low: Math.round(derived.medianViews * derived.uploadFrequencyPerWeek * 4.3 * 0.0012),
+            high: Math.round(derived.medianViews * derived.uploadFrequencyPerWeek * 4.3 * 0.0055),
+          },
+      derived.uploadFrequencyPerWeek,
+    ),
   };
 }
 

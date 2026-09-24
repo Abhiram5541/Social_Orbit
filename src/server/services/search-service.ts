@@ -16,6 +16,8 @@ import {
   quotaFor,
 } from "@/server/repositories/usage-repository";
 import { ApiFailure } from "@/server/auth/rbac";
+import { convertEstimate } from "@/server/analytics/pricing";
+import { matchReasons, type MatchReason } from "./match-reasons";
 
 /* ---------------------------------------------------------------------------
  * Influencer search — DPR §11.
@@ -31,6 +33,12 @@ export interface SearchResult {
   quota: SearchQuota;
   /** True when this call consumed one of the org's metered searches. */
   charged: boolean;
+  /**
+   * Per creator on this page, which of the asked-for criteria they satisfied.
+   * Keyed by id rather than folded into the summary so the creator shape stays
+   * the same object everywhere else in the product.
+   */
+  reasons: Record<string, MatchReason[]>;
 }
 
 /**
@@ -64,6 +72,7 @@ function countFilters(query: SearchQuery): number {
     "platform", "category", "country", "language", "verification", "activity", "risk",
     "followerBand", "followersMin", "followersMax", "engagementMin", "medianViewsMin",
     "growthMin", "healthMin", "authenticityMin", "campaignFitMin", "roiCategory",
+    "rateMin", "rateMax", "excludeIds",
   ];
   return keys.reduce((total, key) => {
     const value = query[key];
@@ -95,6 +104,7 @@ function matchesText(item: InfluencerSummary, needle: string): boolean {
 }
 
 function matches(item: InfluencerSummary, query: SearchQuery): boolean {
+  if (query.excludeIds?.length && query.excludeIds.includes(item.id)) return false;
   if (query.q?.trim() && !matchesText(item, query.q.trim())) return false;
 
   if (query.platform?.length && !query.platform.some((p) => item.platforms.includes(p)))
@@ -106,6 +116,18 @@ function matches(item: InfluencerSummary, query: SearchQuery): boolean {
     return false;
   if (query.verification?.length && !query.verification.includes(item.verification))
     return false;
+
+  // Budget. The creator's band is modelled, so the test is whether the band
+  // *overlaps* what the buyer can spend — a creator at ₹80k–₹1.2L is a real
+  // answer to "under ₹1 lakh", and excluding them because the top of an
+  // estimate clears the limit would hide them on the strength of a guess.
+  if (query.rateMax !== undefined || query.rateMin !== undefined) {
+    const band = convertEstimate(item.estimatedPlacementRate, query.rateCurrency ?? "USD");
+    // No band means no rate was modelled. Absent is not "cheap".
+    if (!band) return false;
+    if (query.rateMax !== undefined && band.low > query.rateMax) return false;
+    if (query.rateMin !== undefined && band.high < query.rateMin) return false;
+  }
   if (query.activity?.length && !query.activity.includes(item.activity)) return false;
   if (query.risk?.length && !query.risk.includes(item.risk)) return false;
 
@@ -271,6 +293,9 @@ export async function searchInfluencers(
     facets: buildFacets(filtered),
     quota,
     charged: chargeable,
+    reasons: Object.fromEntries(
+      sorted.slice(start, start + query.pageSize).map((item) => [item.id, matchReasons(item, query)]),
+    ),
   };
 }
 

@@ -19,9 +19,9 @@ import { encode, postgresDriver, appStateQuery } from "./postgres";
  * write; make the repositories async if that ever matters.
  * ------------------------------------------------------------------------ */
 
-export type AppKind = "shortlists" | "campaigns" | "api_keys" | "users" | "orgs" | "usage" | "digests" | "crm" | "outreach_templates" | "outreach_messages" | "proposals" | "submissions" | "contract_templates" | "contracts" | "payments" | "rules" | "watchlists" | "applications" | "jobs" | "report_schedules" | "reports" | "brands" | "plan_changes" | "usage_history" | "sentiment" | "listening" | "visual";
+export type AppKind = "shortlists" | "campaigns" | "api_keys" | "users" | "orgs" | "usage" | "digests" | "crm" | "outreach_templates" | "outreach_messages" | "proposals" | "submissions" | "contract_templates" | "contracts" | "payments" | "rules" | "watchlists" | "applications" | "jobs" | "report_schedules" | "reports" | "brands" | "plan_changes" | "usage_history" | "sentiment" | "listening" | "visual" | "saved_searches";
 
-export const APP_KINDS: AppKind[] = ["shortlists", "campaigns", "api_keys", "users", "orgs", "usage", "digests", "crm", "outreach_templates", "outreach_messages", "proposals", "submissions", "contract_templates", "contracts", "payments", "rules", "watchlists", "applications", "jobs", "report_schedules", "reports", "brands", "plan_changes", "usage_history", "sentiment", "listening", "visual"];
+export const APP_KINDS: AppKind[] = ["shortlists", "campaigns", "api_keys", "users", "orgs", "usage", "digests", "crm", "outreach_templates", "outreach_messages", "proposals", "submissions", "contract_templates", "contracts", "payments", "rules", "watchlists", "applications", "jobs", "report_schedules", "reports", "brands", "plan_changes", "usage_history", "sentiment", "listening", "visual", "saved_searches"];
 
 /**
  * The one array for `kind`. Under the Postgres driver this is what

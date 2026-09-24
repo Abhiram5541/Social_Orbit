@@ -69,3 +69,26 @@ describe("scale suffixes", () => {
     expect(String(parseAsk("50k to 500k followers").query.followersMax)).toBe("500000");
   });
 });
+
+describe("budget", () => {
+  it("reads a currency amount as a budget, never as an audience size", () => {
+    const result = parseAsk("beauty creators under ₹1 lakh");
+    expect(String(result.query.rateMax)).toBe("100000");
+    expect(result.query.rateCurrency).toBe("INR");
+    // The follower rule must not also fire on the same words.
+    expect(result.query.followersMax).toBeUndefined();
+    expect(result.criteria.some((c) => c.label.includes("per placement"))).toBe(true);
+  });
+
+  it("still reads an audience size when no currency is written", () => {
+    const result = parseAsk("beauty creators under 1 lakh followers");
+    expect(String(result.query.followersMax)).toBe("100000");
+    expect(result.query.rateMax).toBeUndefined();
+  });
+
+  it("reads a budget range and a dollar amount", () => {
+    expect(String(parseAsk("creators between ₹50k and ₹2 lakh").query.rateMin)).toBe("50000");
+    expect(String(parseAsk("creators between ₹50k and ₹2 lakh").query.rateMax)).toBe("200000");
+    expect(parseAsk("creators under $500").query.rateCurrency).toBe("USD");
+  });
+});

@@ -217,6 +217,15 @@ export const InfluencerSummary = z.object({
   lastActiveAt: z.string().datetime().nullable(),
   confidence: z.number().min(0).max(100),
   /**
+   * The modelled per-placement band, in USD. Explicitly an estimate — it is
+   * arithmetic over the earnings model, never a rate card — and it is here so
+   * a budget filter has something deterministic to compare against.
+   */
+  estimatedPlacementRate: z
+    .object({ currency: z.string(), low: z.number(), high: z.number() })
+    .nullable()
+    .default(null),
+  /**
    * A hand-built demonstration record rather than an observed creator. The UI
    * must label it wherever the creator appears — an unlabelled fabrication in
    * a provenance product is worse than no record at all.

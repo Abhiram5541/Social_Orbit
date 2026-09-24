@@ -4,7 +4,8 @@ import { AskPanel } from "@/components/discovery/ask-panel";
 import { AssistantPanel } from "@/components/discovery/assistant-panel";
 import { SlidersHorizontal } from "lucide-react";
 import { formatCompact } from "@/lib/format";
-import { requirePagePermission } from "@/server/auth/rbac";
+import { can, requirePagePermission } from "@/server/auth/rbac";
+import { listCampaigns } from "@/server/repositories/workspace-repository";
 import { countInfluencers } from "@/server/repositories/influencer-repository";
 import { quotaFor } from "@/server/repositories/usage-repository";
 import { PageHeader } from "@/components/shell/app-shell";
@@ -79,7 +80,16 @@ export default async function DiscoveryPage() {
           </div>
         }
       >
-        <DiscoveryView initialQuota={quotaFor(user.orgId, user.plan)} />
+        <DiscoveryView
+          initialQuota={quotaFor(user.orgId, user.plan)}
+          campaigns={
+            can(user, "campaign:write")
+              ? listCampaigns(user)
+                  .filter((campaign) => campaign.status !== "archived")
+                  .map((campaign) => ({ id: campaign.id, name: campaign.name }))
+              : []
+          }
+        />
       </Suspense>
     </div>
   );

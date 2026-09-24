@@ -95,3 +95,43 @@ export function placementRate(
     high: Math.round(monthly.high / perMonth),
   };
 }
+
+/* --- Currency ------------------------------------------------------------
+ * A rate filter has to compare a creator's modelled band against a figure
+ * somebody typed, and people type the currency they buy in. The earnings
+ * model is denominated in USD, so a rupee comparison needs a rate.
+ *
+ * SENSO does not observe exchange rates, so this is a *stated assumption*,
+ * versioned like every other part of the model and shown wherever a converted
+ * figure appears. That is the same treatment the earnings band itself gets —
+ * it is already modelled, and hiding one more assumption inside it would be
+ * the only dishonest option here. Update the constants and bump the version.
+ * ---------------------------------------------------------------------- */
+
+export const FX_VERSION = "fx-2026.09";
+
+/** Units of the currency per 1 USD. */
+export const FX_PER_USD: Record<string, number> = {
+  USD: 1,
+  INR: 88,
+  EUR: 0.92,
+  GBP: 0.78,
+  AED: 3.67,
+};
+
+export const FX_NOTE = `Converted at a stated assumption (${FX_VERSION}): ₹${FX_PER_USD.INR} to the dollar. The rate band is modelled, not a rate card.`;
+
+/** Converts a modelled band into another currency, or null if unsupported. */
+export function convertEstimate(
+  estimate: CostEstimate | null,
+  currency: string,
+): CostEstimate | null {
+  if (!estimate) return null;
+  const target = currency.toUpperCase();
+  if (target === estimate.currency) return estimate;
+  const from = FX_PER_USD[estimate.currency.toUpperCase()];
+  const to = FX_PER_USD[target];
+  if (!from || !to) return null;
+  const factor = to / from;
+  return { currency: target, low: Math.round(estimate.low * factor), high: Math.round(estimate.high * factor) };
+}

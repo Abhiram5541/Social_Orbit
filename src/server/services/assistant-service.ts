@@ -5,6 +5,8 @@ import { SearchQuery } from "@/lib/contracts/search";
 import { AiUnavailable, extract, openAiKey, openAiModel } from "@/server/ai/openai";
 import { formatCompact } from "@/lib/format";
 import { semanticSearch } from "@/server/analytics/semantic-index";
+import { listWatchlists } from "./comparative-service";
+import { matchReasons } from "./match-reasons";
 import { toSummary } from "@/server/repositories/influencer-repository";
 import { parseAsk, refineAsk, type ParsedCriterion } from "./ask-service";
 import { searchInfluencers } from "./search-service";
@@ -71,6 +73,8 @@ export interface AssistantAnswer {
     country: string | null;
     categories: string[];
     confidence: number | null;
+    /** Which of the asked-for criteria this creator satisfied. */
+    reasons: { field: string; detail: string }[];
   }[];
   total: number;
   /** Null when there is no AI, or when the narration failed its check. */
@@ -196,6 +200,31 @@ export async function askAssistant(
   options: { previous?: SearchQuery; limit?: number } = {},
 ): Promise<AssistantAnswer> {
   const parsed = options.previous ? refineAsk(options.previous, question) : parseAsk(question);
+
+  // "remove competitors" only means something once you know who they are.
+  // The grammar cannot: it is pure and has no session. Here we do — so a word
+  // it could not place is matched against the organisation's own watchlists,
+  // and a hit expands into an exclusion of that list's creators.
+  const unresolved = parsed.unparsed.filter((word) => word.length > 2);
+  if (unresolved.length > 0 && /\bremove|exclude|without\b/i.test(question)) {
+    for (const list of listWatchlists(user)) {
+      const name = list.name.toLowerCase();
+      if (!unresolved.some((word) => name.includes(word) || word.includes(name) || word === list.kind)) {
+        continue;
+      }
+      const existing = parsed.query.excludeIds ?? [];
+      parsed.query.excludeIds = [...new Set([...existing, ...list.influencerIds])];
+      parsed.criteria.push({
+        field: "excludeIds",
+        value: list.id,
+        from: question,
+        label: `Without the ${list.name} list (${list.influencerIds.length})`,
+      });
+      parsed.unparsed = parsed.unparsed.filter(
+        (word) => !(name.includes(word) || word.includes(name) || word === list.kind),
+      );
+    }
+  }
   // The grammar builds a query the way a URL carries one — comma strings for
   // the list filters — so it goes back through the schema before the search
   // layer, which expects arrays.
@@ -256,6 +285,7 @@ export async function askAssistant(
     country: item.countryName ?? item.countryCode,
     categories: item.categories,
     confidence: item.confidence,
+    reasons: matchReasons(item, query),
   }));
 
   let answer: string | null = null;

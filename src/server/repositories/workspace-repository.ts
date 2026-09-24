@@ -765,6 +765,45 @@ export function createCampaign(
  * participant owes the same set — because per-creator requirements without a
  * per-creator contract is a promise the platform cannot keep track of yet.
  */
+/**
+ * Adds creators to a campaign that already exists — the path from a search
+ * result or a shortlist straight into the brief, without a detour through a
+ * shortlist first. Already-present creators are skipped rather than
+ * duplicated, so the same click twice is not two participants.
+ */
+export function addParticipants(
+  user: SessionUser,
+  campaignId: string,
+  influencerIds: string[],
+): { added: number; skipped: number } {
+  const row = campaigns().find((entry) => entry.id === campaignId);
+  if (!row) throw new ApiFailure("not_found", "That campaign does not exist.");
+  assertTenantAccess(user, row.orgId);
+
+  const present = new Set(row.participants.map((participant) => participant.influencerId));
+  let added = 0;
+  for (const influencerId of influencerIds) {
+    if (present.has(influencerId)) continue;
+    // A creator the index does not hold cannot be a participant: the campaign
+    // would carry a row nothing can ever be attributed to.
+    if (!toSummary(influencerId, EPOCH)) continue;
+    row.participants.push({
+      influencerId,
+      status: "shortlisted",
+      talentRate: null,
+      clientRate: null,
+      agreedRate: null,
+    });
+    present.add(influencerId);
+    added += 1;
+  }
+  if (added > 0) {
+    row.updatedAt = new Date().toISOString();
+    persist("campaigns", [row]);
+  }
+  return { added, skipped: influencerIds.length - added };
+}
+
 export function setCampaignDeliverables(
   user: SessionUser,
   campaignId: string,

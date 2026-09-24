@@ -57,6 +57,7 @@ export async function register(): Promise<void> {
     sentiment: () => [],
     listening: () => [],
     visual: () => [],
+    saved_searches: () => [],
   });
 
   // Score every creator once now, in the background, so the first request

@@ -107,6 +107,71 @@ export function parseAsk(input: string): AskResult {
     add("pageSize", query.pageSize, count[0], `Return ${query.pageSize}`);
   }
 
+  /* --- budget ----------------------------------------------------------
+   * Runs *before* the follower rules, and they now refuse a number carrying a
+   * currency mark. "under 1 lakh followers" is an audience; "under ₹1 lakh"
+   * is a budget, and reading the second as the first was silently returning
+   * creators with fewer than one hundred thousand rupees of audience.
+   * ------------------------------------------------------------------- */
+  const CUR = "(?:₹|rs\\.?|inr|\\$|usd|€|eur|£|gbp)";
+  const CURRENCY_CODE: Record<string, string> = {
+    "₹": "INR", rs: "INR", "rs.": "INR", inr: "INR",
+    $: "USD", usd: "USD", "€": "EUR", eur: "EUR", "£": "GBP", gbp: "GBP",
+  };
+  const currencyOf = (mark: string): string =>
+    CURRENCY_CODE[mark.trim().toLowerCase()] ?? "INR";
+
+  const budgetRange = take(
+    new RegExp(
+      `\\b(?:between\\s*)?${CUR}\\s*([\\d.,]+\\s*(?:lakh|crore|mn|cr|k|m|l)?)\\s*(?:-|–|to|and)\\s*${CUR}?\\s*([\\d.,]+\\s*(?:lakh|crore|mn|cr|k|m|l)?)`,
+      "i",
+    ).exec(text),
+  );
+  const budgetUnder = budgetRange
+    ? null
+    : take(
+        new RegExp(
+          `\\b(?:under|below|less than|cheaper than|up to|max|<)\\s*${CUR}\\s*([\\d.,]+\\s*(?:lakh|crore|mn|cr|k|m|l)?)`,
+          "i",
+        ).exec(text),
+      );
+  const budgetOver = budgetRange
+    ? null
+    : take(
+        new RegExp(
+          `\\b(?:over|above|more than|at least|from|>)\\s*${CUR}\\s*([\\d.,]+\\s*(?:lakh|crore|mn|cr|k|m|l)?)`,
+          "i",
+        ).exec(text),
+      );
+
+  const markOf = (matched: string): string =>
+    new RegExp(CUR, "i").exec(matched)?.[0] ?? "₹";
+
+  if (budgetRange) {
+    const min = parseCount(budgetRange[1]);
+    const max = parseCount(budgetRange[2]);
+    if (min !== null && max !== null) {
+      query.rateCurrency = currencyOf(markOf(budgetRange[0]));
+      query.rateMin = String(min);
+      query.rateMax = String(max);
+      add("rate", `${min}–${max}`, budgetRange[0], `Budget ${budgetRange[0].trim()} per placement (estimated)`);
+    }
+  } else if (budgetUnder) {
+    const max = parseCount(budgetUnder[1]);
+    if (max !== null) {
+      query.rateCurrency = currencyOf(markOf(budgetUnder[0]));
+      query.rateMax = String(max);
+      add("rateMax", String(max), budgetUnder[0], `Under ${budgetUnder[0].replace(/^\w+\s*/, "").trim()} per placement (estimated)`);
+    }
+  } else if (budgetOver) {
+    const min = parseCount(budgetOver[1]);
+    if (min !== null) {
+      query.rateCurrency = currencyOf(markOf(budgetOver[0]));
+      query.rateMin = String(min);
+      add("rateMin", String(min), budgetOver[0], `Over ${budgetOver[0].replace(/^\w+\s*/, "").trim()} per placement (estimated)`);
+    }
+  }
+
   /* --- follower ranges ------------------------------------------------- */
   const range = take(
     /\b([\d.,]+\s*(?:lakh|crore|mn|cr|k|m|l)?)\s*(?:-|–|to|and)\s*([\d.,]+\s*(?:lakh|crore|mn|cr|k|m|l)?)\s*(?:followers|subs|subscribers|audience)/.exec(text),
@@ -318,21 +383,48 @@ export function refineAsk(previous: SearchQuery, instruction: string): AskResult
     delete query.q;
   }
 
+  let removedNothing = false;
   if (remove) {
     const word = remove[1].trim();
+    let hit = false;
+
+    const drop = (field: string, value: string, label: string) => {
+      const kept = (query[field] ?? "").split(",").filter((entry) => entry && entry !== value);
+      if (kept.length > 0) query[field] = kept.join(",");
+      else delete query[field];
+      criteria.push({ field, value: `-${value}`, from: remove![0], label: `Without ${label}` });
+      hit = true;
+    };
+
     for (const category of Category.options) {
       if (!word.includes(category) && !word.includes(CATEGORY_LABEL[category].toLowerCase())) continue;
-      const kept = (query.category ?? "").split(",").filter((entry) => entry && entry !== category);
-      if (kept.length > 0) query.category = kept.join(",");
-      else delete query.category;
-      criteria.push({
-        field: "category",
-        value: `-${category}`,
-        from: remove[0],
-        label: `Without ${CATEGORY_LABEL[category]}`,
-      });
+      drop("category", category, CATEGORY_LABEL[category]);
     }
+    // Removing anything else the grammar can name: a country, a language, a
+    // platform, a verification state, or the free-text clause.
+    const named = parseAsk(word);
+    for (const criterion of named.criteria) {
+      if (criterion.field === "q" || criterion.field === "pageSize") continue;
+      const values = String(
+        (named.query as unknown as Record<string, string>)[criterion.field] ?? "",
+      ).split(",");
+      for (const value of values) if (value) drop(criterion.field, value, criterion.label);
+    }
+    if (!hit && query.q && query.q.toLowerCase().includes(word)) {
+      delete query.q;
+      criteria.push({ field: "q", value: `-${word}`, from: remove[0], label: `Without “${word}”` });
+      hit = true;
+    }
+    // Nothing in the query was called that. The caller may still be able to
+    // resolve it — a watchlist name, for instance — so it is reported rather
+    // than silently ignored.
+    removedNothing = !hit;
   }
 
-  return { query: query as unknown as SearchQuery, criteria, unparsed: fresh.unparsed, version: ASK_VERSION };
+  return {
+    query: query as unknown as SearchQuery,
+    criteria,
+    unparsed: removedNothing && remove ? [remove[1].trim()] : fresh.unparsed,
+    version: ASK_VERSION,
+  };
 }

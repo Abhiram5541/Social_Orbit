@@ -39,6 +39,7 @@ import { CreatorPreview } from "./creator-preview";
 import { FilterPanel, type Draft } from "./filter-panel";
 import { ResultTable, SelectionBar } from "./result-table";
 import { ResultCards } from "./result-cards";
+import { AddToCampaign } from "./add-to-campaign";
 
 /** The quick sorts, as the references draw them: a row of pills over the grid. */
 const QUICK_SORTS: { key: SortKey; label: string }[] = [
@@ -62,6 +63,8 @@ interface SearchResponse {
   facets: SearchFacet[];
   quota: SearchQuota;
   charged: boolean;
+  /** Which of the asked-for criteria each creator on this page satisfied. */
+  reasons?: Record<string, { field: string; detail: string }[]>;
 }
 
 /** A failed search carries the API error code so the quota case is separable. */
@@ -74,6 +77,7 @@ export function DiscoveryView({
   initialQuota,
   basePath = "/discovery",
   canShortlist = true,
+  campaigns = [],
 }: {
   initialQuota: SearchQuota;
   /**
@@ -85,6 +89,8 @@ export function DiscoveryView({
   basePath?: string;
   /** Shortlists are client-owned, so the action is hidden for operators. */
   canShortlist?: boolean;
+  /** Open campaigns this person may add creators to. Empty hides the action. */
+  campaigns?: { id: string; name: string }[];
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -92,6 +98,7 @@ export function DiscoveryView({
   const query = React.useMemo(() => parseQuery(params), [params]);
   const [draft, setDraft] = React.useState<Draft>(query);
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
+  const [addingToCampaign, setAddingToCampaign] = React.useState(false);
   const [filtersOpen, setFiltersOpen] = React.useState(false);
   const [text, setText] = React.useState(query.q ?? "");
 
@@ -450,6 +457,7 @@ export function DiscoveryView({
                 {view === "cards" ? (
                   <ResultCards
                     items={data.page.items}
+                    reasons={data.reasons}
                     onPreview={setPreviewId}
                     previewId={previewId}
                     selected={selected}
@@ -532,8 +540,27 @@ export function DiscoveryView({
             onCompare={() =>
               router.push(`/compare?ids=${[...selected].join(",")}`)
             }
+            onAddToShortlist={
+              canShortlist
+                ? () => router.push(`/shortlists?add=${[...selected].join(",")}`)
+                : undefined
+            }
+            onAddToCampaign={campaigns.length > 0 ? () => setAddingToCampaign(true) : undefined}
             onClear={() => setSelected(new Set())}
           />
+
+          {addingToCampaign && (
+            <AddToCampaign
+              campaigns={campaigns}
+              count={selected.size}
+              onClose={() => setAddingToCampaign(false)}
+              onDone={() => {
+                setAddingToCampaign(false);
+                setSelected(new Set());
+              }}
+              influencerIds={[...selected]}
+            />
+          )}
         </div>
       </div>
     </div>

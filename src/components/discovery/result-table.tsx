@@ -387,11 +387,16 @@ function CreatorCell({ item }: { item: InfluencerSummary }) {
 export function SelectionBar({
   count,
   onCompare,
+  onAddToCampaign,
+  onAddToShortlist,
   onClear,
   className,
 }: {
   count: number;
   onCompare: () => void;
+  /** Absent when the plan or the role does not allow campaigns. */
+  onAddToCampaign?: () => void;
+  onAddToShortlist?: () => void;
   onClear: () => void;
   className?: string;
 }) {
@@ -414,6 +419,16 @@ export function SelectionBar({
       <Button size="sm" variant="primary" onClick={onCompare} disabled={count < 2}>
         Compare
       </Button>
+      {onAddToShortlist && (
+        <Button size="sm" variant="secondary" onClick={onAddToShortlist}>
+          Add to shortlist
+        </Button>
+      )}
+      {onAddToCampaign && (
+        <Button size="sm" variant="secondary" onClick={onAddToCampaign}>
+          Add to campaign
+        </Button>
+      )}
       <Button size="sm" variant="ghost" onClick={onClear}>
         Clear
       </Button>

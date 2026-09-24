@@ -79,6 +79,15 @@ export const SearchQuery = z.object({
   medianViewsMin: z.coerce.number().int().nonnegative().optional(),
   growthMin: z.coerce.number().optional(),
 
+  /** Creators to leave out — a watchlist expanded, or a hand-picked set. */
+  excludeIds: csv(z.string()).optional(),
+
+  /** Budget per placement, against the modelled rate band. */
+  rateMin: z.coerce.number().nonnegative().optional(),
+  rateMax: z.coerce.number().positive().optional(),
+  /** The currency the two figures above are written in. */
+  rateCurrency: z.string().length(3).optional(),
+
   healthMin: z.coerce.number().min(0).max(100).optional(),
   authenticityMin: z.coerce.number().min(0).max(100).optional(),
   campaignFitMin: z.coerce.number().min(0).max(100).optional(),

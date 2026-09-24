@@ -37,6 +37,7 @@ interface AssistantResult {
     country: string | null;
     categories: string[];
     confidence: number | null;
+    reasons: { field: string; detail: string }[];
   }[];
   total: number;
   semantic: boolean;
@@ -193,6 +194,18 @@ export function AssistantPanel() {
                     </p>
                     {why.get(row.id) && (
                       <p className="mt-0.5 text-sm text-ink-muted">{why.get(row.id)}</p>
+                    )}
+                    {row.reasons.length > 0 && (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {row.reasons.map((reason) => (
+                          <span
+                            key={`${reason.field}-${reason.detail}`}
+                            className="rounded-full bg-brand-softer px-2 py-0.5 text-xs text-ink-muted"
+                          >
+                            {reason.detail}
+                          </span>
+                        ))}
+                      </div>
                     )}
                   </div>
                   <span className="font-num text-sm text-ink">

@@ -23,6 +23,7 @@ import { LastActive } from "./result-table";
 
 export function ResultCards({
   items,
+  reasons,
   selected,
   onToggleSelect,
   onShortlist,
@@ -30,6 +31,8 @@ export function ResultCards({
   previewId,
 }: {
   items: InfluencerSummary[];
+  /** Why each creator matched: the criteria they satisfied, by id. */
+  reasons?: Record<string, { field: string; detail: string }[]>;
   selected: Set<string>;
   onToggleSelect: (id: string) => void;
   onShortlist?: (item: InfluencerSummary) => void;
@@ -110,6 +113,25 @@ export function ResultCards({
                 <dt className="mt-0.5 text-xs text-ink-subtle">Confidence</dt>
               </div>
             </dl>
+
+            {(reasons?.[item.id]?.length ?? 0) > 0 && (
+              // Why this creator is on the list, in the buyer's own terms.
+              // Not a relevance opinion: each line names a criterion they
+              // asked for and the value that satisfied it.
+              <div className="mt-3">
+                <p className="label-caps-sm text-ink-subtle">Matched</p>
+                <div className="mt-1 flex flex-wrap gap-1.5">
+                  {reasons![item.id].map((reason) => (
+                    <span
+                      key={`${reason.field}-${reason.detail}`}
+                      className="rounded-full bg-brand-softer px-2 py-0.5 text-xs text-ink-muted"
+                    >
+                      {reason.detail}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="mt-3 flex items-center gap-2">
               <label className="flex cursor-pointer items-center gap-2 rounded-full bg-surface py-1.5 pl-2.5 pr-3 text-sm font-medium text-ink-muted hover:text-ink">
