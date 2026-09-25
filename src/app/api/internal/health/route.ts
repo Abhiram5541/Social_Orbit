@@ -14,9 +14,26 @@ export function GET() {
   const ok = creators > 0;
   // The database is resident, so memory is the capacity gauge (D42); the
   // healthcheck warns before the heap limit does.
-  const memoryMb = Math.round(process.memoryUsage().rss / 1048576);
+  const usage = process.memoryUsage();
+  const memoryMb = Math.round(usage.rss / 1048576);
+  // RSS is what the box sees, but it holds freed pages for a while after a
+  // scoring pass, so it reads high long after the data has shrunk. The heap
+  // is what the record set actually costs, and it is the number to watch when
+  // judging whether a change to what is resident did anything.
+  const heapMb = Math.round(usage.heapUsed / 1048576);
+  const heapLimitMb = Math.round(
+    (process.availableMemory?.() ?? 0) / 1048576,
+  );
   return NextResponse.json(
-    { ok, creators, memoryMb, uptimeSeconds: Math.round(process.uptime()) },
+    {
+      ok,
+      creators,
+      memoryMb,
+      heapMb,
+      heapHeadroomMb: heapLimitMb || undefined,
+      slimContent: process.env.SENSO_SLIM_CONTENT === "true",
+      uptimeSeconds: Math.round(process.uptime()),
+    },
     { status: ok ? 200 : 503, headers: { "cache-control": "no-store" } },
   );
 }
