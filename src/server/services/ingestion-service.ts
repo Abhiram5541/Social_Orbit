@@ -13,6 +13,7 @@ import { observeAccount, type XAccount, type XPost } from "@/server/connectors/x
 import { upsertIngested, type IngestedRecord } from "@/server/data/ingested-store";
 import { readRecords } from "@/server/data/records";
 import { checkRateLimit } from "./rate-limit";
+import { placeMentions } from "@/server/analytics/place-mentions";
 
 /* ---------------------------------------------------------------------------
  * Real-channel ingestion.
@@ -284,6 +285,14 @@ export function buildRecord(
       countryName: countryName(channel.country),
       languages: declaredLanguages(videos),
       primaryPlatform: "youtube",
+      // Derived here from the whole description rather than at read time from
+      // the truncated caption — the same reason hashtags and mentions are
+      // extracted at ingestion. Still a mention, never a location (D28).
+      placeMentions: placeMentions({
+        channelText: `${channel.title} ${channel.description}`,
+        contentText: videos.map((video) => `${video.title} ${video.description}`),
+        countryCode: channel.country ?? null,
+      }),
       createdAt: channel.publishedAt,
       lastRefreshedAt: collectedAt,
       conflictCount: 0,

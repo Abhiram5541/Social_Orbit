@@ -171,6 +171,13 @@ export interface RawInfluencer {
   languages: string[];
   primaryPlatform: Platform;
   /**
+   * Places the creator's own text keeps naming (D28), derived at ingestion
+   * from the *whole* description rather than the stored 400-character
+   * caption. Optional: rows written before it existed derive it at read time
+   * instead, which is what every row did until now.
+   */
+  placeMentions?: string[];
+  /**
    * A hand-built demonstration record, not an observation.
    *
    * The database is otherwise entirely real (CLAUDE.md D12), so a fabricated

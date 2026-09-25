@@ -666,11 +666,18 @@ export function toSummary(id: string, now: Date = new Date()): InfluencerSummary
     categories: categoriesFor(record.raw),
     countryCode: record.raw.countryCode,
     countryName: record.raw.countryName,
-    placeMentions: placeMentions({
-      channelText: `${record.raw.displayName} ${record.raw.bio}`,
-      contentText: record.content.map((item) => `${item.title} ${item.caption}`),
-      countryCode: record.raw.countryCode || null,
-    }),
+    // Stored when the ingestion derived it, computed here when it did not.
+    // The stored copy is read from the full description; this fallback reads
+    // the truncated caption, so preferring the stored one is both cheaper and
+    // more complete — and under slim loading the caption is not resident at
+    // all, which is why it cannot be the only path.
+    placeMentions:
+      record.raw.placeMentions ??
+      placeMentions({
+        channelText: `${record.raw.displayName} ${record.raw.bio}`,
+        contentText: record.content.map((item) => `${item.title} ${item.caption ?? ""}`),
+        countryCode: record.raw.countryCode || null,
+      }),
     languages: record.raw.languages,
     activity: derived.activity,
     isDemo: record.raw.isDemo === true,
