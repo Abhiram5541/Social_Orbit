@@ -69,6 +69,21 @@ export async function register(): Promise<void> {
     console.error(`[data] content indexes failed: ${String(error)}`),
   );
 
+  // Derived fields the slim process cannot compute for itself, filled in
+  // from the durable copy. Idempotent and a no-op once done, so it is a boot
+  // step rather than a manual one — a migration you have to remember to run
+  // is a migration that gets forgotten on the environment that needed it.
+  const { backfillPlaceMentions } = await import("@/server/services/maintenance-service");
+  void backfillPlaceMentions()
+    .then((report) => {
+      if (report.written > 0) {
+        console.log(
+          `[data] place mentions derived for ${report.written} creators (${report.withPlaces} name somewhere)`,
+        );
+      }
+    })
+    .catch((error: unknown) => console.error(`[data] place backfill failed: ${String(error)}`));
+
   // Score every creator once now, in the background, so the first request
   // reads a finished list instead of taking the ten-second pass itself.
   const { warmSummaries } = await import("@/server/repositories/influencer-repository");

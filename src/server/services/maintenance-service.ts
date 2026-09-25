@@ -1,5 +1,5 @@
 import { placeMentions } from "@/server/analytics/place-mentions";
-import { appStateQuery } from "@/server/data/postgres";
+import { appStateQuery, postgresDriver } from "@/server/data/postgres";
 
 /* ---------------------------------------------------------------------------
  * One-shot maintenance over the durable copy.
@@ -31,6 +31,7 @@ export interface BackfillReport {
  */
 export async function backfillPlaceMentions(batch = 200): Promise<BackfillReport> {
   const report: BackfillReport = { scanned: 0, written: 0, withPlaces: 0 };
+  if (!postgresDriver()) return report;
 
   for (;;) {
     const { rows } = await appStateQuery<{
