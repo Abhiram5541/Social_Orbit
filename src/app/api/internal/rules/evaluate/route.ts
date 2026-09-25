@@ -4,7 +4,11 @@ import { ApiFailure, handler, requirePermission } from "@/server/auth/rbac";
 import { evaluateCreator, evaluateMany } from "@/server/services/rules-service";
 
 /** Evaluates one creator or a roster against this organisation's rules. */
-const Body = z.object({ influencerIds: z.array(z.string().min(1)).min(1).max(200) });
+const Body = z.object({
+  influencerIds: z.array(z.string().min(1)).min(1).max(200),
+  /** Applies that campaign's own stricter rules on top of the org's. */
+  campaignId: z.string().trim().min(1).nullable().default(null),
+});
 
 export async function POST(request: NextRequest) {
   return handler(async () => {
@@ -14,8 +18,8 @@ export async function POST(request: NextRequest) {
     const ids = parsed.data.influencerIds;
     return NextResponse.json(
       ids.length === 1
-        ? { reports: { [ids[0]]: evaluateCreator(user, ids[0]) } }
-        : { reports: evaluateMany(user, ids) },
+        ? { reports: { [ids[0]]: evaluateCreator(user, ids[0], parsed.data.campaignId) } }
+        : { reports: evaluateMany(user, ids, parsed.data.campaignId) },
     );
   });
 }

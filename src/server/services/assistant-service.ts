@@ -6,6 +6,7 @@ import { AiUnavailable, extract, openAiKey, openAiModel } from "@/server/ai/open
 import { formatCompact } from "@/lib/format";
 import { semanticSearch } from "@/server/analytics/semantic-index";
 import { listWatchlists } from "./comparative-service";
+import { campaignContext, campaignTopicOf } from "./assistant-campaign";
 import { matchReasons } from "./match-reasons";
 import { toSummary } from "@/server/repositories/influencer-repository";
 import { parseAsk, refineAsk, type ParsedCriterion } from "./ask-service";
@@ -58,6 +59,11 @@ const Narration = z.object({
 
 export interface AssistantAnswer {
   question: string;
+  /** Set when the question was about work rather than about creators. */
+  topic: "creators" | "campaign" | "benchmark" | "attention";
+  /** The facts a work answer was drawn from, each checkable on the screen. */
+  facts: string[];
+  href: string | null;
   query: SearchQuery;
   criteria: ParsedCriterion[];
   /** What the grammar could not read and the model was asked about. */
@@ -194,11 +200,82 @@ export function isGrounded(text: string, allowed: Set<string>): boolean {
   return true;
 }
 
+/** The empty shell a work answer fills in, so both halves return one shape. */
+function emptyAnswer(question: string, query: SearchQuery): AssistantAnswer {
+  return {
+    question,
+    topic: "creators",
+    facts: [],
+    href: null,
+    query,
+    criteria: [],
+    unparsed: [],
+    results: [],
+    total: 0,
+    semantic: false,
+    matchedTerms: [],
+    answer: null,
+    highlights: [],
+    degraded: null,
+    model: null,
+    promptVersion: ASSISTANT_PROMPT_VERSION,
+    version: ASSISTANT_VERSION,
+  };
+}
+
+const WORK_SYSTEM = [
+  "You answer a marketer's question about their own campaign from the facts below.",
+  "Use ONLY those facts. Never calculate a figure they do not contain, never estimate,",
+  "and where a fact says something was not reported, say it was not reported.",
+  "Two or three sentences, plain and specific.",
+].join(" ");
+
 export async function askAssistant(
   user: SessionUser,
   question: string,
   options: { previous?: SearchQuery; limit?: number } = {},
 ): Promise<AssistantAnswer> {
+  // A question about a campaign, a benchmark or what needs attention is not a
+  // creator search, and running it as one returns a plausible list of
+  // strangers instead of an answer.
+  const topic = options.previous ? null : campaignTopicOf(question);
+  if (topic) {
+    const context = campaignContext(user, question, topic);
+    if (context) {
+      const shell = emptyAnswer(question, SearchQuery.parse({}));
+      shell.topic = context.topic;
+      shell.facts = context.facts;
+      shell.href = context.href;
+      if (!openAiKey()) {
+        shell.degraded = "no_ai";
+        return shell;
+      }
+      try {
+        const call = await extract(Narration, {
+          schemaName: "senso_assistant_answer",
+          system: WORK_SYSTEM,
+          user: `Question: ${question}\n\nFacts:\n${context.facts.join("\n")}`,
+          maxTokens: 700,
+        });
+        shell.model = call.model;
+        // Same check as the creator half: a number that is not in the facts
+        // drops the whole sentence.
+        const allowed = new Set<string>();
+        for (const fact of context.facts) {
+          for (const token of fact.match(/\d[\d.,]*(?:[KMB](?![A-Za-z]))?%?/g) ?? []) {
+            allowed.add(token.replace(/[.,]$/, "").replace(/%/g, ""));
+          }
+        }
+        if (isGrounded(call.value.answer, allowed)) shell.answer = call.value.answer;
+        else shell.degraded = "ungrounded";
+      } catch (error) {
+        if (!(error instanceof AiUnavailable)) throw error;
+        shell.degraded = "ai_unavailable";
+      }
+      return shell;
+    }
+  }
+
   const parsed = options.previous ? refineAsk(options.previous, question) : parseAsk(question);
 
   // "remove competitors" only means something once you know who they are.
@@ -332,6 +409,9 @@ export async function askAssistant(
 
   return {
     question,
+    topic: "creators",
+    facts: [],
+    href: null,
     query,
     criteria: parsed.criteria,
     unparsed: parsed.unparsed,

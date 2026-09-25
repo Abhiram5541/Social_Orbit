@@ -22,7 +22,7 @@ describe("rules engine", () => {
     const svc = await import("./rules-service");
     svc.createRule(USER, {
       kind: "brand_safety", name: "Firearms", label: null, severity: "review",
-      scope: "content", terms: ["gun"], exceptions: ["sound effect"], minMatches: 1, enabled: true,
+      scope: "content", terms: ["gun"], exceptions: ["sound effect"], minMatches: 1, enabled: true, campaignId: null,
     });
     const report = svc.evaluateCreator(USER, "i1");
     const hit = report.hits[0];
@@ -47,20 +47,20 @@ describe("rules engine", () => {
     const svc = await import("./rules-service");
     const rule = svc.createRule(USER, {
       kind: "classifier", name: "Plant based", label: "Vegan", severity: "note",
-      scope: "content", terms: ["vegan"], exceptions: [], minMatches: 1, enabled: true,
+      scope: "content", terms: ["vegan"], exceptions: [], minMatches: 1, enabled: true, campaignId: null,
     });
     expect(svc.evaluateCreator(USER, "i1").labels).toContain("Vegan");
 
     const same = svc.updateRule(USER, rule.id, {
       kind: "classifier", name: "Plant based diets", label: "Vegan", severity: "note",
-      scope: "content", terms: ["vegan"], exceptions: [], minMatches: 1, enabled: true,
+      scope: "content", terms: ["vegan"], exceptions: [], minMatches: 1, enabled: true, campaignId: null,
     });
     // Renaming is not a new judgement.
     expect(same.version).toBe(1);
 
     const changed = svc.updateRule(USER, rule.id, {
       kind: "classifier", name: "Plant based diets", label: "Vegan", severity: "note",
-      scope: "content", terms: ["vegan", "plant based"], exceptions: [], minMatches: 1, enabled: true,
+      scope: "content", terms: ["vegan", "plant based"], exceptions: [], minMatches: 1, enabled: true, campaignId: null,
     });
     // Changing the terms is.
     expect(changed.version).toBe(2);
@@ -70,7 +70,7 @@ describe("rules engine", () => {
     const svc = await import("./rules-service");
     svc.createRule(USER, {
       kind: "brand_safety", name: "Pattern", label: null, severity: "block",
-      scope: "content", terms: ["vegan"], exceptions: [], minMatches: 3, enabled: true,
+      scope: "content", terms: ["vegan"], exceptions: [], minMatches: 3, enabled: true, campaignId: null,
     });
     const report = svc.evaluateCreator(USER, "i1");
     // One post mentions it; the rule asked for three.

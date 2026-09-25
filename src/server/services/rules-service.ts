@@ -35,10 +35,26 @@ const rules = () => appRows<Rule>("rules", () => []);
 const nextId = (prefix: string) =>
   `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
-export function listRules(user: SessionUser, kind?: Rule["kind"]): Rule[] {
+/**
+ * The organisation's rules, optionally narrowed to one campaign.
+ *
+ * With no campaign named, campaign-specific rules are left out: they are a
+ * stricter policy for one piece of work, and applying them to every creator
+ * the org looks at would flag people against a standard nobody asked them to
+ * meet. With a campaign named, both apply — the org's floor plus that
+ * campaign's own additions.
+ */
+export function listRules(
+  user: SessionUser,
+  kind?: Rule["kind"],
+  campaignId?: string | null,
+): Rule[] {
   return rules()
     .filter((row) => row.orgId === user.orgId)
     .filter((row) => !kind || row.kind === kind)
+    .filter((row) =>
+      campaignId ? row.campaignId === null || row.campaignId === campaignId : row.campaignId === null,
+    )
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
@@ -47,6 +63,7 @@ export function createRule(user: SessionUser, input: RuleInput): Rule {
   const row: Rule = {
     id: nextId("rule"),
     orgId: user.orgId,
+    campaignId: input.campaignId ?? null,
     kind: input.kind,
     name: input.name,
     label: input.kind === "classifier" ? (input.label ?? input.name) : null,
@@ -129,8 +146,14 @@ const SEVERITY_RANK: Record<RuleSeverity, number> = { note: 0, review: 1, block:
  * report says how many posts were read, so "no hits" can be told apart from
  * "nothing was looked at".
  */
-export function evaluateCreator(user: SessionUser, influencerId: string): CreatorRuleReport {
-  const active = listRules(user).filter((rule) => rule.enabled);
+export function evaluateCreator(
+  user: SessionUser,
+  influencerId: string,
+  campaignId?: string | null,
+): CreatorRuleReport {
+  // With a campaign named, that campaign's own stricter rules apply on top of
+  // the organisation's; without one, only the organisation's.
+  const active = listRules(user, undefined, campaignId).filter((rule) => rule.enabled);
   const records = readRecords();
   const influencer = records.influencers.find((entry) => entry.id === influencerId);
   const posts = records.content
@@ -221,8 +244,9 @@ export function evaluateCreator(user: SessionUser, influencerId: string): Creato
 export function evaluateMany(
   user: SessionUser,
   influencerIds: string[],
+  campaignId?: string | null,
 ): Record<string, CreatorRuleReport> {
   const out: Record<string, CreatorRuleReport> = {};
-  for (const id of influencerIds.slice(0, 200)) out[id] = evaluateCreator(user, id);
+  for (const id of influencerIds.slice(0, 200)) out[id] = evaluateCreator(user, id, campaignId);
   return out;
 }

@@ -23,6 +23,9 @@ import { Notice } from "@/components/ui/states";
 
 interface AssistantResult {
   question: string;
+  topic: "creators" | "campaign" | "benchmark" | "attention";
+  facts: string[];
+  href: string | null;
   query: Record<string, unknown>;
   criteria: { field: string; value: string; from: string; label: string }[];
   unparsed: string[];
@@ -134,7 +137,37 @@ export function AssistantPanel() {
           </Notice>
         )}
 
-        {result && (
+        {result && result.topic !== "creators" && (
+          <div className="space-y-3">
+            {result.answer && (
+              <div className="rounded-xl bg-sunken/60 px-4 py-3">
+                <p className="text-base text-ink">{result.answer}</p>
+              </div>
+            )}
+            {result.degraded && (
+              <Notice tone="info" title="Answered without a written summary">
+                {DEGRADED_NOTE[result.degraded]}
+              </Notice>
+            )}
+            <div>
+              <p className="label-caps text-ink-subtle">From your own records</p>
+              <ul className="mt-1 space-y-1">
+                {result.facts.map((fact) => (
+                  <li key={fact} className="text-sm text-ink-muted">
+                    {fact}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {result.href && (
+              <Link href={result.href} className="text-sm font-medium text-brand hover:underline">
+                Open it
+              </Link>
+            )}
+          </div>
+        )}
+
+        {result && result.topic === "creators" && (
           <div className="space-y-3">
             {result.answer && (
               <div className="rounded-xl bg-sunken/60 px-4 py-3">

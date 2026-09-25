@@ -72,6 +72,7 @@ function carriesTag(item: RawContent, tag: string): boolean {
 
 /** An `@handle` in the caption or title. Exact token, same as a hashtag. */
 function carriesMention(item: RawContent, mention: string): boolean {
+  if (!mention) return false;
   const text = `${item.title} ${item.caption}`.toLowerCase();
   return new RegExp(`(^|[^\\w])@${escape(mention)}([^\\w]|$)`).test(text);
 }
@@ -82,8 +83,13 @@ function carriesMention(item: RawContent, mention: string): boolean {
  * reason: a substring match on someone's livelihood is not evidence.
  */
 function carriesKeyword(item: RawContent, keyword: string): boolean {
+  const term = keyword?.trim().toLowerCase();
+  // An empty term would compile to a regex that matches every post, which is
+  // the worst possible failure here: a campaign that silently claims credit
+  // for everything its participants published.
+  if (!term) return false;
   const text = `${item.title} ${item.caption}`.toLowerCase();
-  return new RegExp(`(^|[^\\w])${escape(keyword.trim().toLowerCase())}([^\\w]|$)`).test(text);
+  return new RegExp(`(^|[^\\w])${escape(term)}([^\\w]|$)`).test(text);
 }
 
 /** Which signal put this post in the campaign, or null if none did. */

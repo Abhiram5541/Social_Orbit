@@ -58,3 +58,61 @@ describe("campaign attribution", () => {
     expect(campaignScoreOf(totalsOf([]), 2)).toBeNull();
   });
 });
+
+describe("extra detection signals", () => {
+  const sample = (over: Partial<RawContent> = {}): RawContent =>
+    ({
+      id: "p1",
+      accountId: "a",
+      influencerId: "i",
+      platform: "youtube",
+      title: "Morning routine",
+      url: "https://x/1",
+      thumbnailUrl: null,
+      publishedAt: "2026-06-02T00:00:00.000Z",
+      views: 10,
+      likes: 1,
+      comments: 0,
+      shares: null,
+      durationSeconds: null,
+      isSponsored: null,
+      caption: "",
+      hashtags: [],
+      platformCategoryId: null,
+      ...over,
+    }) as RawContent;
+
+  const base = {
+    hashtag: "launch",
+    platforms: ["youtube" as const],
+    startsOn: "2026-01-01",
+    endsOn: "2026-12-31",
+  };
+
+  it("attributes an @mention and a keyword, and names which signal did it", async () => {
+    const { signalFor } = await import("./attribution-service");
+    expect(signalFor(sample({ caption: "loved working with @northwind" }), { ...base, mentions: ["@Northwind"] })).toBe("mention");
+    expect(signalFor(sample({ caption: "the new orbit series is out" }), { ...base, keywords: ["orbit series"] })).toBe("keyword");
+    expect(signalFor(sample({ hashtags: ["#Launch"] }), base)).toBe("hashtag");
+    expect(signalFor(sample(), base)).toBeNull();
+  });
+
+  it("never matches on an empty term — that would claim credit for everything", async () => {
+    const { signalFor } = await import("./attribution-service");
+    expect(signalFor(sample({ caption: "anything at all" }), { ...base, keywords: ["", "   "] })).toBeNull();
+    expect(signalFor(sample({ caption: "anything at all" }), { ...base, mentions: [""] })).toBeNull();
+  });
+
+  it("checks a post against what the deliverable required", async () => {
+    const { complianceOf } = await import("./attribution-service");
+    const result = complianceOf(sample({ caption: "#ad with @northwind, paid partnership" }), {
+      requiredHashtags: ["#ad"],
+      requiredMentions: ["northwind"],
+      captionMustInclude: ["paid partnership", "discount code"],
+    });
+    expect(result.compliant).toBe(false);
+    expect(result.checks.filter((check) => check.met)).toHaveLength(3);
+    // No requirements is an absence, not a pass.
+    expect(complianceOf(sample(), { requiredHashtags: [], requiredMentions: [], captionMustInclude: [] }).compliant).toBeNull();
+  });
+});

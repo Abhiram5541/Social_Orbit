@@ -178,6 +178,41 @@ export function sendContract(user: SessionUser, contractId: string): Contract {
   return decorate(row, getCampaign(user, row.campaignId)?.name ?? "Campaign");
 }
 
+/**
+ * Nudges a signer who has not signed. Deliberately keeps the same token: a
+ * reminder that invalidated the link in their first email would break the
+ * thing it is reminding them to use. Every reminder is recorded, so "we
+ * chased them three times" is a fact rather than a recollection.
+ */
+export function remindContract(user: SessionUser, contractId: string): Contract {
+  const row = contracts().find((entry) => entry.id === contractId);
+  if (!row) throw new ApiFailure("not_found", "Contract not found.");
+  assertTenantAccess(user, row.orgId);
+  if (row.status !== "sent") {
+    throw new ApiFailure("conflict", "Only a contract that is out for signature can be chased.");
+  }
+
+  row.updatedAt = new Date().toISOString();
+  row.events.push({
+    id: nextId("ev"),
+    status: null,
+    note: "Reminder sent",
+    at: row.updatedAt,
+    byName: user.name,
+  });
+  persist("contracts", [row]);
+  return decorate(row, getCampaign(user, row.campaignId)?.name ?? "Campaign");
+}
+
+/** Contracts sent but unsigned for longer than `days`. Chase candidates. */
+export function awaitingSignature(user: SessionUser, days = 3): Contract[] {
+  const cutoff = new Date(Date.now() - days * 86_400_000).toISOString();
+  return listContracts(user)
+    .filter((contract) => contract.status === "sent")
+    .filter((contract) => contract.updatedAt <= cutoff)
+    .sort((a, b) => a.updatedAt.localeCompare(b.updatedAt));
+}
+
 /** The signer's view. No session: reached by the token in their email. */
 export function contractByToken(token: string): Contract | null {
   const row = contracts().find((entry) => entry.signToken === token);

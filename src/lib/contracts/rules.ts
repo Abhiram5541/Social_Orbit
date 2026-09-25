@@ -33,6 +33,12 @@ export type RuleScope = z.infer<typeof RuleScope>;
 export const Rule = z.object({
   id: z.string(),
   orgId: z.string(),
+  /**
+   * Scoped to one campaign when set. A campaign for a children's brand can
+   * be stricter than the organisation's own policy without making every
+   * other campaign stricter too.
+   */
+  campaignId: z.string().nullable().default(null),
   kind: RuleKind,
   name: z.string(),
   /** For a classifier: the label applied when the rule matches. */
@@ -58,6 +64,7 @@ export const RuleInput = z.object({
   label: z.string().trim().max(40).nullable().default(null),
   severity: RuleSeverity.default("review"),
   scope: RuleScope.default("both"),
+  campaignId: z.string().trim().min(1).nullable().default(null),
   terms: z.array(z.string().trim().min(2).max(40)).min(1, "Add at least one term").max(100),
   exceptions: z.array(z.string().trim().min(2).max(40)).max(100).default([]),
   minMatches: z.number().int().min(1).max(20).default(1),

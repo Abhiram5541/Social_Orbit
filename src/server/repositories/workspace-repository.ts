@@ -471,14 +471,19 @@ function windowOf(row: CampaignRow): AttributionWindow {
     startsOn: row.startsOn,
     endsOn: row.endsOn,
     overrides: row.attribution,
-    mentions: row.trackedMentions ?? [],
+    mentions: (row.trackedMentions ?? []).filter(
+      (mention): mention is string => typeof mention === "string" && mention.trim() !== "",
+    ),
     // Deliverable rules are detection signals too: a campaign that requires
     // "#ad @brand" in the caption has told us exactly what to look for, and
     // making the operator retype it as a tracking term would be asking twice.
+    // Deliverables written before these fields existed carry none of them,
+    // so every read defaults rather than assuming the shape (D29: rows are
+    // jsonb, and an older row is a normal thing to meet).
     keywords: [
       ...(row.trackedKeywords ?? []),
-      ...(row.deliverables ?? []).flatMap((deliverable) => deliverable.captionMustInclude),
-    ],
+      ...(row.deliverables ?? []).flatMap((deliverable) => deliverable.captionMustInclude ?? []),
+    ].filter((keyword): keyword is string => typeof keyword === "string" && keyword.trim() !== ""),
   };
 }
 
@@ -598,13 +603,22 @@ function toCampaignSummary(row: CampaignRow): CampaignSummary {
             0,
           ),
     attributedPosts,
+    // Capped per participant before summing. Pooling the posts and dividing
+    // by the total requirement let one prolific creator's surplus cover
+    // everyone else's misses — the campaign read 100% fulfilled while three
+    // of its four participants were overdue, which is the most reassuring
+    // possible way to be wrong.
     fulfilmentPercent:
       requiredPostsOf(row) === 0 || row.participants.length === 0
         ? null
         : Number(
-            Math.min(
-              100,
-              (attributedPosts / (requiredPostsOf(row) * row.participants.length)) * 100,
+            (
+              (performances.reduce(
+                (sum, performance) => sum + Math.min(performance.attributedPosts, requiredPostsOf(row)),
+                0,
+              ) /
+                (requiredPostsOf(row) * row.participants.length)) *
+              100
             ).toFixed(1),
           ),
     deliverableCount: (row.deliverables ?? []).length,
@@ -705,9 +719,9 @@ export function getCampaign(user: SessionUser, id: string): CampaignDetail | nul
             (deliverable) => deliverable.platform === post.platform,
           );
           const compliance = complianceOf(post, {
-            requiredHashtags: rules.flatMap((rule) => rule.requiredHashtags),
-            requiredMentions: rules.flatMap((rule) => rule.requiredMentions),
-            captionMustInclude: rules.flatMap((rule) => rule.captionMustInclude),
+            requiredHashtags: rules.flatMap((rule) => rule.requiredHashtags ?? []),
+            requiredMentions: rules.flatMap((rule) => rule.requiredMentions ?? []),
+            captionMustInclude: rules.flatMap((rule) => rule.captionMustInclude ?? []),
           });
           return { compliant: compliance.compliant, complianceChecks: compliance.checks };
         })(),
