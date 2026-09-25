@@ -421,6 +421,60 @@ when the filters match nothing, labelled as "closest by meaning" rather than
 passed off as a filter match. "Telugu cooking in Hyderabad" returned nothing
 before and now returns Telugu cooks in Hyderabad.
 
+**D49 — The content table is indexed and queryable, and the process no longer holds the parts of it that nothing reads.**
+*(Amends D29's "reads have to become queries" and D42's deferral of it.)*
+
+Measured before deciding anything: content is 84% of the resident record set
+and the only table anything scans. Its columns are now GENERATED from `data`
+rather than copied out of it, so nothing can drift from the row and no write
+path changed; `published_at` stays ISO text because a timestamptz cast is not
+immutable and Postgres refuses it in a generated column — and ISO UTC sorts
+lexicographically, which is how every date comparison here already works.
+With a GIN index on hashtags and a trigram index on title+caption, a hashtag
+lookup over 202k posts is 16ms and a text search 31ms.
+
+Three fields then left memory and stayed in the database, behind
+`SENSO_SLIM_CONTENT`: `caption`, `url`, `thumbnailUrl`. None of it can move a
+figure, and each for a reason rather than a hope:
+
+- **Captions are redundant for tag matching**, because `hashtags` is
+  extracted at ingestion from the whole description while `caption` keeps
+  only its first 400 characters. The array was always the superset; this is
+  the first thing to depend on it.
+- **Mentions got the same treatment**, so mention attribution now reads the
+  whole text instead of stopping at character 400 — more complete than before.
+- **Links are derived from the row id, exceptions are stored.** Deriving all
+  of them would be simpler and would quietly rewrite a few hundred real
+  links. A row the platform told us something specific about is not a
+  rounding error.
+
+What this cost, and what it caught. Comparing a slim process against a full
+one on the same database found `placeMentions` narrowing: it is derived from
+upload *text*, and captions are upload text. The claim that captions could
+not move anything the product reports was wrong, and that is the case it was
+wrong about. Place mentions are now derived at ingestion from the full
+description and stored, with a boot-time backfill — a migration you have to
+remember to run is one that gets forgotten on the environment that needed it.
+After the fix, 1,000 creators and every campaign compare identically across
+the two modes, and `scripts/slim-parity.mjs` rebuilds every stored link:
+437,986 rows on production, zero mismatches.
+
+The honest numbers. In isolation the content table's heap fell 283 MB to 177
+MB (−37%). On the live process, settled after a scoring pass, total heap fell
+851 MB to 734 MB (−14%) — smaller because content is not the whole heap, and
+because production is 13% Instagram, whose links are not derivable and are
+held as overrides. RSS is a poor gauge here (it holds freed pages long after
+a pass), so `/api/internal/health` now reports heap beside it.
+
+Still resident, and why: `title` feeds place mentions on every summary and
+`hashtags` feeds attribution, both on synchronous paths. Dropping them takes
+content to 77 MB but turns the campaign and profile reads async, which is a
+real refactor and belongs in its own change. The index migration runs in the
+background after warm-up, not in `ensureSchema`: adding a generated column
+rewrites the table — 109 seconds on production — and in front of the first
+request, on a box whose healthcheck restarts after two failures, that is how
+you get a restart loop.
+
 **D45 — An agency's clients are books of work inside one org, and a session's authority is re-read on every request.**
 Two things the tenancy model was missing, and one that was quietly wrong.
 
