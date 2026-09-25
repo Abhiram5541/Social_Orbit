@@ -2,6 +2,7 @@ import type { SessionUser } from "@/lib/contracts/auth";
 import type { Platform } from "@/lib/contracts/common";
 import { ApiFailure } from "@/server/auth/rbac";
 import { readRecords } from "@/server/data/records";
+import { contentUrl } from "@/server/data/content-media";
 import { toSummary } from "@/server/repositories/influencer-repository";
 
 /* ---------------------------------------------------------------------------
@@ -187,7 +188,7 @@ export function listen(
       displayName: toSummary(item.influencerId)?.displayName ?? item.influencerId,
       platform: item.platform,
       title: item.title,
-      url: item.url,
+      url: contentUrl(item),
       publishedAt: item.publishedAt,
       views: item.views,
       engagements: engagementOf(item),

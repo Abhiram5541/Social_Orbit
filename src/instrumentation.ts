@@ -60,6 +60,15 @@ export async function register(): Promise<void> {
     saved_searches: () => [],
   });
 
+  // Indexes for the SQL content path, after the store is warm and the
+  // process is already able to serve. Adding a generated column rewrites the
+  // table; doing that in front of the first request is how a slow boot
+  // becomes a restart loop.
+  const { ensureContentIndexes } = await import("@/server/data/postgres");
+  void ensureContentIndexes().catch((error: unknown) =>
+    console.error(`[data] content indexes failed: ${String(error)}`),
+  );
+
   // Score every creator once now, in the background, so the first request
   // reads a finished list instead of taking the ten-second pass itself.
   const { warmSummaries } = await import("@/server/repositories/influencer-repository");

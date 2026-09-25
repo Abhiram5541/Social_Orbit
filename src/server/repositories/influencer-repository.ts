@@ -62,6 +62,7 @@ import { FOLLOWER_BANDS, type FollowerBand } from "@/lib/contracts/search";
 import { FORMULA_VERSION } from "@/lib/contracts/score";
 import { placeMentions } from "@/server/analytics/place-mentions";
 import { costEfficiency, placementRate } from "@/server/analytics/pricing";
+import { contentThumbnail, contentUrl } from "@/server/data/content-media";
 import { lookalikes, type SimilarityCandidate } from "@/server/analytics/similarity";
 
 /* ---------------------------------------------------------------------------
@@ -725,8 +726,8 @@ function toContentItem(raw: RawContent, medianViews: number | null): ContentItem
     id: raw.id,
     platform: raw.platform,
     title: raw.title,
-    url: raw.url,
-    thumbnailUrl: raw.thumbnailUrl,
+    url: contentUrl(raw),
+    thumbnailUrl: contentThumbnail(raw),
     publishedAt: raw.publishedAt,
     views: raw.views,
     likes: raw.likes,

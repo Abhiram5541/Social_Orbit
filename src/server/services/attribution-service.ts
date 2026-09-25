@@ -59,21 +59,30 @@ const escape = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "
 export type MatchSignal = "hashtag" | "mention" | "keyword" | "manual";
 
 /**
- * A post also counts when the creator put the tag in the title or caption
- * rather than where the platform exposes structured tags — Instagram returns
- * the caption as one string, and a YouTube creator often tags in the title.
+ * A post also counts when the creator put the tag in the title rather than
+ * where the platform exposes structured tags — a YouTube creator often does.
+ *
+ * `hashtags` is extracted at ingestion from the *whole* description, while
+ * `caption` stores only its first 400 characters, so the array is already a
+ * superset of anything a caption scan could find. Reading the caption here
+ * adds nothing and costs the largest field in the database.
  */
 function carriesTag(item: RawContent, tag: string): boolean {
   if (item.hashtags.some((entry) => normaliseTag(entry) === tag)) return true;
-  const text = `${item.title} ${item.caption}`.toLowerCase();
+  const text = `${item.title} ${item.caption ?? ""}`.toLowerCase();
   // Word-boundary either side so `#launchday` does not satisfy `#launch`.
   return new RegExp(`(^|[^\\w])#${escape(tag)}([^\\w]|$)`).test(text);
 }
 
-/** An `@handle` in the caption or title. Exact token, same as a hashtag. */
+/**
+ * An `@handle` the post names. Reads the extracted array first, for the same
+ * reason hashtags does: it was taken from the whole text, and the stored
+ * caption is truncated.
+ */
 function carriesMention(item: RawContent, mention: string): boolean {
   if (!mention) return false;
-  const text = `${item.title} ${item.caption}`.toLowerCase();
+  if ((item.mentions ?? []).some((entry) => normaliseMention(entry) === mention)) return true;
+  const text = `${item.title} ${item.caption ?? ""}`.toLowerCase();
   return new RegExp(`(^|[^\\w])@${escape(mention)}([^\\w]|$)`).test(text);
 }
 
@@ -84,6 +93,10 @@ function carriesMention(item: RawContent, mention: string): boolean {
  */
 function carriesKeyword(item: RawContent, keyword: string): boolean {
   const term = keyword?.trim().toLowerCase();
+  // Unlike tags and mentions there is no extracted array for an arbitrary
+  // phrase, so this one genuinely needs the text. Under slim loading the
+  // caption is absent and the daily refresh resolves keyword matches into
+  // explicit includes instead (see resolveKeywordMatches).
   // An empty term would compile to a regex that matches every post, which is
   // the worst possible failure here: a campaign that silently claims credit
   // for everything its participants published.

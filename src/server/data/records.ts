@@ -83,6 +83,12 @@ export interface RawContent {
   isSponsored: boolean | null;
   caption: string;
   hashtags: string[];
+  /**
+   * Accounts the post names, extracted from the full text at ingestion.
+   * Optional because rows written before it existed carry none; the backfill
+   * in scripts/backfill-mentions.mjs fills those in.
+   */
+  mentions?: string[];
   /** YouTube's own video category id. Observed platform classification. */
   platformCategoryId: string | null;
 }

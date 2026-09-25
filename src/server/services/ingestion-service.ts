@@ -195,6 +195,20 @@ export function extractHashtags(text: string): string[] {
 }
 
 /**
+ * The accounts a post names, from the whole text.
+ *
+ * Stored for the same reason hashtags are: `caption` keeps only the first 400
+ * characters, so scanning it finds a fraction of what the creator actually
+ * wrote. Extracting here reads everything, which makes mention-based campaign
+ * attribution both cheaper and more complete than searching the stored
+ * caption ever was.
+ */
+export function extractMentions(text: string): string[] {
+  const matches = text.match(/(?<![\p{L}\p{N}_])@[\p{L}\p{N}_.]+/gu) ?? [];
+  return [...new Set(matches.map((handle) => handle.toLowerCase().replace(/\.$/, "")))];
+}
+
+/**
  * The language the creator declared most often across the sampled uploads.
  * Declared, not detected: guessing a language from a title is inference, and
  * this platform does not present inference as observation.
@@ -318,6 +332,7 @@ export function buildRecord(
       isSponsored: null,
       caption: video.description.slice(0, 400),
       hashtags: extractHashtags(video.description),
+      mentions: extractMentions(video.description),
       platformCategoryId: video.categoryId,
     })),
   };
@@ -464,6 +479,7 @@ export function buildXRecord(
       isSponsored: null,
       caption: post.text.slice(0, 400),
       hashtags: extractHashtags(post.text),
+      mentions: extractMentions(post.text),
       platformCategoryId: null,
     })),
   };
@@ -580,6 +596,7 @@ export function buildInstagramRecord(
       isSponsored: null,
       caption: post.caption.slice(0, 400),
       hashtags: extractHashtags(post.caption),
+      mentions: extractMentions(post.caption),
       platformCategoryId: post.productType,
     })),
   };

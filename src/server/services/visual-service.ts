@@ -3,6 +3,7 @@ import { AiUnavailable, extract, openAiKey, openAiModel } from "@/server/ai/open
 import { ApiFailure } from "@/server/auth/rbac";
 import { appRows, persist } from "@/server/data/app-store";
 import { readRecords } from "@/server/data/records";
+import { contentThumbnail, contentUrl } from "@/server/data/content-media";
 import { registerJob, enqueue } from "./job-queue";
 
 /* ---------------------------------------------------------------------------
@@ -122,7 +123,8 @@ export async function analyseThumbnails(influencerId: string): Promise<VisualRec
   if (blocked) throw new ApiFailure("connector_unavailable", blocked);
 
   const posts = readRecords()
-    .content.filter((item) => item.influencerId === influencerId && item.thumbnailUrl)
+    .content.filter((item) => item.influencerId === influencerId)
+    .filter((item) => contentThumbnail(item) !== null)
     .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
     .slice(0, THUMBNAILS_PER_CREATOR);
 
@@ -137,7 +139,7 @@ export async function analyseThumbnails(influencerId: string): Promise<VisualRec
       schemaName: "senso_thumbnail_frames",
       system: SYSTEM,
       user: `Describe each of these ${slice.length} thumbnails. They are numbered from 0 in the order given.`,
-      images: slice.map((post) => post.thumbnailUrl!).filter(Boolean),
+      images: slice.map((post) => contentThumbnail(post)!).filter(Boolean),
       maxTokens: 2000,
     });
     for (const frame of call.value.frames) {
@@ -192,8 +194,8 @@ export async function analyseThumbnails(influencerId: string): Promise<VisualRec
         return {
           concern: frame.safetyConcern,
           contentId: frame.contentId,
-          url: post.url,
-          thumbnailUrl: post.thumbnailUrl ?? "",
+          url: contentUrl(post),
+          thumbnailUrl: contentThumbnail(post) ?? "",
         };
       }),
     consistency: styles.length === 0 ? null : share(styles[0].count),

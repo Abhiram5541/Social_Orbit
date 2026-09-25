@@ -115,6 +115,28 @@ export async function ensureSchema(): Promise<void> {
       await client.query(`CREATE INDEX IF NOT EXISTS ${name}_owner_idx ON ${name} (owner_id)`);
     }
 
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * The columns and indexes that make content queryable, run *after* the
+ * process is already serving.
+ *
+ * Adding a generated column rewrites the table, and on a few hundred
+ * thousand posts that is tens of seconds. Inside `ensureSchema` it would sit
+ * in front of the first request, and on a box whose healthcheck restarts the
+ * process after two failures a slow boot is how you get a restart loop. So
+ * it runs once, in the background, and logs what it did; a boot that is
+ * interrupted halfway leaves the earlier statements in place and the next one
+ * continues.
+ */
+export async function ensureContentIndexes(): Promise<void> {
+  if (!postgresDriver()) return;
+  const client = await db().connect();
+  const started = Date.now();
+  try {
     /* Content is 84% of the resident record set and the only table anything
      * scans, so it is the one that gets real columns. They are GENERATED from
      * `data`, which means: nothing is copied, nothing can drift out of step
@@ -165,21 +187,73 @@ export async function ensureSchema(): Promise<void> {
          (coalesce(data->>'title','') || ' ' || coalesce(data->>'caption','')) gin_trgm_ops
        )`,
     ).catch(() => {});
+    console.log(`[data] content indexes ready in ${Date.now() - started}ms`);
+  } catch (error) {
+    // A read path that is not turned on yet must never stop the process from
+    // serving. The queries simply stay slow until this succeeds.
+    console.error(`[data] content index migration failed: ${String(error)}`);
   } finally {
     client.release();
   }
 }
 
 /** Every row of every table, in insertion order — the array order the JSON file had. */
+/**
+ * Whether the process keeps the heavy halves of a content row in memory.
+ *
+ * What it drops: `caption`, `url`, `thumbnailUrl` — 41% of the heap the
+ * content table costs, measured on 202,237 real posts (256 MB to 150 MB).
+ *
+ * What it cannot change: any figure the product reports. Captions are not
+ * scored, and they are redundant for tag matching because `hashtags` is
+ * extracted from the *whole* description while `caption` stores only its
+ * first 400 characters. Links are derived from the row id, with the few that
+ * differ loaded as exceptions. Everything remains stored and queryable.
+ */
+export function slimContent(): boolean {
+  return postgresDriver() && process.env.SENSO_SLIM_CONTENT === "true";
+}
+
 export async function loadAll(): Promise<IngestedRecords> {
   const records = { revision: 0 } as IngestedRecords;
   for (const table of TABLES) {
+    const slim = table === "content" && slimContent();
     const { rows } = await db().query<{ data: unknown }>(
-      `SELECT data FROM ${TABLE[table].name} ORDER BY seq`,
+      slim
+        ? `SELECT data - 'caption' - 'url' - 'thumbnailUrl' AS data FROM content ORDER BY seq`
+        : `SELECT data FROM ${TABLE[table].name} ORDER BY seq`,
     );
     (records as unknown as Record<Table, unknown[]>)[table] = rows.map((row) => row.data);
   }
   return records;
+}
+
+/**
+ * The posts whose stored link or thumbnail is *not* what the rule would
+ * derive. Small by construction; only read under slim loading.
+ */
+export async function loadMediaOverrides(): Promise<
+  { id: string; url?: string; thumbnailUrl?: string }[]
+> {
+  const derivedVideoId = `right(id, length(id) - length(data->>'accountId') - 1)`;
+  const { rows } = await db().query<{
+    id: string;
+    url: string | null;
+    thumbnail_url: string | null;
+  }>(
+    `SELECT id, data->>'url' AS url, data->>'thumbnailUrl' AS thumbnail_url
+       FROM content
+      WHERE data->>'platform' <> 'youtube'
+         OR id NOT LIKE (data->>'accountId') || '\_%'
+         OR coalesce(data->>'url','') <> 'https://www.youtube.com/watch?v=' || ${derivedVideoId}
+         OR coalesce(data->>'thumbnailUrl','') <>
+            'https://i.ytimg.com/vi/' || ${derivedVideoId} || '/mqdefault.jpg'`,
+  );
+  return rows.map((row) => ({
+    id: row.id,
+    url: row.url ?? undefined,
+    thumbnailUrl: row.thumbnail_url ?? undefined,
+  }));
 }
 
 /* --- Reading content without loading it ----------------------------------

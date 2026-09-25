@@ -24,6 +24,7 @@ import {
 import { ApiFailure, assertTenantAccess } from "@/server/auth/rbac";
 import { appRows, persist } from "@/server/data/app-store";
 import { readRecords } from "@/server/data/records";
+import { contentThumbnail, contentUrl } from "@/server/data/content-media";
 import { toSummary } from "./influencer-repository";
 import { currentBrandIds } from "./user-repository";
 import { EPOCH } from "@/server/data/records";
@@ -696,8 +697,10 @@ export function getCampaign(user: SessionUser, id: string): CampaignDetail | nul
         influencerId: participant.influencerId,
         influencerName: participant.displayName,
         platform: post.platform,
-        url: post.url,
-        thumbnailUrl: post.thumbnailUrl,
+        url: contentUrl(post),
+        thumbnailUrl: contentThumbnail(post),
+        // Under slim loading the stored caption is absent; the title is
+        // always resident and is what a row in this table shows anyway.
         caption: post.caption || post.title,
         publishedAt: post.publishedAt,
         views: post.views,

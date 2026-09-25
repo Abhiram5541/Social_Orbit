@@ -6,10 +6,13 @@ import {
   countInfluencersStored,
   ensureSchema,
   loadAll,
+  loadMediaOverrides,
+  slimContent,
   TABLES,
   postgresDriver,
   type WriteOp,
 } from "./postgres";
+import { primeMediaOverrides } from "./content-media";
 import { replaceShared, shared } from "./process-store";
 import type {
   RawAccount,
@@ -128,9 +131,20 @@ export async function warmIngestedStore(): Promise<void> {
     await applyWrites(TABLES.map((table) => ({ table, upsert: fromDisk[table] })));
   }
 
+  // Under slim loading the display halves are left in the database, so the
+  // exceptions to the derivation rule are primed before anything renders.
+  if (slimContent()) {
+    const overrides = await loadMediaOverrides();
+    primeMediaOverrides(overrides);
+    console.log(`[data] slim content: ${overrides.length} media overrides held`);
+  }
+
   const records = await loadAll();
   replaceShared("ingested", records);
-  console.log(`[data] loaded ${records.influencers.length} creators from postgres`);
+  console.log(
+    `[data] loaded ${records.influencers.length} creators from postgres` +
+      (slimContent() ? " (slim content)" : ""),
+  );
 }
 
 function loadFromDisk(): IngestedRecords {
