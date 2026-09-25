@@ -114,6 +114,57 @@ export async function ensureSchema(): Promise<void> {
       );
       await client.query(`CREATE INDEX IF NOT EXISTS ${name}_owner_idx ON ${name} (owner_id)`);
     }
+
+    /* Content is 84% of the resident record set and the only table anything
+     * scans, so it is the one that gets real columns. They are GENERATED from
+     * `data`, which means: nothing is copied, nothing can drift out of step
+     * with the row, and no write path changes — the jsonb row stays the
+     * single source of truth and these are just indexable views onto it.
+     *
+     * Adding a generated column rewrites the table once. That is why they are
+     * added one at a time and guarded: a half-finished migration leaves the
+     * earlier ones in place and the next boot continues. */
+    for (const [column, definition] of [
+      ["influencer_id", `text GENERATED ALWAYS AS (data->>'influencerId') STORED`],
+      ["account_id", `text GENERATED ALWAYS AS (data->>'accountId') STORED`],
+      ["platform", `text GENERATED ALWAYS AS (data->>'platform') STORED`],
+      // Kept as the ISO text the platforms return. A timestamptz cast is not
+      // immutable (it reads DateStyle and TimeZone), so Postgres refuses it in
+      // a generated column — and ISO-8601 UTC sorts lexicographically anyway,
+      // which is exactly how every date comparison in this codebase already
+      // works.
+      ["published_at", `text GENERATED ALWAYS AS (data->>'publishedAt') STORED`],
+      ["views", `bigint GENERATED ALWAYS AS ((data->>'views')::bigint) STORED`],
+    ] as const) {
+      await client.query(
+        `ALTER TABLE content ADD COLUMN IF NOT EXISTS ${column} ${definition}`,
+      );
+    }
+
+    await client.query(
+      `CREATE INDEX IF NOT EXISTS content_creator_published_idx
+         ON content (influencer_id, published_at DESC)`,
+    );
+    await client.query(
+      `CREATE INDEX IF NOT EXISTS content_published_idx ON content (published_at DESC)`,
+    );
+    // Hashtag lookups are the campaign tracker's hot path: a GIN index over
+    // the jsonb array turns "every post carrying #launch" from a scan of
+    // everything into a lookup.
+    await client.query(
+      `CREATE INDEX IF NOT EXISTS content_hashtags_idx ON content USING gin ((data->'hashtags'))`,
+    );
+    // Free-text over the words creators wrote. Used by listening and by the
+    // caption search behind attribution.
+    await client.query(`CREATE EXTENSION IF NOT EXISTS pg_trgm`).catch(() => {
+      // Not every managed Postgres allows extensions. Without it the text
+      // queries still run, just as scans — correctness is unaffected.
+    });
+    await client.query(
+      `CREATE INDEX IF NOT EXISTS content_text_idx ON content USING gin (
+         (coalesce(data->>'title','') || ' ' || coalesce(data->>'caption','')) gin_trgm_ops
+       )`,
+    ).catch(() => {});
   } finally {
     client.release();
   }
@@ -129,6 +180,123 @@ export async function loadAll(): Promise<IngestedRecords> {
     (records as unknown as Record<Table, unknown[]>)[table] = rows.map((row) => row.data);
   }
   return records;
+}
+
+/* --- Reading content without loading it ----------------------------------
+ * The queries the product needs over posts, answered by the database rather
+ * than by a scan of everything in memory. Each one is indexed; see
+ * `ensureSchema`.
+ * ---------------------------------------------------------------------- */
+
+/** The full stored rows for these ids, display fields included. */
+export async function contentByIds(ids: string[]): Promise<Record<string, unknown>[]> {
+  if (ids.length === 0) return [];
+  const { rows } = await db().query<{ data: Record<string, unknown> }>(
+    `SELECT data FROM content WHERE id = ANY($1)`,
+    [ids],
+  );
+  return rows.map((row) => row.data);
+}
+
+/** A creator's posts, newest first. */
+export async function contentForCreator(
+  influencerId: string,
+  limit = 50,
+): Promise<Record<string, unknown>[]> {
+  const { rows } = await db().query<{ data: Record<string, unknown> }>(
+    `SELECT data FROM content
+       WHERE influencer_id = $1
+       ORDER BY published_at DESC
+       LIMIT $2`,
+    [influencerId, limit],
+  );
+  return rows.map((row) => row.data);
+}
+
+/** Posts inside a window, optionally on given platforms. */
+export async function contentInWindow(window: {
+  from: string;
+  to: string;
+  platforms?: string[];
+  limit?: number;
+}): Promise<Record<string, unknown>[]> {
+  const { rows } = await db().query<{ data: Record<string, unknown> }>(
+    `SELECT data FROM content
+       WHERE published_at >= $1 AND published_at <= $2
+         AND ($3::text[] IS NULL OR platform = ANY($3))
+       ORDER BY published_at DESC
+       LIMIT $4`,
+    [window.from, window.to, window.platforms?.length ? window.platforms : null, window.limit ?? 5000],
+  );
+  return rows.map((row) => row.data);
+}
+
+/**
+ * Posts whose own words contain `term`, as a whole token.
+ *
+ * The SQL mirrors the in-memory rule exactly — word boundary either side —
+ * so a campaign attributes the same posts whichever path answered. A
+ * detection rule with two implementations that disagree is worse than one
+ * that is slow.
+ *
+ * The boundary class is spelled out as ASCII rather than written
+ * `[[:alnum:]]`, because Postgres reads that as Unicode and JavaScript reads
+ * `\w` as ASCII. On a database of Indian creators that difference is not
+ * academic: `…ఉన్నాయి#shorts` matched in memory and did not match in SQL,
+ * and a parity check over 55,000 matches found exactly this, thirteen times.
+ */
+export async function contentMatchingText(
+  term: string,
+  window: { from: string; to: string; platforms?: string[]; limit?: number },
+): Promise<Record<string, unknown>[]> {
+  const { rows } = await db().query<{ data: Record<string, unknown> }>(
+    `SELECT data FROM content
+       WHERE published_at >= $1 AND published_at <= $2
+         AND ($3::text[] IS NULL OR platform = ANY($3))
+         AND (coalesce(data->>'title','') || ' ' || coalesce(data->>'caption',''))
+             ~* ('(^|[^A-Za-z0-9_])' || $4 || '([^A-Za-z0-9_]|$)')
+       ORDER BY published_at DESC
+       LIMIT $5`,
+    [
+      window.from,
+      window.to,
+      window.platforms?.length ? window.platforms : null,
+      term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+      window.limit ?? 5000,
+    ],
+  );
+  return rows.map((row) => row.data);
+}
+
+/** Posts carrying a structured hashtag. Served by the GIN index. */
+export async function contentWithHashtag(
+  tag: string,
+  window: { from: string; to: string; limit?: number },
+): Promise<Record<string, unknown>[]> {
+  const { rows } = await db().query<{ data: Record<string, unknown> }>(
+    `SELECT data FROM content
+       WHERE data->'hashtags' @> $1::jsonb
+         AND published_at >= $2 AND published_at <= $3
+       ORDER BY published_at DESC
+       LIMIT $4`,
+    [JSON.stringify([`#${tag}`]), window.from, window.to, window.limit ?? 5000],
+  );
+  return rows.map((row) => row.data);
+}
+
+/** How many posts each creator has, for reporting without loading them. */
+export async function contentCounts(): Promise<{ total: number; byPlatform: Record<string, number> }> {
+  const { rows } = await db().query<{ platform: string; count: string }>(
+    `SELECT platform, count(*)::text AS count FROM content GROUP BY platform`,
+  );
+  const byPlatform: Record<string, number> = {};
+  let total = 0;
+  for (const row of rows) {
+    const count = Number(row.count);
+    byPlatform[row.platform ?? "unknown"] = count;
+    total += count;
+  }
+  return { total, byPlatform };
 }
 
 /* --- Scheduled-job bookkeeping -------------------------------------------
