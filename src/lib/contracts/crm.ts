@@ -122,6 +122,12 @@ export const RelationshipScore = z.object({
     onTimeRate: z.number().nullable(),
     repeatCollaborations: z.number().int(),
     campaignsCompleted: z.number().int(),
+    /**
+     * Share of this creator's approved payments that were actually settled.
+     * Null until one has been approved — an unpaid creator is a fact about
+     * the organisation, and it belongs in the record they are judged by.
+     */
+    paymentReliability: z.number().nullable().default(null),
   }),
   /** Share of the formula that was measurable, 0–1. */
   coverage: z.number().min(0).max(1),

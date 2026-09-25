@@ -16,6 +16,7 @@ import {
 } from "@/server/repositories/crm-repository";
 import { toSummary } from "@/server/repositories/influencer-repository";
 import { getCampaign } from "@/server/repositories/workspace-repository";
+import { createHmac } from "node:crypto";
 import { sendEmail } from "./notification-service";
 
 /* ---------------------------------------------------------------------------
@@ -142,13 +143,20 @@ export async function sendOutreach(user: SessionUser, input: SendInput): Promise
     const subject = render(input.subject, values);
     const body = render(input.body, values);
 
+    // Every outreach email carries a way out of outreach. The opt-out was
+    // always enforced on send; without a link in the message the only way to
+    // exercise it was to ask the sender, which is not a control the recipient
+    // holds.
+    const origin = process.env.APP_URL?.replace(/\/$/, "") ?? "";
+    const unsubscribe = `${origin}/unsubscribe/${unsubscribeToken(user.orgId, influencerId)}`;
+
     const delivered = await sendEmail({
       to,
       subject,
       html: `<div style="font-family:Inter,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55;color:#1a0a2e">${body
         .split("\n")
         .map((line) => `<p style="margin:0 0 12px">${escapeHtml(line)}</p>`)
-        .join("")}</div>`,
+        .join("")}<p style="margin:24px 0 0;font-size:12px;color:#8a8399">Not interested in hearing from ${escapeHtml(user.orgName)}? <a href="${unsubscribe}" style="color:#8a8399">Unsubscribe</a>.</p></div>`,
     });
 
     const row: MessageRow = {
@@ -223,4 +231,40 @@ export function recordProviderEvent(messageId: string, status: MessageStatus): b
   if (RANK[status] > RANK[row.status]) row.status = status;
   persist("outreach_messages", [row]);
   return true;
+}
+
+
+/* --- Unsubscribe ---------------------------------------------------------
+ * The link is a signature over (org, creator) rather than a stored row: it
+ * needs no table, cannot be guessed, and cannot be pointed at a different
+ * creator by editing the URL. It does not expire, because an unsubscribe
+ * link that stops working is a dark pattern.
+ * ---------------------------------------------------------------------- */
+
+function unsubscribeSecret(): string {
+  const configured = process.env.AUTH_SECRET;
+  if (configured && configured.length >= 32) return configured;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("AUTH_SECRET must be set to sign unsubscribe links.");
+  }
+  return "development-only-session-key-do-not-ship-32";
+}
+
+export function unsubscribeToken(orgId: string, influencerId: string): string {
+  const payload = Buffer.from(`${orgId}:${influencerId}`).toString("base64url");
+  const signature = createHmac("sha256", unsubscribeSecret()).update(payload).digest("base64url");
+  return `${payload}.${signature}`;
+}
+
+export function readUnsubscribeToken(
+  token: string,
+): { orgId: string; influencerId: string } | null {
+  const separator = token.lastIndexOf(".");
+  if (separator <= 0) return null;
+  const payload = token.slice(0, separator);
+  const expected = createHmac("sha256", unsubscribeSecret()).update(payload).digest("base64url");
+  if (expected !== token.slice(separator + 1)) return null;
+
+  const [orgId, influencerId] = Buffer.from(payload, "base64url").toString().split(":");
+  return orgId && influencerId ? { orgId, influencerId } : null;
 }

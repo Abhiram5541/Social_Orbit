@@ -10,7 +10,11 @@ import { SUBMISSION_LABEL } from "@/lib/contracts/campaign-workflow";
 import { PLATFORM_LABEL } from "@/lib/contracts/common";
 import { formatCompact, formatCurrency, formatDate, formatPercent, NO_VALUE } from "@/lib/format";
 import { requireOwnProfile } from "@/server/auth/creator";
-import { creatorWorkspace } from "@/server/services/creator-workspace-service";
+import {
+  creatorAnalytics,
+  creatorNotices,
+  creatorWorkspace,
+} from "@/server/services/creator-workspace-service";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +32,8 @@ export const dynamic = "force-dynamic";
 export default async function CreatorCampaignsPage() {
   const { user } = await requireOwnProfile("/creator/campaigns");
   const workspace = creatorWorkspace(user.influencerId!);
+  const analytics = creatorAnalytics(user.influencerId!);
+  const notices = creatorNotices(user.influencerId!);
 
   return (
     <>
@@ -42,6 +48,90 @@ export default async function CreatorCampaignsPage() {
           the platforms published for them. They never see your other campaigns, your rates
           with anyone else, or your payout details.
         </Notice>
+
+        {notices.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Needs you</CardTitle>
+            </CardHeader>
+            <ul className="divide-y divide-rule">
+              {notices.map((notice) => (
+                <li key={notice.id} className="flex flex-wrap items-center gap-3 px-4 py-2.5">
+                  <Badge
+                    tone={
+                      notice.severity === "critical"
+                        ? "critical"
+                        : notice.severity === "warning"
+                          ? "caution"
+                          : "neutral"
+                    }
+                  >
+                    {notice.severity === "critical" ? "Overdue" : notice.severity === "warning" ? "Action" : "Update"}
+                  </Badge>
+                  <div className="min-w-0 flex-1 basis-56">
+                    <p className="font-medium text-ink">{notice.title}</p>
+                    <p className="text-sm text-ink-muted">{notice.detail}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
+
+        {workspace.campaigns.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Across all your campaigns</CardTitle>
+            </CardHeader>
+            <div className="grid gap-px bg-rule sm:grid-cols-3 lg:grid-cols-6">
+              {[
+                { label: "Campaigns", value: String(analytics.campaigns) },
+                { label: "Posts attributed", value: String(analytics.attributedPosts) },
+                {
+                  label: "Views",
+                  value: analytics.views === null ? NO_VALUE : formatCompact(analytics.views),
+                },
+                {
+                  label: "Engagements",
+                  value:
+                    analytics.engagements === null ? NO_VALUE : formatCompact(analytics.engagements),
+                },
+                {
+                  label: "Median campaign score",
+                  value:
+                    analytics.medianCampaignScore === null
+                      ? NO_VALUE
+                      : String(Math.round(analytics.medianCampaignScore)),
+                },
+                {
+                  label: "On time",
+                  value:
+                    analytics.onTimePercent === null ? NO_VALUE : `${analytics.onTimePercent}%`,
+                },
+              ].map((cell) => (
+                <div key={cell.label} className="bg-surface px-4 py-3">
+                  <p className="text-sm text-ink-muted">{cell.label}</p>
+                  <p className="font-num text-2xl text-ink">{cell.value}</p>
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-line px-4 py-2.5">
+              <p className="text-sm text-ink-subtle">
+                Paid:{" "}
+                {analytics.paid.length === 0
+                  ? "nothing settled yet"
+                  : analytics.paid
+                      .map((entry) => formatCurrency(entry.amount, entry.currency))
+                      .join(", ")}
+                {analytics.awaitingPayment.length > 0 &&
+                  ` · awaiting ${analytics.awaitingPayment
+                    .map((entry) => formatCurrency(entry.amount, entry.currency))
+                    .join(", ")}`}
+                . Summed from the same attributed posts the brand sees.
+              </p>
+            </div>
+          </Card>
+        )}
 
         {workspace.campaigns.length === 0 ? (
           <Card>

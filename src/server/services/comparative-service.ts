@@ -400,3 +400,161 @@ export function watchlistOverlap(user: SessionUser, aId: string, bId: string) {
     ),
   };
 }
+
+/* --- Topic overlap and movement ------------------------------------------
+ * Two things the watchlist comparison could not answer: what the two sets
+ * talk about in common, and whether either is moving.
+ * ---------------------------------------------------------------------- */
+
+export interface TopicOverlap {
+  a: { id: string; name: string };
+  b: { id: string; name: string };
+  /** Tags both sets use, with how often each side uses them. */
+  shared: { tag: string; aCount: number; bCount: number }[];
+  /** Tags only one side uses — where the two sets actually differ. */
+  onlyA: { tag: string; count: number }[];
+  onlyB: { tag: string; count: number }[];
+  /** Jaccard over the tag sets, 0–100. */
+  similarity: number;
+  postsRead: number;
+}
+
+function tagCounts(influencerIds: string[], from: string, to: string): Map<string, number> {
+  const ids = new Set(influencerIds);
+  const counts = new Map<string, number>();
+  for (const item of readRecords().content) {
+    if (!ids.has(item.influencerId)) continue;
+    const day = item.publishedAt.slice(0, 10);
+    if (day < from || day > to) continue;
+    for (const tag of item.hashtags) {
+      const normalised = tag.trim().replace(/^#+/, "").toLowerCase();
+      if (normalised.length < 2) continue;
+      counts.set(normalised, (counts.get(normalised) ?? 0) + 1);
+    }
+  }
+  return counts;
+}
+
+export function topicOverlap(
+  user: SessionUser,
+  aId: string,
+  bId: string,
+  window: { from?: string; to?: string } = {},
+): TopicOverlap {
+  const lists = listWatchlists(user);
+  const a = lists.find((list) => list.id === aId);
+  const b = lists.find((list) => list.id === bId);
+  if (!a || !b) throw new ApiFailure("not_found", "Watchlist not found.");
+
+  const to = window.to ?? new Date().toISOString().slice(0, 10);
+  const from = window.from ?? new Date(Date.now() - 180 * 86_400_000).toISOString().slice(0, 10);
+
+  const countsA = tagCounts(a.influencerIds, from, to);
+  const countsB = tagCounts(b.influencerIds, from, to);
+
+  const shared: TopicOverlap["shared"] = [];
+  for (const [tag, aCount] of countsA) {
+    const bCount = countsB.get(tag);
+    if (bCount !== undefined) shared.push({ tag, aCount, bCount });
+  }
+  shared.sort((x, y) => y.aCount + y.bCount - (x.aCount + x.bCount));
+
+  const union = new Set([...countsA.keys(), ...countsB.keys()]);
+
+  return {
+    a: { id: a.id, name: a.name },
+    b: { id: b.id, name: b.name },
+    shared: shared.slice(0, 20),
+    onlyA: [...countsA.entries()]
+      .filter(([tag]) => !countsB.has(tag))
+      .sort((x, y) => y[1] - x[1])
+      .slice(0, 12)
+      .map(([tag, count]) => ({ tag, count })),
+    onlyB: [...countsB.entries()]
+      .filter(([tag]) => !countsA.has(tag))
+      .sort((x, y) => y[1] - x[1])
+      .slice(0, 12)
+      .map(([tag, count]) => ({ tag, count })),
+    similarity: union.size === 0 ? 0 : Number(((shared.length / union.size) * 100).toFixed(1)),
+    postsRead: [...countsA.values(), ...countsB.values()].reduce((sum, count) => sum + count, 0),
+  };
+}
+
+export interface WatchlistMovement {
+  watchlistId: string;
+  name: string;
+  /** The two windows compared, so the reader can see what "change" means. */
+  current: { from: string; to: string; posts: number; views: number | null };
+  previous: { from: string; to: string; posts: number; views: number | null };
+  postsChangePct: number | null;
+  viewsChangePct: number | null;
+  /** Tags that rose or appeared, strongest first. */
+  rising: { tag: string; now: number; before: number }[];
+  /** Null when the previous window holds nothing to compare against. */
+  comparable: boolean;
+}
+
+/**
+ * Whether a watchlist is moving, by comparing two equal windows.
+ *
+ * A percentage change needs both windows to hold something. When the earlier
+ * one is empty the change is reported as null rather than as infinite growth
+ * — the creators may simply not have been indexed yet, which is a fact about
+ * SENSO rather than about them (D19's rule, applied to a comparison).
+ */
+export function watchlistMovement(
+  user: SessionUser,
+  watchlistId: string,
+  days = 30,
+): WatchlistMovement {
+  const list = listWatchlists(user).find((entry) => entry.id === watchlistId);
+  if (!list) throw new ApiFailure("not_found", "Watchlist not found.");
+
+  const day = (offset: number) =>
+    new Date(Date.now() - offset * 86_400_000).toISOString().slice(0, 10);
+  const windows = {
+    current: { from: day(days), to: day(0) },
+    previous: { from: day(days * 2), to: day(days + 1) },
+  };
+
+  const ids = new Set(list.influencerIds);
+  const measure = (from: string, to: string) => {
+    let posts = 0;
+    let views: number | null = null;
+    for (const item of readRecords().content) {
+      if (!ids.has(item.influencerId)) continue;
+      const published = item.publishedAt.slice(0, 10);
+      if (published < from || published > to) continue;
+      posts += 1;
+      if (item.views !== null) views = (views ?? 0) + item.views;
+    }
+    return { from, to, posts, views };
+  };
+
+  const current = measure(windows.current.from, windows.current.to);
+  const previous = measure(windows.previous.from, windows.previous.to);
+
+  const change = (now: number | null, before: number | null): number | null =>
+    now === null || before === null || before === 0
+      ? null
+      : Number((((now - before) / before) * 100).toFixed(1));
+
+  const now = tagCounts(list.influencerIds, windows.current.from, windows.current.to);
+  const before = tagCounts(list.influencerIds, windows.previous.from, windows.previous.to);
+  const rising = [...now.entries()]
+    .map(([tag, count]) => ({ tag, now: count, before: before.get(tag) ?? 0 }))
+    .filter((entry) => entry.now > entry.before)
+    .sort((x, y) => y.now - y.before - (x.now - x.before))
+    .slice(0, 10);
+
+  return {
+    watchlistId: list.id,
+    name: list.name,
+    current,
+    previous,
+    postsChangePct: change(current.posts, previous.posts),
+    viewsChangePct: change(current.views, previous.views),
+    rising,
+    comparable: previous.posts > 0,
+  };
+}

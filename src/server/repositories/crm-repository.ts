@@ -56,7 +56,7 @@ const EMPTY_CONTACT: CrmRecord["contact"] = {
   optedOutAt: null,
 };
 
-export const RELATIONSHIP_FORMULA_VERSION = "relationship-1.0.0";
+export const RELATIONSHIP_FORMULA_VERSION = "relationship-1.1.0";
 
 /**
  * Relationship strength from collaboration history this platform can count:
@@ -66,7 +66,11 @@ export const RELATIONSHIP_FORMULA_VERSION = "relationship-1.0.0";
  * a bad partner, they are an unmeasured one, and `value` is null until at
  * least one component exists.
  */
-function relationshipScore(row: CrmRow, campaigns: { fulfilled: number; total: number; onTime: number }): RelationshipScore {
+function relationshipScore(
+  row: CrmRow,
+  campaigns: { fulfilled: number; total: number; onTime: number },
+  payments: { approved: number; paid: number },
+): RelationshipScore {
   const sent = row.interactions.filter((entry) => entry.kind === "email_sent").length;
   const replied = row.interactions.filter((entry) => entry.kind === "email_replied").length;
 
@@ -76,10 +80,21 @@ function relationshipScore(row: CrmRow, campaigns: { fulfilled: number; total: n
   const onTimeRate =
     campaigns.fulfilled === 0 ? null : Number(((campaigns.onTime / campaigns.fulfilled) * 100).toFixed(1));
 
+  // Whether *we* paid them. It reads oddly in a score about the creator, and
+  // it belongs there: a creator who was paid late and did the work anyway is
+  // a better partner than the number would otherwise say, and the one place
+  // an organisation will look at this creator is the place it should see its
+  // own record with them.
+  const paymentReliability =
+    payments.approved === 0
+      ? null
+      : Number(((payments.paid / payments.approved) * 100).toFixed(1));
+
   const weights: [number | null, number][] = [
-    [responseRate, 0.25],
-    [completionRate, 0.4],
+    [responseRate, 0.2],
+    [completionRate, 0.35],
     [onTimeRate, 0.25],
+    [paymentReliability, 0.1],
     // Repeat business is the strongest signal there is, but it only says
     // anything once there is a second campaign to count.
     [campaigns.total >= 2 ? Math.min(100, (campaigns.total - 1) * 50) : null, 0.1],
@@ -101,6 +116,7 @@ function relationshipScore(row: CrmRow, campaigns: { fulfilled: number; total: n
       onTimeRate,
       repeatCollaborations: Math.max(0, campaigns.total - 1),
       campaignsCompleted: campaigns.fulfilled,
+      paymentReliability,
     },
     coverage: Number(coverage.toFixed(2)),
     formulaVersion: RELATIONSHIP_FORMULA_VERSION,
@@ -108,6 +124,29 @@ function relationshipScore(row: CrmRow, campaigns: { fulfilled: number; total: n
 }
 
 /** What this creator actually did on this organisation's campaigns. */
+/**
+ * What this organisation owed this creator and whether it paid.
+ *
+ * Read from the store directly rather than through the payments service:
+ * that service already calls back into this file to write interaction notes,
+ * and importing it here would close the loop.
+ */
+function paymentHistory(
+  user: SessionUser,
+  influencerId: string,
+): { approved: number; paid: number } {
+  const rows = appRows<{
+    orgId: string;
+    influencerId: string;
+    status: string;
+  }>("payments", () => []).filter(
+    (row) => row.orgId === user.orgId && row.influencerId === influencerId,
+  );
+  // "Approved" is everything that reached a state where payment was owed.
+  const approved = rows.filter((row) => ["approved", "paid", "failed"].includes(row.status)).length;
+  return { approved, paid: rows.filter((row) => row.status === "paid").length };
+}
+
 function campaignHistory(user: SessionUser, influencerId: string) {
   const ids: string[] = [];
   let total = 0;
@@ -153,7 +192,7 @@ function toRecord(user: SessionUser, row: CrmRow): CrmRecord | null {
     contact: row.contact,
     customFields: row.customFields,
     interactions,
-    relationship: relationshipScore(row, history),
+    relationship: relationshipScore(row, history, paymentHistory(user, row.influencerId)),
     campaignIds: history.ids,
     lastInteractionAt: interactions[0]?.at ?? null,
     createdAt: row.createdAt,
@@ -304,6 +343,34 @@ export function optOut(user: SessionUser, influencerId: string, note: string): C
   row.updatedAt = new Date().toISOString();
   persist("crm", [row]);
   return addInteraction(user, influencerId, { kind: "note", body: `Opted out of outreach. ${note}`.trim() });
+}
+
+/**
+ * The recipient's own opt-out, from the link in an email. No session: the
+ * person clicking has no SENSO account and should not need one to stop being
+ * emailed. The caller has already verified the signed token, which is what
+ * proves the (org, creator) pair.
+ */
+export function optOutByToken(orgId: string, influencerId: string): boolean {
+  const row = rows().find(
+    (entry) => entry.orgId === orgId && entry.influencerId === influencerId,
+  );
+  if (!row) return false;
+  if (row.contact.optedOutAt) return true;
+
+  const now = new Date().toISOString();
+  row.contact = { ...row.contact, optedOutAt: now };
+  row.interactions.push({
+    id: nextId("int"),
+    kind: "note",
+    body: "Opted out through the unsubscribe link in an email.",
+    at: now,
+    byName: "The creator",
+    refId: null,
+  });
+  row.updatedAt = now;
+  persist("crm", [row]);
+  return true;
 }
 
 export function addInteraction(
